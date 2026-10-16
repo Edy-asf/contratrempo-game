@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db66c1be4d86e6a42bcf5ca409669926, type: 3}
+  m_Name: Chefe_ReiFungo
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ReiFungoDefinition
+  Prefab: {fileID: 3301092662110757058, guid: 06aaca330cd0e3445b4ffebc46e73512, type: 3}
+  DisplayName: Rei Fungo
+  MinArena: 1
+  MaxAlive: 0
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 5000
+  Damage: 20
+  AttackCooldown: 1
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0
+  CronitaValue: 3
+  MoveSpeed: 3
+  PreferredDistance: 12
+  AttackGap: 1.8
+  PhaseTwoAt: 0.5
+  PhaseThreeAt: 0
+  PhaseGapFactor: 0.75
+  AttackColor: {r: 0.45, g: 1, b: 0.7, a: 0.9}
+  Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  RingCount: 3
+  BulletsPerRing: 16
+  BulletSpeed: 9
+  BulletDamage: 10
+  RingInterval: 0.5
+  RingGap: 3
+  JumpWarning: 1.1
+  JumpAirTime: 0.8
+  SlamRadius: 5
+  SlamDamage: 28
+  ShockwaveSpeed: 12
+  ShockwaveDamage: 18
+  Shockwaves: {x: 1, y: 2}
+  SporeBombs: 6
+  SporeWarning: 1.2
+  SporeRadius: 2.5
+  SporeDamage: 18

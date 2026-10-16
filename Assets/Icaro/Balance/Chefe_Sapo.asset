@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a98f100b1f2d2b34a826533d81b114f1, type: 3}
+  m_Name: Chefe_Sapo
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.SapoDefinition
+  Prefab: {fileID: 3153760939601861925, guid: 248e9fe4d12494748bcae834dfd7e850, type: 3}
+  DisplayName: Sapo Rei do Brejo
+  MinArena: 1
+  MaxAlive: 0
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 6500
+  Damage: 22
+  AttackCooldown: 1
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0
+  CronitaValue: 3
+  MoveSpeed: 3.5
+  PreferredDistance: 14
+  AttackGap: 1.6
+  PhaseTwoAt: 0.5
+  PhaseThreeAt: 0
+  PhaseGapFactor: 0.75
+  AttackColor: {r: 1, g: 0.85, b: 0.2, a: 0.9}
+  Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  AcidDrops: {x: 7, y: 11}
+  AcidWarning: 1.1
+  AcidRadius: 2.8
+  AcidImpactDamage: 14
+  PuddleDuration: 7
+  PuddleTickDamage: 5
+  PuddleTickInterval: 0.4
+  Bubbles: {x: 5, y: 8}
+  BubbleSpeed: 6
+  BubbleTurnRate: 70
+  BubbleDamage: 14
+  BubbleLifetime: 7
+  LeapWarning: 0.9
+  LeapAirTime: 1
+  LeapDistance: 14
+  ShockwaveSpeed: 13
+  ShockwaveDamage: 20
+  Shockwaves: {x: 2, y: 3}
+  ShockwaveInterval: 0.55
+  FanVolleys: {x: 3, y: 5}
+  FanBullets: 7
+  FanAngle: 60
+  FanSpeed: 13
+  FanDamage: 9
+  FanInterval: 0.35

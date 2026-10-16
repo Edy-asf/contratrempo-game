@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a4584c4b29545c4faa51d1138a0a12f, type: 3}
+  m_Name: Item_EscudoDeSincronia
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ItemDefinition
+  DisplayName: Escudo de Sincronia
+  Description: "Escudo de 8% da vida. Recarrega ap\xF3s 3 s sem dano."
+  StackRule: "+8% da vida m\xE1xima por pilha."
+  Rarity: 1
+  Icon: {fileID: 0}
+  IconLetter: E
+  Effects:
+  - Stat: 10
+    FirstStack: 0.08
+    PerExtraStack: 0.08
+  Consumable: 0
+  Tags: 4
+  Flavor:

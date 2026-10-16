@@ -1,0 +1,272 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02c7cd9c0420a1947b4822b10670a8f2, type: 3}
+  m_Name: CombatBalance
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.CombatBalance
+  QuotaBase: 12
+  QuotaPerRoom: 2.5
+  AliveBase: 6
+  AlivePerRoom: 0.75
+  AliveCeiling: 40
+  EnemyCountMultiplier: 1
+  SpawnIntervalMin: 0.5
+  SpawnIntervalMax: 1
+  FirstSpawnDelay: 2
+  BossQuota: 8
+  BossAliveLimit: 3
+  SpawnTables:
+  - Name: Bosque 1-3
+    FromRoom: 1
+    ToRoom: 3
+    Weights:
+    - Enemy: {fileID: 11400000, guid: c1b29d44e33037540b0c2f030ea72032, type: 2}
+      Weight: 4
+    - Enemy: {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: 65699d3b964f5a94cb3975785997a953, type: 2}
+      Weight: 1.5
+  - Name: Bosque 4-6
+    FromRoom: 4
+    ToRoom: 6
+    Weights:
+    - Enemy: {fileID: 11400000, guid: c1b29d44e33037540b0c2f030ea72032, type: 2}
+      Weight: 3
+    - Enemy: {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e28d69650a2e5bf419995c734aff8d7b, type: 2}
+      Weight: 1.5
+    - Enemy: {fileID: 11400000, guid: e88d0cf768a74c043a00e2606b1d1a51, type: 2}
+      Weight: 1
+    - Enemy: {fileID: 11400000, guid: 65699d3b964f5a94cb3975785997a953, type: 2}
+      Weight: 2
+  - Name: Charco 7-9
+    FromRoom: 7
+    ToRoom: 9
+    Weights:
+    - Enemy: {fileID: 11400000, guid: c1b29d44e33037540b0c2f030ea72032, type: 2}
+      Weight: 2.5
+    - Enemy: {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e28d69650a2e5bf419995c734aff8d7b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e88d0cf768a74c043a00e2606b1d1a51, type: 2}
+      Weight: 1.6
+    - Enemy: {fileID: 11400000, guid: cc6bd50e1c9fec3418c277bd7cfb9dec, type: 2}
+      Weight: 1
+    - Enemy: {fileID: 11400000, guid: 65699d3b964f5a94cb3975785997a953, type: 2}
+      Weight: 2.5
+  - Name: Charco 10-11
+    FromRoom: 10
+    ToRoom: 11
+    Weights:
+    - Enemy: {fileID: 11400000, guid: c1b29d44e33037540b0c2f030ea72032, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e28d69650a2e5bf419995c734aff8d7b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e88d0cf768a74c043a00e2606b1d1a51, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: cc6bd50e1c9fec3418c277bd7cfb9dec, type: 2}
+      Weight: 1.5
+    - Enemy: {fileID: 11400000, guid: 65699d3b964f5a94cb3975785997a953, type: 2}
+      Weight: 2.5
+  - Name: "Ru\xEDnas 12-16"
+    FromRoom: 12
+    ToRoom: 16
+    Weights:
+    - Enemy: {fileID: 11400000, guid: c1b29d44e33037540b0c2f030ea72032, type: 2}
+      Weight: 1.8
+    - Enemy: {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e28d69650a2e5bf419995c734aff8d7b, type: 2}
+      Weight: 2.2
+    - Enemy: {fileID: 11400000, guid: e88d0cf768a74c043a00e2606b1d1a51, type: 2}
+      Weight: 2.2
+    - Enemy: {fileID: 11400000, guid: cc6bd50e1c9fec3418c277bd7cfb9dec, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: 65699d3b964f5a94cb3975785997a953, type: 2}
+      Weight: 3
+  - Name: Cratera 17-20
+    FromRoom: 17
+    ToRoom: 20
+    Weights:
+    - Enemy: {fileID: 11400000, guid: c1b29d44e33037540b0c2f030ea72032, type: 2}
+      Weight: 1.5
+    - Enemy: {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+      Weight: 2
+    - Enemy: {fileID: 11400000, guid: e28d69650a2e5bf419995c734aff8d7b, type: 2}
+      Weight: 2.4
+    - Enemy: {fileID: 11400000, guid: e88d0cf768a74c043a00e2606b1d1a51, type: 2}
+      Weight: 2.5
+    - Enemy: {fileID: 11400000, guid: cc6bd50e1c9fec3418c277bd7cfb9dec, type: 2}
+      Weight: 2.6
+    - Enemy: {fileID: 11400000, guid: 65699d3b964f5a94cb3975785997a953, type: 2}
+      Weight: 3
+  SpawnWarningDuration: 1
+  MinSpawnDistance: 14
+  SpawnJitter: 2.5
+  SpawnWarningPrefab: {fileID: 1783060154719177155, guid: 0397eb828db48d64595ebdbc9f0becb9, type: 3}
+  HealthByRoom:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0.06999999
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 2.33
+      inSlope: 0.06999999
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DamageByRoom:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0.034999996
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 1.665
+      inSlope: 0.034999996
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  ScrapByRoom:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0.06999999
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 2.33
+      inSlope: 0.06999999
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  BossRoomHealthBonus: 1.25
+  Bosses:
+  - {fileID: 11400000, guid: 63f4977d6fb163947bf47a78b0f2c114, type: 2}
+  - {fileID: 11400000, guid: a8e55911a189ece43a72ba66f7695346, type: 2}
+  - {fileID: 11400000, guid: 620b56121eda0a940bd9b8e4655893fb, type: 2}
+  - {fileID: 11400000, guid: 5062ec0994481aa44bbcacf11c233dd4, type: 2}
+  Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  BossHealthMultiplier: 1
+  BossDamageMultiplier: 1
+  BossScale: 1
+  EliteMaterial: {fileID: 2100000, guid: 811d9c1ed6ccbaa4584ef0220cc7627c, type: 2}
+  EliteChanceByRoom:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 3
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 4
+      value: 0.04
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 20
+      value: 0.15
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  EliteArmoredHealth: 2.5
+  EliteArmoredScale: 1.2
+  EliteSwiftSpeed: 1.5
+  EliteSwiftHealth: 1.4
+  EliteBlastRadius: 5
+  EliteBlastDamage: 30
+  EliteBlastWarning: 1.2
+  EliteBlastHealth: 1.6
+  Shop: {fileID: 11400000, guid: 686d477454adaf44a882c176dd3ac87e, type: 2}
+  Items: {fileID: 11400000, guid: 9c64be95b20b2e242b10f052387c2f20, type: 2}
+  PlayerMaxHealth: 125
+  PlayerCritChance: 0.1
+  PlayerCritMultiplier: 2
+  PlayerDamageMultiplier: 1
+  Music: {fileID: 11400000, guid: 29538b54426f1e8479fbd23fdef40250, type: 2}
+  AimAssist: {fileID: 11400000, guid: 77bd3b279f7159244a00724cabd2ed2f, type: 2}
+  FragmentPrefab: {fileID: 6138055235487434397, guid: 785bc5e2d32c83d418f114658852aaae, type: 3}
+  FragmentReduction: 0.5
+  FragmentLifetime: 20
+  FragmentBlinkTime: 5
+  BossFragmentDrops: 2
+  DashDistance: 7
+  DashDuration: 0.18
+  DashCooldown: 2.5
+  DashCharges: 1
+  DashInvulnerable: 1
+  MaxHitFraction: 0.2
+  HeavyMaxHitFraction: 0.25
+  HitInvulnerability: 0.3

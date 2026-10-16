@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 439586621ed9d0e4d9535244da46c791, type: 3}
+  m_Name: Inimigo_Cascudo
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.CascudoDefinition
+  Prefab: {fileID: 8931990137486767754, guid: bcf492125f10de249b440d90bfbe0509, type: 3}
+  DisplayName: 
+  MinArena: 1
+  MaxAlive: 6
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 420
+  Damage: 22
+  AttackCooldown: 1.6
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 6
+  MaxHitFraction: 0
+  FragmentDropChance: 0.04
+  CronitaValue: 3
+  PlayerSpeedDivisor: 3
+  FallbackSpeed: 4.3
+  AttackRange: 2.4
+  WindupDuration: 0.6
+  HitboxSize: {x: 2.4, y: 1.8, z: 2.2}
+  HitboxForward: 1.3

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9ab04fd2afe8664b85f319a7bb2e964, type: 3}
+  m_Name: Inimigo_Espinhento
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.EnemyDefinition
+  Prefab: {fileID: 3577798923503137001, guid: c0ac36f8a86672c45a2288830d6c2d5b, type: 3}
+  DisplayName: 
+  MinArena: 3
+  MaxAlive: 4
+  RequiresHighSpawn: 1
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 210
+  Damage: 11
+  AttackCooldown: 2.2
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0.06
+  CronitaValue: 3
+  MinShotInterval: 1.4
