@@ -25,6 +25,7 @@ namespace Icaro
         const float k_ControlWidth = 420f;
 
         readonly List<Control> m_Controls = new List<Control>();
+        readonly List<Control> m_Snapshot = new List<Control>();
 
         // Linha de tecla esperando uma tecla nova (as outras ficam paradas enquanto isso)
         public KeyRow Waiting { get; set; }
@@ -55,8 +56,9 @@ namespace Icaro
 
             // Percorre uma cópia e para se um controle trocar a tela (a lista foi limpa e os controles destruídos)
             int version = m_Version;
-            Control[] controls = m_Controls.ToArray();
-            foreach (Control control in controls)
+            m_Snapshot.Clear();
+            m_Snapshot.AddRange(m_Controls);
+            foreach (Control control in m_Snapshot)
             {
                 if (!control.Rect || !control.Rect.gameObject.activeInHierarchy)
                     continue;

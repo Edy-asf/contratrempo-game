@@ -66,14 +66,15 @@ namespace Icaro
             }
         }
 
-        // Há chão logo abaixo nos quatro lados (o ponto não está na beirada)
+        // Há chão firme logo abaixo nos quatro lados (o ponto não está na beirada nem numa ponte que pode cair)
         bool SolidAround(Vector3 position)
         {
             Vector3[] offsets = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
             foreach (Vector3 offset in offsets)
             {
                 Vector3 from = position + offset * SafeMargin + Vector3.up * 1f;
-                if (!Physics.Raycast(from, Vector3.down, 2.5f, ~0, QueryTriggerInteraction.Ignore))
+                if (!Physics.Raycast(from, Vector3.down, out RaycastHit hit, 2.5f, ~0, QueryTriggerInteraction.Ignore) ||
+                    UnsafeGround.IsUnsafe(hit.collider))
                     return false;
             }
 

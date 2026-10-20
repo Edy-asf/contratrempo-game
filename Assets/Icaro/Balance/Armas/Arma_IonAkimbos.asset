@@ -29,6 +29,10 @@ MonoBehaviour:
   Akimbo: 1
   Suppressed: 0
   SpriteMuzzle: {x: 0.52, y: 0.39}
+  SpriteHeight: 0.6
+  SpriteOffset: {x: 0.04, y: -0.04}
+  SpriteTilt: 0
+  OverrideSpriteMuzzle: 0
   Damage: 120
   ProjectileSpeed: 350
   ProjectileRadius: 0.07

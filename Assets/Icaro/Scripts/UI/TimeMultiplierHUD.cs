@@ -1,12 +1,12 @@
 using System.Globalization;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Icaro
 {
     // Mostra o multiplicador de tempo (ex.: "1,7x") com cor que esquenta conforme ele sobe.
-    // Se nenhum texto for atribuído, cria sozinho um canvas com o texto no canto superior direito.
+    // Se nenhum texto for atribuído, cria sozinho o texto no canto superior direito do visor (HelmetVisor), discreto,
+    // na fonte sci-fi fina, com a legenda "KAIRÓS".
     public class TimeMultiplierHUD : MonoBehaviour
     {
         [Tooltip("Texto onde o multiplicador é escrito. Deixe vazio para criar um automaticamente.")]
@@ -16,18 +16,19 @@ namespace Icaro
         public Gradient MultiplierColors = DefaultGradient();
 
         [Tooltip("Tamanho da fonte do texto criado automaticamente")]
-        public float FontSize = 40f;
+        public float FontSize = 46f;
 
         float m_DisplayedMultiplier = -1f;
 
-        void Start()
-        {
-            if (!Label)
-                Label = CreateLabel();
-        }
-
         void Update()
         {
+            if (!Label)
+            {
+                Label = CreateLabel();
+                if (!Label)
+                    return;
+            }
+
             float multiplier = TimeManager.CurrentMultiplier;
 
             // Arredonda para a casa decimal mostrada, para só reescrever o texto quando ele muda
@@ -43,34 +44,24 @@ namespace Icaro
             Label.color = MultiplierColors.Evaluate(t);
         }
 
+        // No canto superior direito do visor; nulo enquanto o visor ainda não existe
         TMP_Text CreateLabel()
         {
-            var canvasObject = new GameObject("TimeMultiplierCanvas", typeof(Canvas), typeof(CanvasScaler));
-            canvasObject.transform.SetParent(transform, false);
+            if (!HelmetVisor.TryGroup(VisorAnchor.TopRight, out RectTransform group))
+            {
+                // Cena sem jogador (testes do tempo): texto comum na tela depois de 1 s
+                if (Time.timeSinceLevelLoad < 1f)
+                    return null;
+                group = (RectTransform)ItemUI.CreateCanvas(transform, "TimeMultiplierCanvas", 50).transform;
+            }
 
-            var canvas = canvasObject.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 50;
-
-            var scaler = canvasObject.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            var textObject = new GameObject("TimeMultiplierText", typeof(RectTransform));
-            textObject.transform.SetParent(canvasObject.transform, false);
-
-            var rect = (RectTransform)textObject.transform;
-            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1f, 1f);
-            rect.anchoredPosition = new Vector2(-40f, -30f);
-            rect.sizeDelta = new Vector2(300f, 60f);
-
-            var text = textObject.AddComponent<TextMeshProUGUI>();
-            text.fontSize = FontSize;
-            text.fontStyle = FontStyles.Bold;
-            text.alignment = TextAlignmentOptions.TopRight;
-            text.raycastTarget = false;
-            return text;
+            m_DisplayedMultiplier = -1f;
+            TextMeshProUGUI caption = VisorUI.Label("Kairos", group, new Vector2(1f, 1f), new Vector2(-44f, -30f),
+                new Vector2(200f, 18f), 14f, TextAlignmentOptions.TopRight, VisorUI.Dim, true);
+            caption.text = "KAIRÓS";
+            caption.characterSpacing = 8f;
+            return VisorUI.Label("Multiplicador", group, new Vector2(1f, 1f), new Vector2(-42f, -46f),
+                new Vector2(300f, 60f), FontSize, TextAlignmentOptions.TopRight, Color.white);
         }
 
         static Gradient DefaultGradient()

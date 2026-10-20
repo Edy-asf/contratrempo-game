@@ -4,8 +4,9 @@ using UnityEngine;
 namespace Icaro
 {
     // Números de dano no ponto do impacto: sobem, encolhem do "pop" inicial e somem em Lifetime segundos, sempre
-    // virados para a câmera. Brancos no dano normal, amarelos e maiores no crítico. Os textos vêm de um pool fixo
-    // (sem instanciar durante o combate); se faltar texto, o mais antigo é reaproveitado.
+    // virados para a câmera. Brancos no dano normal, amarelos e maiores no crítico. Fonte do visor (Kenney Future,
+    // ItemFonts.VisorWide) com o shader e o contorno do FontMaterial. Os textos vêm de um pool fixo (sem instanciar
+    // durante o combate); se faltar texto, o mais antigo é reaproveitado.
     public class DamageNumbers : MonoBehaviour
     {
         [Tooltip("Material do texto; use um com shader Overlay para os números não sumirem atrás da geometria")]
@@ -69,6 +70,8 @@ namespace Icaro
                 return;
 
             m_Pool = new Entry[PoolSize];
+            TMP_FontAsset font = ItemFonts.VisorWide;
+            Material material = font ? VisorMaterial(font) : FontMaterial;
             for (int i = 0; i < PoolSize; i++)
             {
                 var go = new GameObject("NumeroDano", typeof(TextMeshPro));
@@ -77,11 +80,29 @@ namespace Icaro
                 text.alignment = TextAlignmentOptions.Center;
                 text.fontSize = 10f;
                 text.textWrappingMode = TextWrappingModes.NoWrap;
-                if (FontMaterial)
-                    text.fontSharedMaterial = FontMaterial;
+                if (font)
+                    text.font = font;
+                if (material)
+                    text.fontSharedMaterial = material;
                 go.SetActive(false);
                 m_Pool[i] = new Entry { Text = text, Age = Lifetime };
             }
+        }
+
+        // Material da fonte do visor com o shader Overlay (por cima de tudo) e o contorno do FontMaterial
+        Material VisorMaterial(TMP_FontAsset font)
+        {
+            font.TryAddCharacters("0123456789!");
+            if (!FontMaterial)
+                return font.material;
+            var material = new Material(font.material) { name = "NumeroDano_Visor" };
+            material.shader = FontMaterial.shader;
+            material.EnableKeyword(ShaderUtilities.Keyword_Outline);
+            material.SetFloat(ShaderUtilities.ID_OutlineWidth, FontMaterial.GetFloat(ShaderUtilities.ID_OutlineWidth));
+            material.SetColor(ShaderUtilities.ID_OutlineColor, FontMaterial.GetColor(ShaderUtilities.ID_OutlineColor));
+            material.SetFloat(ShaderUtilities.ID_FaceDilate, FontMaterial.GetFloat(ShaderUtilities.ID_FaceDilate));
+            ShaderUtilities.UpdateShaderRatios(material);
+            return material;
         }
 
         void LateUpdate()

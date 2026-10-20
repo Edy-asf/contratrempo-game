@@ -118,7 +118,7 @@ namespace Icaro.EditorTools
             var eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
             eventSystem.transform.SetParent(systems, false);
 
-            var timeManager = new GameObject("TimeManager", typeof(TimeManager), typeof(TimeMultiplierHUD), typeof(EnemiesRemainingHUD));
+            var timeManager = new GameObject("TimeManager", typeof(TimeManager), typeof(TimeMultiplierHUD));
             timeManager.transform.SetParent(systems, false);
 
             // Hit marker, números de dano, sons de acerto e tremor da câmera

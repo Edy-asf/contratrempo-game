@@ -30,6 +30,15 @@ namespace Icaro
             }
         }
 
+        // Fonte sci-fi fina do HUD do visor (Kenney Future Narrow, CC0) e a larga (Kenney Future), para títulos
+        static TMP_FontAsset s_Visor;
+        static TMP_FontAsset s_VisorWide;
+
+        public static TMP_FontAsset Visor => s_Visor ? s_Visor : s_Visor = Create("Fonts/KenneyFutureNarrow") ?? Regular;
+
+        public static TMP_FontAsset VisorWide =>
+            s_VisorWide ? s_VisorWide : s_VisorWide = Create("Fonts/KenneyFuture") ?? Visor;
+
         static void Load()
         {
             if (s_Loaded && s_Bold && s_Regular)

@@ -130,11 +130,32 @@ namespace Icaro.EditorTools
         }
 
         // Objeto com a malha (salva como asset em Art/Grade/Malhas); sem material, só colisão
+        // Malhas grandes (mais de k_ChunkVertices vértices) são divididas em blocos de k_ChunkSize metros, filhos do
+        // objeto devolvido: assim a câmera deixa de desenhar o que está fora da vista e o DistanceCulling, o que está
+        // longe. Com 'split' falso a malha fica inteira (quem põe componentes no objeto devolvido, como a água).
+        public const int k_ChunkVertices = 4000;
+        public const float k_ChunkSize = 64f;
+
         public static GameObject CreateObject(string assetName, string name, MeshData data, Material material,
-            Transform parent, bool collider, bool shadows = true)
+            Transform parent, bool collider, bool shadows = true, bool split = true)
         {
             if (data.Count == 0)
                 return null;
+
+            if (split && data.Count > k_ChunkVertices)
+            {
+                Dictionary<Vector2Int, MeshData> chunks = SplitByArea(data, k_ChunkSize);
+                if (chunks.Count > 1)
+                {
+                    var root = new GameObject(name);
+                    root.transform.SetParent(parent, false);
+                    foreach (KeyValuePair<Vector2Int, MeshData> chunk in chunks)
+                        CreateObject($"{assetName}_{chunk.Key.x}_{chunk.Key.y}", $"{name}_{chunk.Key.x}_{chunk.Key.y}",
+                            chunk.Value, material, root.transform, collider, shadows, false);
+                    GameObjectUtility.SetStaticEditorFlags(root, StaticEditorFlags.BatchingStatic);
+                    return root;
+                }
+            }
 
             IcaroAssetUtility.EnsureFolder(MeshFolder);
             string path = $"{MeshFolder}/{assetName}.asset";
@@ -168,21 +189,106 @@ namespace Icaro.EditorTools
 
             if (collider)
                 go.AddComponent<MeshCollider>().sharedMesh = mesh;
+            // Só o que é opaco esconde o que está atrás (oclusão); recortado (sprites, trepadeiras) e transparente não
+            bool opaque = material && material.renderQueue < (int)RenderQueue.AlphaTest;
             GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic |
-                                                       StaticEditorFlags.OccluderStatic |
+                                                       (opaque ? StaticEditorFlags.OccluderStatic : 0) |
                                                        StaticEditorFlags.OccludeeStatic);
             return go;
+        }
+
+        // Separa os triângulos pelo bloco (x, z) em que fica o centro de cada um
+        static Dictionary<Vector2Int, MeshData> SplitByArea(MeshData data, float size)
+        {
+            var chunks = new Dictionary<Vector2Int, MeshData>();
+            for (int i = 0; i < data.Triangles.Count; i += 3)
+            {
+                int a = data.Triangles[i], b = data.Triangles[i + 1], c = data.Triangles[i + 2];
+                Vector3 middle = (data.Vertices[a] + data.Vertices[b] + data.Vertices[c]) / 3f;
+                var key = new Vector2Int(Mathf.FloorToInt(middle.x / size), Mathf.FloorToInt(middle.z / size));
+                if (!chunks.TryGetValue(key, out MeshData chunk))
+                    chunks[key] = chunk = new MeshData();
+                foreach (int index in new[] { a, b, c })
+                {
+                    chunk.Triangles.Add(chunk.Vertices.Count);
+                    chunk.Vertices.Add(data.Vertices[index]);
+                    chunk.Normals.Add(data.Normals[index]);
+                    chunk.Uvs.Add(data.Uvs[index]);
+                }
+            }
+
+            return chunks;
+        }
+
+        // Volume onde a câmera pode estar, para o cálculo de oclusão (BakeOcclusion)
+        public static void AddOcclusionArea(string name, Transform parent, Vector3 center, Vector3 size)
+        {
+            var area = new GameObject(name).AddComponent<OcclusionArea>();
+            area.transform.SetParent(parent, false);
+            area.transform.position = center;
+            area.size = size;
+        }
+
+        // Calcula a oclusão da cena aberta (já salva): o que fica escondido atrás do cenário opaco de cada ponto dos
+        // volumes (AddOcclusionArea) deixa de ser desenhado. Demora alguns minutos em cenas grandes.
+        public static void BakeOcclusion()
+        {
+            StaticOcclusionCulling.smallestOccluder = 5f;
+            StaticOcclusionCulling.smallestHole = 0.5f;
+            StaticOcclusionCulling.backfaceThreshold = 100f;
+            StaticOcclusionCulling.Compute();
+        }
+
+        // Corte por distância (DistanceCulling) de todos os renderizadores do cenário sob 'root', menos os que estão
+        // em objetos (ou dentro de objetos) cujo nome contém algum de 'keep' (mar, céu, silhuetas, o que se move)
+        public static DistanceCulling AddDistanceCulling(Transform root, float distance, params string[] keep)
+        {
+            var renderers = new List<Renderer>();
+            foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
+            {
+                bool kept = false;
+                for (Transform t = renderer.transform; t && t != root && !kept; t = t.parent)
+                {
+                    foreach (string name in keep)
+                    {
+                        if (t.name.Contains(name))
+                        {
+                            kept = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!kept && !(renderer is ParticleSystemRenderer))
+                    renderers.Add(renderer);
+            }
+
+            var culling = new GameObject("Culling_Distancia").AddComponent<DistanceCulling>();
+            culling.transform.SetParent(root, false);
+            culling.Distance = distance;
+            culling.Renderers = renderers.ToArray();
+            return culling;
         }
 
         // ---------- sprites ----------
 
         // Sprite que olha para o jogador: objeto no chão com o quad num filho (o filho gira; colisores ficam no pai)
+        // Com um lote ativo (ActiveBatch), o desenho do sprite entra no lote (giro feito na placa de vídeo, uma malha
+        // por bloco) e o objeto devolvido fica só com a posição (e o que o chamador puser nele, como o colisor do
+        // tronco); sem lote, o sprite é um objeto que o SpriteBillboardSystem gira
+        public static BillboardBatch ActiveBatch;
+
         public static GameObject Billboard(string name, Mesh quad, Material material, Vector2 size, Vector3 position,
             Transform parent, bool flip = false)
         {
             var root = new GameObject(name);
             root.transform.SetParent(parent, false);
             root.transform.position = position;
+            if (ActiveBatch != null)
+            {
+                ActiveBatch.Add(material, root.transform.position, size, flip);
+                return root;
+            }
 
             var visual = new GameObject("Sprite");
             visual.transform.SetParent(root.transform, false);
@@ -215,6 +321,115 @@ namespace Icaro.EditorTools
                 foreach (KeyValuePair<Material, MeshData> entry in m_ByMaterial)
                     CreateObject($"{prefix}_{entry.Key.name}", "Cartas_" + entry.Key.name, entry.Value, entry.Key,
                         parent, false, false);
+            }
+        }
+
+        // Sprites que olham para o jogador, juntados por material e por bloco de 64 m numa malha só (shader
+        // Icaro/BillboardSprite: cada vértice guarda o pé do sprite e o canto, e a placa de vídeo gira). As posições
+        // ficam no espaço do objeto raiz do lote, para o lote andar junto se o mundo for deslocado.
+        public class BillboardBatch
+        {
+            readonly Transform m_Root;
+            readonly Dictionary<Material, List<(Vector3 pivot, Vector2 size, bool flip)>> m_Sprites =
+                new Dictionary<Material, List<(Vector3, Vector2, bool)>>();
+
+            public BillboardBatch(Transform root) => m_Root = root;
+
+            public int Count { get; private set; }
+
+            public void Add(Material material, Vector3 world, Vector2 size, bool flip)
+            {
+                if (!material)
+                    return;
+                if (!m_Sprites.TryGetValue(material, out var list))
+                    m_Sprites[material] = list = new List<(Vector3, Vector2, bool)>();
+                list.Add((m_Root.InverseTransformPoint(world), size, flip));
+                Count++;
+            }
+
+            public void Build(string prefix)
+            {
+                var holder = new GameObject("Sprites").transform;
+                holder.SetParent(m_Root, false);
+                foreach (KeyValuePair<Material, List<(Vector3 pivot, Vector2 size, bool flip)>> entry in m_Sprites)
+                {
+                    Material material = GridTextureKit.BillboardMaterial(entry.Key);
+                    var chunks = new Dictionary<Vector2Int, List<(Vector3 pivot, Vector2 size, bool flip)>>();
+                    foreach (var sprite in entry.Value)
+                    {
+                        var key = new Vector2Int(Mathf.FloorToInt(sprite.pivot.x / k_ChunkSize),
+                            Mathf.FloorToInt(sprite.pivot.z / k_ChunkSize));
+                        if (!chunks.TryGetValue(key, out var list))
+                            chunks[key] = list = new List<(Vector3, Vector2, bool)>();
+                        list.Add(sprite);
+                    }
+
+                    foreach (var chunk in chunks)
+                        BuildChunk($"{prefix}_{entry.Key.name}_{chunk.Key.x}_{chunk.Key.y}", chunk.Value, material,
+                            holder);
+                }
+            }
+
+            static void BuildChunk(string assetName, List<(Vector3 pivot, Vector2 size, bool flip)> sprites,
+                Material material, Transform parent)
+            {
+                IcaroAssetUtility.EnsureFolder(MeshFolder);
+                string path = $"{MeshFolder}/{assetName}.asset";
+                var mesh = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                if (!mesh)
+                {
+                    mesh = new Mesh { name = assetName };
+                    AssetDatabase.CreateAsset(mesh, path);
+                }
+
+                var vertices = new List<Vector3>(sprites.Count * 4);
+                var uvs = new List<Vector2>(sprites.Count * 4);
+                var corners = new List<Vector2>(sprites.Count * 4);
+                var pivots = new List<Vector3>(sprites.Count * 4);
+                var triangles = new List<int>(sprites.Count * 6);
+                var bounds = new Bounds(sprites[0].pivot, Vector3.zero);
+                Vector2[] quad =
+                {
+                    new Vector2(-0.5f, 0f), new Vector2(-0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 0f),
+                };
+                Vector2[] quadUv = { Vector2.zero, Vector2.up, Vector2.one, Vector2.right };
+                foreach ((Vector3 pivot, Vector2 size, bool flip) in sprites)
+                {
+                    int start = vertices.Count;
+                    float sx = flip ? -size.x : size.x;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var corner = new Vector2(quad[i].x * sx, quad[i].y * size.y);
+                        vertices.Add(pivot + new Vector3(corner.x, corner.y, 0f));
+                        uvs.Add(quadUv[i]);
+                        corners.Add(corner);
+                        pivots.Add(pivot);
+                    }
+
+                    triangles.AddRange(new[] { start, start + 1, start + 2, start, start + 2, start + 3 });
+                    // O sprite gira em volta do pé: o volume cobre o giro inteiro
+                    float width = Mathf.Abs(size.x);
+                    bounds.Encapsulate(new Bounds(pivot + Vector3.up * (size.y * 0.5f),
+                        new Vector3(width, size.y, width)));
+                }
+
+                mesh.Clear();
+                mesh.indexFormat = IndexFormat.UInt32;
+                mesh.SetVertices(vertices);
+                mesh.SetUVs(0, uvs);
+                mesh.SetUVs(1, corners);
+                mesh.SetUVs(2, pivots);
+                mesh.SetTriangles(triangles, 0);
+                mesh.bounds = bounds;
+                EditorUtility.SetDirty(mesh);
+
+                var go = new GameObject(assetName);
+                go.transform.SetParent(parent, false);
+                go.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var renderer = go.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = material;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.OccludeeStatic);
             }
         }
 

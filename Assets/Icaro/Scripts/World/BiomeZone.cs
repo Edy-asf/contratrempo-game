@@ -104,13 +104,24 @@ namespace Icaro
             RenderSettings.ambientGroundColor = Color.Lerp(ground, AmbientGround, k);
 
             // O ambiente trilight só chega aos objetos dinâmicos depois de recalcular a probe ambiente
-            DynamicGI.UpdateEnvironment();
+            RefreshAmbient(k >= 1f);
 
             if (sun)
             {
                 sun.color = Color.Lerp(sunColor, SunColor, k);
                 sun.intensity = Mathf.Lerp(sunIntensity, SunIntensity, k);
             }
+        }
+
+        static float s_NextAmbient;
+
+        // Recalcula a luz ambiente no máximo 5 vezes por segundo (a mudança é lenta; 'force' = a última, no fim)
+        public static void RefreshAmbient(bool force)
+        {
+            if (!force && Time.unscaledTime < s_NextAmbient)
+                return;
+            s_NextAmbient = Time.unscaledTime + 0.2f;
+            DynamicGI.UpdateEnvironment();
         }
 
         void OnDestroy()

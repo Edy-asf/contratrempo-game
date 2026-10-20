@@ -64,13 +64,18 @@ namespace Icaro.EditorTools
 
         static Vector2Int V(int x, int z) => new Vector2Int(x, z);
 
+        // Com GridTheme.OpenEnd: ponto (no mundo, no chão) onde a trilha que sai da arena do chefe chega à borda norte
+        // do mapa, para o próximo trecho da Via continuar dali
+        public static Vector3 OpenEndPoint { get; private set; }
+
         [MenuItem("Ícaro/Grade/Gerar Bosque", priority = 45)]
         static void GenerateBosque() => Generate(GridThemes.Bosque());
 
         [MenuItem("Ícaro/Grade/Gerar Charco (teste)", priority = 46)]
         static void GenerateCharcoTest() => Generate(GridThemes.CharcoTeste());
 
-        public static void Generate(GridTheme theme)
+        // 'extend' monta mais coisas na mesma cena antes de salvar (ex.: o desfiladeiro e o bioma seguinte)
+        public static void Generate(GridTheme theme, System.Action<Scene, Transform> extend = null)
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 return;
@@ -93,6 +98,8 @@ namespace Icaro.EditorTools
                 GridSceneKit.ApplyNight(theme, sky, systems);
 
                 var world = new GameObject("Mapa").transform;
+                // Sprites que olham para o jogador: juntados em malhas por bloco, giradas na placa de vídeo
+                GridSceneKit.ActiveBatch = new GridSceneKit.BillboardBatch(world);
                 BuildGeometry(materials, world);
                 AddWaterMap(world);
 
@@ -112,6 +119,16 @@ namespace Icaro.EditorTools
                 BiomeZone zone = GridSceneKit.AddBiomeZone(theme,
                     GridSceneKit.CellCenter(s_CenterX, s_Clearing.yMax - 1), new Vector3(24f, 12f, 2f), world);
                 AddDebugTeleport(systems, zone);
+                extend?.Invoke(scene, world);
+
+                GridSceneKit.ActiveBatch.Build(theme.MeshPrefix + "_Sprite");
+                GridSceneKit.ActiveBatch = null;
+                GridSceneKit.AddOcclusionArea("Oclusao_" + theme.Biome, world,
+                    new Vector3(s_Width * k_Cell * 0.5f, 10f, s_Depth * k_Cell * 0.5f),
+                    new Vector3(s_Width * k_Cell, 30f, s_Depth * k_Cell));
+
+                // Desenho do cenário só até 300 m (o mar, o céu, as silhuetas e o que se move ficam de fora)
+                GridSceneKit.AddDistanceCulling(world, 300f, "Mar", "Gigantes_Fundo", "Feixe_Farol", "Destroco_");
 
                 Physics.SyncTransforms();
                 int perches = 0, validPerches = 0;
@@ -130,6 +147,9 @@ namespace Icaro.EditorTools
 
                 EditorSceneManager.MarkSceneDirty(scene);
                 EditorSceneManager.SaveScene(scene);
+                EditorUtility.DisplayProgressBar(title, "Oclusão (alguns minutos)", 0.97f);
+                GridSceneKit.BakeOcclusion();
+                EditorSceneManager.SaveScene(scene);
                 AssetDatabase.SaveAssets();
                 Debug.Log($"[Ícaro] {theme.Biome} em grade gerado em {theme.ScenePath}: {s_Arenas.Length} arenas, " +
                           $"{forest} árvores no cerco, {validPerches} de {perches} poleiros com linha de visão, " +
@@ -137,6 +157,7 @@ namespace Icaro.EditorTools
             }
             finally
             {
+                GridSceneKit.ActiveBatch = null;
                 EditorUtility.ClearProgressBar();
             }
         }
@@ -178,7 +199,7 @@ namespace Icaro.EditorTools
             {
                 GridArena arena = s_Arenas[i];
                 arena.Index = i;
-                arena.HasExit = i < s_Arenas.Length - 1;
+                arena.HasExit = i < s_Arenas.Length - 1 || s_Theme.OpenEnd;
                 arena.Perch.Clear();
                 float grow = 1f + arena.Noise * 1.7f;
                 arena.ExtentDown = 0f;
@@ -242,6 +263,13 @@ namespace Icaro.EditorTools
                 fromZ = arena.Exit.y;
             }
 
+            // Fim aberto: trilha da porta de saída da última arena até a borda norte do mapa
+            if (s_Theme.OpenEnd)
+            {
+                CarveColumn(fromX, fromZ, s_Depth - 1);
+                OpenEndPoint = GridSceneKit.CellCenter(fromX, s_Depth - 1) + Vector3.forward * (k_Cell * 0.5f);
+            }
+
             foreach (GridArena arena in s_Arenas)
             {
                 MarkArenaPath(arena);
@@ -264,6 +292,18 @@ namespace Icaro.EditorTools
                         s_Map[x, z] = Cell.Wall;
                         break;
                     }
+                }
+            }
+
+            // Fim aberto: a última fileira (onde o próximo trecho encosta) também ganha parede dos lados da trilha
+            if (s_Theme.OpenEnd)
+            {
+                int z = s_Depth - 1;
+                for (int x = 1; x < s_Width - 1; x++)
+                {
+                    if (s_Map[x, z] == Cell.Void && (IsWalkable(s_Map[x - 1, z]) || IsWalkable(s_Map[x + 1, z]) ||
+                                                     IsWalkable(s_Map[x - 1, z - 1]) || IsWalkable(s_Map[x + 1, z - 1])))
+                        s_Map[x, z] = Cell.Wall;
                 }
             }
 
@@ -725,9 +765,9 @@ namespace Icaro.EditorTools
                 GridSceneKit.CreateObject(prefix + "_Agua_Fundo", "Agua_Fundo", bed, materials.WaterBed, parent, true);
                 GridSceneKit.CreateObject(prefix + "_Agua_Margem", "Agua_Margem", banks, materials.WaterBed, parent, true);
                 GameObject shallow = GridSceneKit.CreateObject(prefix + "_Agua_Rasa", "Agua_Rasa", shallowSurface,
-                    materials.WaterSurface, parent, false, false);
+                    materials.WaterSurface, parent, false, false, false);
                 GameObject deep = GridSceneKit.CreateObject(prefix + "_Agua_Funda", "Agua_Funda", deepSurface,
-                    materials.DeepSurface, parent, false, false);
+                    materials.DeepSurface, parent, false, false, false);
                 if (shallow)
                     shallow.AddComponent<WaterRipple>();
                 if (deep)
@@ -736,7 +776,7 @@ namespace Icaro.EditorTools
 
             // Borda: colisão sem desenho; projéteis atravessam (não aparecem faíscas "no ar")
             GameObject edge = GridSceneKit.CreateObject(prefix + "_Borda", "Borda_Invisivel", barrier, null, parent,
-                true);
+                true, true, false);
             if (edge)
                 edge.AddComponent<IgnoreHitDetection>();
         }

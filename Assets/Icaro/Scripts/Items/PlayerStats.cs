@@ -178,13 +178,32 @@ namespace Icaro
                 var ui = new GameObject("Itens");
                 ui.AddComponent<ItemDraft>().Catalog = Catalog;
                 ui.AddComponent<ItemHUD>().Catalog = Catalog;
+                ui.AddComponent<CardPickupToast>().Catalog = Catalog;
             }
+
+            // Vida e escudo no canto inferior esquerdo do visor
+            if (!FindAnyObjectByType<VisorHealthPanel>())
+                new GameObject("VidaHUD").AddComponent<VisorHealthPanel>();
 
             // Indicadores de dano direcional, ameaças fora da tela e Metrônomo
             if (!FindAnyObjectByType<ThreatIndicatorHUD>())
                 new GameObject("IndicadoresHUD").AddComponent<ThreatIndicatorHUD>();
 
-            // Munição e recarga da arma na mão
+            // Barra do chefe (topo do visor) e faixa de avisos (centro do visor)
+            if (!FindAnyObjectByType<BossHealthBar>())
+                new GameObject("ChefeHUD").AddComponent<BossHealthBar>();
+            if (!FindAnyObjectByType<VisorBanner>())
+                new GameObject("AvisosHUD").AddComponent<VisorBanner>();
+
+            // Aba de objetivo (canto superior direito do visor)
+            if (!FindAnyObjectByType<ObjectivePanel>())
+                new GameObject("ObjetivoHUD").AddComponent<ObjectivePanel>();
+
+            // Barras de vida acima dos inimigos acertados
+            if (!FindAnyObjectByType<EnemyHealthBars>())
+                new GameObject("BarrasInimigosHUD").AddComponent<EnemyHealthBars>();
+
+            // Munição, recarga e dash (bloco do canto inferior direito do visor)
             if (!FindAnyObjectByType<WeaponAmmoHUD>())
                 new GameObject("MunicaoHUD").AddComponent<WeaponAmmoHUD>();
 

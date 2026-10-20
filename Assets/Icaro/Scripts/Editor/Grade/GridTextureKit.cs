@@ -35,7 +35,6 @@ namespace Icaro.EditorTools
         static readonly Color k_Bark = new Color(0.3f, 0.19f, 0.3f);
         static readonly Color k_BarkDark = new Color(0.17f, 0.1f, 0.18f);
         static readonly Color k_BarkLight = new Color(0.44f, 0.3f, 0.42f);
-        static readonly Color k_Fungus = new Color(1f, 0.65f, 0.22f);
         static readonly Color k_Gate = new Color(0.08f, 0.08f, 0.13f);
         static readonly Color k_White = new Color(0.92f, 0.95f, 1f);
 
@@ -110,9 +109,9 @@ namespace Icaro.EditorTools
 
             var set = new Set
             {
-                Rock = Surface("Bosque_Rocha", PaintRock(), k_NeonCyan),
-                RockTop = Surface("Bosque_Rocha_Topo", PaintRockTop(), k_NeonCyan),
-                Perch = Surface("Bosque_Toco", PaintStump(), k_NeonAmber),
+                Rock = Surface("Bosque_Rocha", PaintRock(), Color.black),
+                RockTop = Surface("Bosque_Rocha_Topo", PaintRockTop(), Color.black),
+                Perch = Surface("Bosque_Toco", PaintStump(), Color.black),
                 PerchTop = Surface("Bosque_Toco_Topo", PaintRings(), Color.black),
                 Grass = Surface("Bosque_Grama", PaintGrass(), Color.black),
                 Path = Surface("Bosque_Trilha", PaintPath(), Color.black),
@@ -372,7 +371,7 @@ namespace Icaro.EditorTools
             return p;
         }
 
-        // Rochedos de ardósia empilhados (três pedras de 2 m) com musgo e cristais ciano que brilham
+        // Rochedos de ardósia empilhados (três pedras de 2 m) com musgo, sem brilho
         static Paint PaintRock()
         {
             Paint p = Tile(32, 96, 17, k_SlateDark);
@@ -392,12 +391,6 @@ namespace Icaro.EditorTools
                         c = k_Moss;
                     p.Set(x + shift, y0 + y, p.Vary(c, 0.07f));
                 }
-
-                // Aglomerado de cristais saindo da pedra
-                int cx = p.Range(6, 26) + shift, cy = y0 + p.Range(6, 18);
-                for (int i = 0; i < 3; i++)
-                for (int h = 0; h < 4 + i; h++)
-                    p.Set(cx + i * 2 - 2, cy + h, k_Crystal, true);
             }
 
             return p;
@@ -408,12 +401,10 @@ namespace Icaro.EditorTools
             Paint p = Tile(32, 32, 19, k_Moss);
             for (int i = 0; i < 160; i++)
                 p.Set(p.Range(0, 32), p.Range(0, 32), p.Next < 0.5f ? k_MossDark : k_Slate);
-            for (int i = 0; i < 3; i++)
-                p.Set(p.Range(0, 32), p.Range(0, 32), k_Crystal, true);
             return p;
         }
 
-        // Toco gigante: casca roxa com sulcos e prateleiras de fungo âmbar (brilham)
+        // Toco gigante: casca roxa com sulcos, sem brilho
         internal static Paint PaintStump()
         {
             Paint p = Tile(32, 96, 23, k_Bark);
@@ -427,16 +418,6 @@ namespace Icaro.EditorTools
             for (int y = 92; y < 96; y++)
             for (int x = 0; x < 32; x++)
                 p.Set(x, y, y == 95 ? k_BarkLight : k_BarkDark);
-
-            int[,] shelves = { { 4, 24 }, { 18, 46 }, { 8, 70 }, { 24, 82 } };
-            for (int i = 0; i < shelves.GetLength(0); i++)
-            {
-                int sx = shelves[i, 0], sy = shelves[i, 1];
-                for (int x = -4; x <= 4; x++)
-                for (int y = 0; y < (x * x < 9 ? 2 : 1); y++)
-                    p.Set(sx + x, sy + y, k_Fungus, true);
-            }
-
             return p;
         }
 
@@ -1032,6 +1013,36 @@ namespace Icaro.EditorTools
             material.SetFloat("_Cull", 0f);
             material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
             material.SetOverrideTag("RenderType", "TransparentCutout");
+            return material;
+        }
+
+        // Variante do material de sprite para o shader Icaro/BillboardSprite (giro na placa de vídeo), com a mesma
+        // textura, cor, recorte e brilho
+        internal static Material BillboardMaterial(Material lit)
+        {
+            string path = $"{MaterialsFolder}/{lit.name}_GPU.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            Shader shader = Shader.Find("Icaro/BillboardSprite");
+            if (!material)
+            {
+                material = new Material(shader) { name = lit.name + "_GPU" };
+                AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.shader = shader;
+            material.SetTexture("_BaseMap", lit.GetTexture("_BaseMap"));
+            material.SetColor("_BaseColor", lit.GetColor("_BaseColor"));
+            material.SetFloat("_Cutoff", lit.HasProperty("_Cutoff") ? lit.GetFloat("_Cutoff") : 0.5f);
+            bool emission = lit.IsKeywordEnabled("_EMISSION");
+            material.SetTexture("_EmissionMap", emission ? lit.GetTexture("_EmissionMap") : null);
+            material.SetColor("_EmissionColor", emission ? lit.GetColor("_EmissionColor") : Color.black);
+            if (emission)
+                material.EnableKeyword("_EMISSION");
+            else
+                material.DisableKeyword("_EMISSION");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+            material.enableInstancing = true;
+            EditorUtility.SetDirty(material);
             return material;
         }
 

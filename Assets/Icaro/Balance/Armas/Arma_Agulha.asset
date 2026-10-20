@@ -25,16 +25,16 @@ MonoBehaviour:
   ReloadTime: 1.8
   PelletsPerShot: 1
   SpreadAngle: 0
-  RecoilForce: 0.4
+  RecoilForce: 2
   Akimbo: 0
   Suppressed: 0
-  SpriteMuzzle: {x: 0.5197, y: 0.3927}
-  SpriteHeight: 0.55
-  SpriteOffset: {x: 0.04, y: -0.04}
-  SpriteTilt: 0
-  OverrideSpriteMuzzle: 0
+  SpriteMuzzle: {x: 0.5197, y: 0.39}
+  SpriteHeight: 0.72999996
+  SpriteOffset: {x: -0.14749995, y: -0.1091971}
+  SpriteTilt: 1.6000004
+  OverrideSpriteMuzzle: 1
   Damage: 30
-  ProjectileSpeed: 300
+  ProjectileSpeed: 500
   ProjectileRadius: 0.05
   Range: 120
   AimMode: 0

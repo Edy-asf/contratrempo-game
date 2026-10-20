@@ -13,6 +13,10 @@ namespace Icaro.EditorTools
         public GridTextureKit.Set Materials;
         public GridArena[] Arenas;
 
+        // A última arena (a do chefe) também tem porta de saída, com uma trilha até a borda norte do mapa
+        // (GridBiomeBuilder.OpenEndPoint), por onde a Via continua para o bioma seguinte
+        public bool OpenEnd;
+
         // Noite
         public Color FogColor = new Color(0.15f, 0.11f, 0.26f);
         public float FogDensity = 0.014f;

@@ -116,10 +116,8 @@ namespace Icaro
         protected virtual void OnPhaseChanged(int phase)
         {
             Squash(-0.4f);
-            DisplayMessageEvent message = Events.DisplayMessageEvent;
-            message.Message = phase == 2 ? "O chefe se enfurece!" : "Fúria final!";
-            message.DelayBeforeDisplay = 0f;
-            EventManager.Broadcast(message);
+            VisorBanner.Show(phase == 2 ? "O chefe se enfurece" : "Fúria final", $"Fase {phase}",
+                BannerTone.Danger);
         }
 
         // ---------- quadro a quadro ----------

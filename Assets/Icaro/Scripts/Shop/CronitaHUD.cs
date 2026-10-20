@@ -4,28 +4,31 @@ using UnityEngine.UI;
 
 namespace Icaro
 {
-    // Cronitas no HUD, no canto superior direito (abaixo do multiplicador de tempo): um cristal ciano e o total, que
+    // Cronitas no visor (HelmetVisor), no canto superior direito (abaixo do multiplicador de tempo): um cristal ciano e o total, que
     // pulsa ao recolher. Mostra também as fichas de rerrolagem, quando houver. O ShopDirector cria este HUD.
     public class CronitaHUD : MonoBehaviour
     {
         static readonly Color k_Color = new Color(0.55f, 0.9f, 1f);
 
         TextMeshProUGUI m_Label;
+        int m_ShownCronitas = -1, m_ShownTokens = -1;
         RectTransform m_Root;
         PlayerWallet m_Wallet;
         float m_Pulse;
 
-        void Start()
+        // No canto superior direito do visor, abaixo do multiplicador
+        bool Build()
         {
-            Canvas canvas = ItemUI.CreateCanvas(transform, "Cronitas", 46);
-            m_Root = ItemUI.Rect("Cronitas", canvas.transform, new Vector2(1f, 1f), new Vector2(-40f, -92f),
-                new Vector2(320f, 40f));
-            Image crystal = ItemUI.Panel("Cristal", m_Root, new Vector2(1f, 0.5f), new Vector2(-8f, 0f),
-                Vector2.one * 18f, k_Color);
+            if (!HelmetVisor.TryGroup(VisorAnchor.TopRight, out RectTransform group))
+                return false;
+            m_Root = ItemUI.Rect("Cronitas", group, new Vector2(1f, 1f), new Vector2(-44f, -112f),
+                new Vector2(320f, 34f));
+            Image crystal = ItemUI.Panel("Cristal", m_Root, new Vector2(1f, 0.5f), new Vector2(-6f, 0f),
+                Vector2.one * 14f, k_Color);
             crystal.rectTransform.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            m_Label = ItemUI.Text("Total", m_Root, new Vector2(1f, 0.5f), new Vector2(-36f, 0f),
-                new Vector2(280f, 40f), 30f, TextAlignmentOptions.Right, k_Color);
-            m_Label.fontStyle = FontStyles.Bold;
+            m_Label = VisorUI.Label("Total", m_Root, new Vector2(1f, 0.5f), new Vector2(-30f, 0f),
+                new Vector2(280f, 34f), 26f, TextAlignmentOptions.Right, k_Color);
+            return true;
         }
 
         void OnDestroy()
@@ -38,6 +41,8 @@ namespace Icaro
 
         void Update()
         {
+            if (!m_Root && !Build())
+                return;
             if (!m_Wallet && PlayerWallet.Instance)
             {
                 m_Wallet = PlayerWallet.Instance;
@@ -47,7 +52,13 @@ namespace Icaro
                 return;
 
             m_Pulse = Mathf.MoveTowards(m_Pulse, 0f, Time.unscaledDeltaTime * 3f);
-            m_Root.localScale = Vector3.one * (1f + 0.18f * m_Pulse);
+            VisorUI.SetScale(m_Root, Vector3.one * (1f + 0.18f * m_Pulse));
+
+            // Texto só quando o total ou as fichas mudam
+            if (m_Wallet.Cronitas == m_ShownCronitas && m_Wallet.RerollTokens == m_ShownTokens)
+                return;
+            m_ShownCronitas = m_Wallet.Cronitas;
+            m_ShownTokens = m_Wallet.RerollTokens;
             string tokens = m_Wallet.RerollTokens > 0
                 ? $"  <size=70%><color=#9AA4AE>R x{m_Wallet.RerollTokens}</color></size>"
                 : "";

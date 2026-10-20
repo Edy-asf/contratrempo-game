@@ -18,6 +18,9 @@ namespace Icaro
     {
         public static ItemDraft Instance { get; private set; }
 
+        // Cada carta escolhida, quando a escolha fecha (o CardPickupToast mostra o aviso)
+        public static event System.Action<ItemDefinition> OnCardPicked;
+
         public ItemCatalog Catalog;
 
         public bool IsOpen { get; private set; }
@@ -99,10 +102,13 @@ namespace Icaro
                 yield return null;
             }
 
+            var picked = new List<ItemDefinition>();
             foreach (Card card in m_Cards)
             {
-                if (card.Selected)
-                    PlayerStats.Instance.AddItem(card.Item);
+                if (!card.Selected)
+                    continue;
+                PlayerStats.Instance.AddItem(card.Item);
+                picked.Add(card.Item);
             }
 
             // Solta o clique/tecla antes de voltar, para a confirmação não virar um tiro
@@ -119,6 +125,8 @@ namespace Icaro
             Cursor.visible = false;
             if (menu)
                 menu.enabled = true;
+            foreach (ItemDefinition item in picked)
+                OnCardPicked?.Invoke(item);
         }
 
         static void Pause()

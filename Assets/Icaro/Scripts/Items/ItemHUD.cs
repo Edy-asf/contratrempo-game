@@ -5,44 +5,45 @@ using UnityEngine.UI;
 
 namespace Icaro
 {
-    // Itens coletados no HUD: ícone e quantidade, em linhas no canto superior esquerdo. Com o cursor livre (na
-    // escolha de itens ou no menu de pausa), passar o mouse num ícone mostra o nome e a descrição. Também mostra a
-    // barra do Escudo de Sincronia, quando o jogador tem escudo.
+    // Itens coletados na run, numa grade minimalista de ícones no canto superior esquerdo do visor (HelmetVisor):
+    // cada célula é um vidro escuro com o ícone em pixel art, uma linha fina na cor da raridade e a quantidade quando
+    // passa de 1; a grade quebra a cada PerRow ícones. Um item novo (ou mais uma pilha) dá um pulo na célula. Com o
+    // cursor livre (na escolha de itens ou no menu de pausa), passar o mouse num ícone mostra o nome e a descrição.
     public class ItemHUD : MonoBehaviour
     {
         public ItemCatalog Catalog;
 
-        public float IconSize = 52f;
-        public float Spacing = 8f;
-        public int PerRow = 10;
+        public float IconSize = 40f;
+        public float Spacing = 6f;
+        public int PerRow = 8;
 
-        static readonly Color k_TooltipBack = new Color(0.05f, 0.07f, 0.09f, 0.95f);
-        static readonly Color k_ShieldColor = new Color(0.35f, 0.8f, 1f, 0.9f);
+        static readonly Color k_Cell = new Color(0.03f, 0.07f, 0.1f, 0.5f);
+        static readonly Color k_TooltipBack = new Color(0.04f, 0.08f, 0.11f, 0.88f);
 
         class Slot
         {
             public ItemDefinition Item;
+            public int Count;
             public RectTransform Rect;
+            public float Pop;
         }
 
-        Canvas m_Canvas;
-        RectTransform m_Row;
+        RectTransform m_Group;
+        RectTransform m_Grid;
         readonly List<Slot> m_Slots = new List<Slot>();
+        readonly Dictionary<ItemDefinition, int> m_KnownCounts = new Dictionary<ItemDefinition, int>();
         RectTransform m_Tooltip;
         TextMeshProUGUI m_TooltipText;
-        Image m_ShieldBack;
-        Image m_ShieldFill;
-        TextMeshProUGUI m_ShieldText;
         PlayerStats m_Stats;
-        PlayerDefenses m_Defenses;
+        bool m_Initialized;
 
-        void Start()
+        bool Build()
         {
-            m_Canvas = ItemUI.CreateCanvas(transform, "ItensHUD", 120);
-            Transform root = m_Canvas.transform;
-            m_Row = ItemUI.Rect("Itens", root, new Vector2(0f, 1f), new Vector2(30f, -30f), new Vector2(800f, 200f));
-            BuildTooltip(root);
-            BuildShieldBar(root);
+            if (!HelmetVisor.TryGroup(VisorAnchor.TopLeft, out m_Group))
+                return false;
+            m_Grid = ItemUI.Rect("Itens", m_Group, new Vector2(0f, 1f), new Vector2(44f, -40f), new Vector2(600f, 300f));
+            BuildTooltip();
+            return true;
         }
 
         void OnDestroy()
@@ -53,16 +54,24 @@ namespace Icaro
 
         void Update()
         {
+            if (!m_Grid && !Build())
+                return;
             if (!m_Stats && PlayerStats.Instance)
             {
                 m_Stats = PlayerStats.Instance;
-                m_Defenses = m_Stats.GetComponent<PlayerDefenses>();
                 m_Stats.OnItemsChanged += Rebuild;
                 Rebuild();
             }
 
+            foreach (Slot slot in m_Slots)
+            {
+                if (slot.Pop <= 0f || !slot.Rect)
+                    continue;
+                slot.Pop = Mathf.MoveTowards(slot.Pop, 0f, Time.unscaledDeltaTime * 2.5f);
+                slot.Rect.localScale = Vector3.one * (1f + 0.35f * Mathf.Sin(slot.Pop * Mathf.PI));
+            }
+
             UpdateTooltip();
-            UpdateShield();
         }
 
         void Rebuild()
@@ -73,7 +82,7 @@ namespace Icaro
                     Destroy(slot.Rect.gameObject);
             }
             m_Slots.Clear();
-            if (!m_Stats || !m_Row)
+            if (!m_Stats || !m_Grid)
                 return;
 
             int index = 0;
@@ -85,46 +94,82 @@ namespace Icaro
                 int column = index % PerRow;
                 int row = index / PerRow;
                 var position = new Vector2(column * (IconSize + Spacing), -row * (IconSize + Spacing));
-                RectTransform icon = ItemUI.Icon(m_Row, stack.Item, Catalog, new Vector2(0f, 1f), position, IconSize);
+                RectTransform cell = Cell(stack.Item, stack.Count, position);
 
-                if (stack.Count > 1)
-                {
-                    TextMeshProUGUI count = ItemUI.Text("Quantidade", icon, new Vector2(1f, 0f), new Vector2(-3f, 2f),
-                        new Vector2(IconSize, 24f), 20f, TextAlignmentOptions.BottomRight, Color.white);
-                    count.fontStyle = FontStyles.Bold;
-                    count.outlineWidth = 0.25f;
-                    count.outlineColor = Color.black;
-                    count.text = "x" + stack.Count;
-                }
-
-                m_Slots.Add(new Slot { Item = stack.Item, Rect = icon });
+                // Item novo ou pilha a mais: a célula pula
+                m_KnownCounts.TryGetValue(stack.Item, out int known);
+                var slot = new Slot { Item = stack.Item, Count = stack.Count, Rect = cell };
+                if (stack.Count > known && m_Initialized)
+                    slot.Pop = 1f;
+                m_KnownCounts[stack.Item] = stack.Count;
+                m_Slots.Add(slot);
                 index++;
             }
+
+            // A primeira montagem (itens que já existiam) não pula
+            m_Initialized = true;
+            if (index == 0)
+                m_KnownCounts.Clear();
+        }
+
+        RectTransform Cell(ItemDefinition item, int count, Vector2 position)
+        {
+            Color rarity = Catalog ? Catalog.ColorOf(item.Rarity) : Color.white;
+            Image cell = ItemUI.Panel("Item", m_Grid, new Vector2(0f, 1f), position, Vector2.one * IconSize, k_Cell);
+            RectTransform rect = cell.rectTransform;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = position + new Vector2(IconSize, -IconSize) * 0.5f;
+
+            Sprite sprite = ItemArt.IconFor(item);
+            if (sprite)
+            {
+                Image icon = ItemUI.Fill("Icone", rect, 3f, Color.white);
+                icon.sprite = sprite;
+                icon.preserveAspect = true;
+            }
+            else
+            {
+                TextMeshProUGUI letter = VisorUI.Label("Letra", rect, new Vector2(0.5f, 0.5f), Vector2.zero,
+                    Vector2.one * IconSize, IconSize * 0.55f, TextAlignmentOptions.Center, rarity);
+                letter.text = item.IconLetter;
+            }
+
+            VisorUI.Line("Raridade", rect, Vector2.zero, Vector2.right, 2f, rarity);
+            if (count > 1)
+            {
+                TextMeshProUGUI amount = VisorUI.Label("Quantidade", rect, new Vector2(1f, 0f), new Vector2(-2f, 3f),
+                    new Vector2(IconSize, 16f), 14f, TextAlignmentOptions.BottomRight, Color.white);
+                amount.outlineWidth = 0.3f;
+                amount.outlineColor = Color.black;
+                amount.text = "x" + count;
+            }
+
+            return rect;
         }
 
         // ---------- tooltip ----------
 
-        void BuildTooltip(Transform root)
+        void BuildTooltip()
         {
-            Image back = ItemUI.Panel("Descricao", root, new Vector2(0f, 1f), Vector2.zero, new Vector2(380f, 170f),
+            Image back = ItemUI.Panel("Descricao", m_Group, new Vector2(0f, 1f), Vector2.zero, new Vector2(380f, 170f),
                 k_TooltipBack);
             m_Tooltip = back.rectTransform;
+            VisorUI.Line("Borda", m_Tooltip, Vector2.zero, Vector2.right, 1.5f, VisorUI.Edge);
             m_TooltipText = ItemUI.Text("Texto", m_Tooltip, new Vector2(0f, 1f), new Vector2(14f, -10f),
-                new Vector2(352f, 150f), 21f, TextAlignmentOptions.TopLeft, Color.white);
+                new Vector2(352f, 150f), 19f, TextAlignmentOptions.TopLeft, Color.white);
+            if (ItemFonts.Visor)
+                m_TooltipText.font = ItemFonts.Visor;
             m_Tooltip.gameObject.SetActive(false);
         }
 
         void UpdateTooltip()
         {
-            if (!m_Tooltip)
-                return;
-
             Slot hovered = null;
             if (Cursor.lockState != CursorLockMode.Locked)
             {
                 foreach (Slot slot in m_Slots)
                 {
-                    if (ItemUI.MouseOver(slot.Rect))
+                    if (HelmetVisor.MouseOver(slot.Rect))
                     {
                         hovered = slot;
                         break;
@@ -145,41 +190,9 @@ namespace Icaro
             m_TooltipText.ForceMeshUpdate();
             m_Tooltip.sizeDelta = new Vector2(380f, m_TooltipText.preferredHeight + 24f);
 
-            // Logo abaixo do ícone
-            Vector2 iconPosition = hovered.Rect.anchoredPosition + m_Row.anchoredPosition;
-            m_Tooltip.anchoredPosition = iconPosition + new Vector2(0f, -(IconSize + 10f));
-        }
-
-        // ---------- escudo ----------
-
-        void BuildShieldBar(Transform root)
-        {
-            var anchor = new Vector2(0.5f, 0f);
-            m_ShieldBack = ItemUI.Panel("Escudo", root, anchor, new Vector2(0f, 130f), new Vector2(320f, 14f),
-                new Color(0f, 0f, 0f, 0.55f));
-            m_ShieldFill = ItemUI.Fill("Carga", m_ShieldBack.transform, 2f, k_ShieldColor);
-            m_ShieldFill.rectTransform.pivot = new Vector2(0f, 0.5f);
-            m_ShieldText = ItemUI.Text("Valor", root, anchor, new Vector2(0f, 146f), new Vector2(320f, 26f), 18f,
-                TextAlignmentOptions.Bottom, k_ShieldColor);
-            m_ShieldBack.gameObject.SetActive(false);
-            m_ShieldText.gameObject.SetActive(false);
-        }
-
-        void UpdateShield()
-        {
-            bool show = m_Defenses && m_Defenses.ShieldMax > 0f;
-            if (m_ShieldBack.gameObject.activeSelf != show)
-            {
-                m_ShieldBack.gameObject.SetActive(show);
-                m_ShieldText.gameObject.SetActive(show);
-            }
-            if (!show)
-                return;
-
-            float ratio = Mathf.Clamp01(m_Defenses.Shield / m_Defenses.ShieldMax);
-            RectTransform fill = m_ShieldFill.rectTransform;
-            fill.anchorMax = new Vector2(ratio, 1f);
-            m_ShieldText.text = $"Escudo {Mathf.CeilToInt(m_Defenses.Shield)}/{Mathf.CeilToInt(m_Defenses.ShieldMax)}";
+            // Logo abaixo da célula
+            Vector2 cell = hovered.Rect.anchoredPosition + m_Grid.anchoredPosition;
+            m_Tooltip.anchoredPosition = cell + new Vector2(-IconSize * 0.5f, -(IconSize * 0.5f + 10f));
         }
     }
 }

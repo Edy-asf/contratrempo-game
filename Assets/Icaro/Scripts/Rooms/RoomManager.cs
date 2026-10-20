@@ -135,10 +135,9 @@ namespace Icaro
         {
             State = RoomState.Active;
             Active = this;
-            EnemiesRemainingHUD.EnsureExists();
             SetDoorsOpen(false);
             OnRoomActivated?.Invoke(this);
-            ShowMessage(RoomName + ": portas trancadas");
+            VisorBanner.Show(RoomName, "Portas trancadas", BannerTone.Warning);
 
             yield return RunQuota();
 
@@ -151,7 +150,7 @@ namespace Icaro
             SetDoorsOpen(true);
             OnRoomCleared?.Invoke(this);
             OnAnyRoomCleared?.Invoke(this);
-            ShowMessage(RoomName + " limpa");
+            VisorBanner.Show("Arena limpa", "Portas abertas", BannerTone.Success);
         }
 
         // ---------- cota contínua ----------
@@ -174,7 +173,7 @@ namespace Icaro
                 BossName = string.IsNullOrEmpty(bossDefinition.DisplayName)
                     ? bossDefinition.name.Replace("Inimigo_", "").Replace("Chefe_", "")
                     : bossDefinition.DisplayName;
-                ShowMessage($"Chefe: {BossName}!");
+                VisorBanner.Show(BossName, RoomName, BannerTone.Danger);
                 StartCoroutine(SpawnBoss());
             }
 
@@ -580,14 +579,6 @@ namespace Icaro
                 else
                     door.Close();
             }
-        }
-
-        static void ShowMessage(string message)
-        {
-            DisplayMessageEvent evt = Events.DisplayMessageEvent;
-            evt.Message = message;
-            evt.DelayBeforeDisplay = 0f;
-            EventManager.Broadcast(evt);
         }
 
         void OnDrawGizmosSelected()

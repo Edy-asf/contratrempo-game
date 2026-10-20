@@ -68,9 +68,6 @@ namespace Icaro
             m_Balance = balance ? balance.Balance : null;
             MaxCharges = BaseCharges;
             Charges = MaxCharges;
-
-            if (!FindAnyObjectByType<DashHUD>())
-                new GameObject("DashHUD").AddComponent<DashHUD>().Dash = this;
         }
 
         void Update()

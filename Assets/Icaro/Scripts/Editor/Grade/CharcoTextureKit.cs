@@ -64,7 +64,7 @@ namespace Icaro.EditorTools
             {
                 Rock = GridTextureKit.Surface("Charco_Raizes", PaintRoots(), k_NeonBlue),
                 RockTop = GridTextureKit.Surface("Charco_Raizes_Topo", PaintRootsTop(), Color.black),
-                Perch = GridTextureKit.Surface("Charco_Toco", GridTextureKit.PaintStump(), GridTextureKit.k_NeonAmber),
+                Perch = GridTextureKit.Surface("Charco_Toco", GridTextureKit.PaintStump(), Color.black),
                 PerchTop = GridTextureKit.Surface("Charco_Toco_Topo", GridTextureKit.PaintRings(), Color.black),
                 Grass = GridTextureKit.Surface("Charco_Lama", PaintMud(), Color.black),
                 Path = GridTextureKit.Surface("Charco_Passarela", PaintBoardwalk(), Color.black),

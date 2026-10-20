@@ -451,13 +451,19 @@ namespace Icaro
 
         // Arte importada sem quadros próprios: coice (recua para o canto) e recarga (abaixa e volta), em fração da
         // altura do sprite
-        static Vector2 ImportedMotion(Frames frames, IcaroWeapon icaro, Side side)
+        Vector2 ImportedMotion(Frames frames, IcaroWeapon icaro, Side side)
         {
             if (!frames.Imported)
                 return Vector2.zero;
             if (icaro && icaro.IsReloading && frames.Reload.Length == 0)
                 return new Vector2(0f, -Mathf.Sin(icaro.ReloadProgress * Mathf.PI) * 0.35f);
-            return Vector2.zero;
+            // Coice de cada lado no próprio tiro (recua para o canto)
+            float sinceShot = Time.time - side.FireTime;
+            float kickTime = FireFrameTime * 2f;
+            if (frames.Fire.Length > 0 || side.FireTime < 0f || sinceShot >= kickTime)
+                return Vector2.zero;
+            float kick = (1f - sinceShot / kickTime) * 0.02f;
+            return new Vector2(kick, -kick * 0.8f);
         }
 
         static string KeyOf(WeaponController weapon)
@@ -602,8 +608,7 @@ namespace Icaro
             return hot && frames.HotIdle ? frames.HotIdle : frames.Idle;
         }
 
-        // Balanço ao andar, atraso ao virar a câmera, subida ao trocar de arma e, na arte importada sem quadros de
-        // tiro, o coice; em fração da altura do sprite
+        // Balanço ao andar, atraso ao virar a câmera e subida ao trocar de arma, em fração da altura do sprite
         Vector2 Motion()
         {
             float dt = Time.deltaTime;
@@ -632,19 +637,6 @@ namespace Icaro
             }
 
             var motion = new Vector2(bobX + m_Sway.x, bobY + m_Sway.y) / WeaponSpritePainter.Height;
-
-            // Coice da arte importada sem quadros de tiro (recua para o canto)
-            Frames frames = m_Active && KeyOf(m_Active) is string key ? m_Frames[key] : null;
-            if (frames != null && frames.Imported && frames.Fire.Length == 0 && m_Right.FireTime >= 0f)
-            {
-                float sinceShot = Time.time - m_Right.FireTime;
-                float kickTime = FireFrameTime * 2f;
-                if (sinceShot < kickTime)
-                {
-                    float kick = (1f - sinceShot / kickTime) * 0.02f;
-                    motion += new Vector2(kick, -kick * 0.8f);
-                }
-            }
 
             float raise = Mathf.Clamp01((Time.time - m_RaiseStart) / Mathf.Max(0.01f, RaiseTime));
             motion.y -= (1f - raise) * (1f - raise);
