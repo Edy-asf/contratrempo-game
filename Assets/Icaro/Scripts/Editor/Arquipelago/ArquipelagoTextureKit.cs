@@ -18,6 +18,9 @@ namespace Icaro.EditorTools
             public Material Grass, Cliff, Stone, StoneDark, Silhouette, Sea, Door;
             public Material[] StoneTones, StoneDarkTones;
             public Material Moss, Wet, Shadow, Sand;
+            public Material[] Pavings;       // lajes grandes limpas (variações), para os pisos do Cemitério e da Ponte
+            public Material[] PavingMoss;    // transições laje-musgo (o musgo cresce em manchas de um passo ao outro)
+            public Material MossPatch;       // placa de musgo de borda irregular (carta deitada no chão)
             public Material Tuft, Flower, Vine;
             public Vector2 TuftSize, FlowerSize, VineSize;
             public Material Spores;
@@ -81,6 +84,15 @@ namespace Icaro.EditorTools
                     Color.black);
             }
 
+            set.Pavings = new Material[3];
+            for (int i = 0; i < set.Pavings.Length; i++)
+                set.Pavings[i] = GridTextureKit.Surface($"Arquipelago_Laje_{i + 1}", PaintPaving(i), Color.black);
+            set.PavingMoss = new Material[5];
+            for (int k = 0; k < set.PavingMoss.Length; k++)
+                set.PavingMoss[k] = GridTextureKit.Blend($"Arquipelago_Laje_Musgo_{k + 1}", set.Pavings[0], set.Moss,
+                    (k + 1) / 6f, 2424);
+            set.MossPatch = GridTextureKit.Sprite("Arquipelago_Placa_Musgo", PaintMossPatch(), Color.black);
+
             set.Silhouette = Silhouette(set.StoneDark.GetTexture("_BaseMap"));
             return set;
         }
@@ -110,6 +122,10 @@ namespace Icaro.EditorTools
         static Material Sea()
         {
             Material material = GridTextureKit.Surface("Arquipelago_Mar", PaintSea(), Color.black);
+            // A versão com reflexo (Icaro/Sea) deixava o mar preto: volta ao URP/Lit transparente de antes
+            Shader lit = Shader.Find("Universal Render Pipeline/Lit");
+            if (lit && material.shader != lit)
+                material.shader = lit;
             material.SetFloat("_Surface", 1f);
             material.SetFloat("_Blend", 0f);
             material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
@@ -177,6 +193,98 @@ namespace Icaro.EditorTools
                 if (!joint && y % 8 == 7 && p.Next < 0.3f)
                     c = k_Moss;
                 p.Set(x, y, p.Vary(c, 0.05f));
+            }
+
+            return p;
+        }
+
+        // Lajes grandes do piso (8 m de textura, lajes de 2 m em fiadas desencontradas, algumas emendadas em lajes de
+        // 4 m): juntas escuras, tom próprio em cada laje e bordas gastas; a variação 1 tem rachaduras e a 2, manchas de
+        // sujeira e um pouco de musgo nas juntas. As três têm o mesmo desenho de lajes (emendam sem costura).
+        static Paint PaintPaving(int variant)
+        {
+            const int size = 128, slab = 32;
+            Paint p = GridTextureKit.Tile(size, size, 640 + variant * 7, k_Ruin);
+            var layout = new System.Random(641);
+            var tone = new float[size, size];
+            var joint = new bool[size, size];
+            for (int row = 0; row < size / slab; row++)
+            {
+                int offset = layout.Next(2) * slab / 2, y0 = row * slab;
+                for (int x = -slab; x < size; )
+                {
+                    int width = layout.NextDouble() < 0.25 ? slab * 2 : slab;
+                    float shade = 0.9f + (float)layout.NextDouble() * 0.2f;
+                    for (int y = y0; y < y0 + slab; y++)
+                    for (int dx = 0; dx < width; dx++)
+                    {
+                        int px = ((x + offset + dx) % size + size) % size;
+                        tone[px, y] = shade;
+                        joint[px, y] = y == y0 || dx == 0;
+                    }
+
+                    x += width;
+                }
+            }
+
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                Color c = joint[x, y] ? k_RuinDark : k_Ruin * tone[x, y];
+                // Borda gasta: um pouco mais clara logo depois da junta
+                if (!joint[x, y] && (joint[(x + size - 1) % size, y] || joint[x, (y + size - 1) % size]) && p.Next < 0.5f)
+                    c *= 1.12f;
+                if (variant == 2 && joint[x, y] && p.Next < 0.35f)
+                    c = k_Moss;
+                c.a = 1f;
+                p.Set(x, y, p.Vary(c, 0.05f));
+            }
+
+            if (variant == 1)
+            {
+                // Rachaduras: caminhos tortos escuros
+                for (int k = 0; k < 4; k++)
+                {
+                    int x = p.Range(0, size), y = p.Range(0, size), length = p.Range(14, 34);
+                    int dx = p.Range(-1, 2), dy = p.Range(0, 2) * 2 - 1;
+                    for (int i = 0; i < length; i++)
+                    {
+                        p.Set(x, y, k_RuinDark * 0.8f);
+                        if (p.Next < 0.6f)
+                            y += dy;
+                        else
+                            x += dx == 0 ? p.Range(-1, 2) : dx;
+                    }
+                }
+            }
+            else if (variant == 2)
+            {
+                // Manchas de sujeira
+                for (int k = 0; k < 6; k++)
+                    p.Dot(p.Range(0, size), p.Range(0, size), k_RuinDark * 1.2f, p.Range(3, 7));
+            }
+
+            return p;
+        }
+
+        // Placa de musgo de borda irregular (com transparência), para deitar em cima das lajes
+        static Paint PaintMossPatch()
+        {
+            const int size = 48;
+            Paint p = GridTextureKit.Transparent(size, size, 645);
+            float seedX = p.Next * 50f, seedY = p.Next * 50f;
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                float u = (x + 0.5f) / size * 2f - 1f, v = (y + 0.5f) / size * 2f - 1f;
+                float edge = 1f - Mathf.Sqrt(u * u + v * v) + (Mathf.PerlinNoise(seedX + x * 0.18f, seedY + y * 0.18f) - 0.5f) * 0.7f;
+                if (edge < 0.12f)
+                    continue;
+                float roll = p.Next;
+                Color c = roll < 0.25f ? k_MossDark : roll < 0.4f ? k_MossLight : k_Moss;
+                if (edge < 0.2f && p.Next < 0.5f)
+                    continue;
+                p.Set(x, y, p.Vary(c, 0.06f));
             }
 
             return p;

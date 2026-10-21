@@ -64,12 +64,12 @@ namespace Icaro
                 s_Instance = null;
         }
 
-        // Depois do chefe: uma loja e um Metrônomo lado a lado no meio da arena
+        // Depois do chefe: uma loja e um Metrônomo lado a lado no meio da arena (ou no RewardPoint da sala)
         void OnRoomCleared(RoomManager room)
         {
             if (!room || !room.IsBoss)
                 return;
-            Vector3 center = room.transform.position;
+            Vector3 center = room.RewardPoint ? room.RewardPoint.position : room.transform.position;
             Vector3 side = Vector3.right * Settings.OffsetFromMetronome;
             // O Metrônomo é de uso único: nasce do lado mais longe do jogador, para não ser gasto sem querer
             if (BossTarget.Exists && BossTarget.FlatDistance(center + side) > BossTarget.FlatDistance(center - side))

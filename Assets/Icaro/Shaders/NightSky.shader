@@ -4,6 +4,8 @@
 // no topo) e, bem perto do horizonte, a cor da névoa, para casar com a floresta distante. O ângulo e o comprimento do rastro vêm
 // de variáveis globais (_IcaroStarAngle e _IcaroStarTrail, em radianos), que o NightSkyMotion atualiza conforme o
 // multiplicador de tempo: quanto mais rápido o tempo, mais rápido o céu gira e mais longos ficam os rastros.
+// Aurora: muitos raios verticais de luz subindo de uma borda ondulada perto do horizonte até o alto da vista (somem
+// perto do zênite, onde os raios se encontrariam), correndo para os lados, piscando e ondulando de forma visível.
 Shader "Icaro/NightSky"
 {
     Properties
@@ -28,6 +30,7 @@ Shader "Icaro/NightSky"
         [HDR] _AuroraColorA("Aurora: cor de baixo", Color) = (0.2, 1.4, 0.8, 1)
         [HDR] _AuroraColorB("Aurora: cor de cima", Color) = (0.5, 0.3, 1.2, 1)
         _AuroraHeight("Aurora: altura no céu", Range(0.1, 0.9)) = 0.42
+        _AuroraSpeed("Aurora: velocidade do movimento", Range(0, 4)) = 1
     }
 
     SubShader
@@ -64,6 +67,7 @@ Shader "Icaro/NightSky"
                 half4 _AuroraColorA;
                 half4 _AuroraColorB;
                 half _AuroraHeight;
+                half _AuroraSpeed;
             CBUFFER_END
 
             float _IcaroStarAngle;
@@ -97,6 +101,22 @@ Shader "Icaro/NightSky"
                 float3 p3 = frac(float3(p.xyx) * float3(0.1031, 0.1030, 0.0973));
                 p3 += dot(p3, p3.yzx + 33.33);
                 return frac((p3.xx + p3.yz) * p3.zy);
+            }
+
+            float Hash11(float p)
+            {
+                p = frac(p * 0.1031);
+                p *= p + 33.33;
+                p *= p + p;
+                return frac(p);
+            }
+
+            // Ruído suave de uma dimensão (0 a 1)
+            float Noise1(float x)
+            {
+                float i = floor(x), f = frac(x);
+                float u = f * f * (3.0 - 2.0 * f);
+                return lerp(Hash11(i), Hash11(i + 1.0), u);
             }
 
             // Planeta com faixas, sombreado de um lado, e um anel inclinado; alpha = quanto cobre o céu
@@ -211,6 +231,37 @@ Shader "Icaro/NightSky"
                 return half4(color * _StarBrightness, pixelBand);
             }
 
+            // Aurora: muitos raios verticais (cada um segue a linha do horizonte até o alto) saindo de uma borda
+            // ondulada perto do horizonte; os raios correm para os lados e piscam, a borda ondula e manchas mais fortes
+            // passam ao longo do céu. Some perto do zênite (onde os raios se encontrariam).
+            half3 Aurora(float3 d)
+            {
+                float h = d.y;
+                float az = atan2(d.x, d.z);
+                float t = _Time.y * _AuroraSpeed;
+                float bottom = _AuroraHeight * 0.45 + 0.06 * sin(az * 2.0 + t * 0.9) + 0.035 * sin(az * 5.3 - t * 1.4) +
+                               0.015 * sin(az * 13.0 + t * 2.3);
+                float above = h - bottom;
+                if (above < -0.04)
+                    return 0;
+
+                float edge = smoothstep(-0.04, 0.015, above);
+                // Forte logo acima da borda e ainda visível bem alto
+                float rise = 0.8 * exp(-max(above, 0.0) / 0.35) + 0.25 * exp(-max(above, 0.0) / 1.4);
+                float zenith = 1.0 - smoothstep(0.8, 0.97, h);
+
+                // Raios: dois tamanhos de listras verticais que correm para os lados em velocidades diferentes
+                float wobble = sin(az * 3.0 + t * 0.7) * 1.5;
+                float wide = Noise1(az * 40.0 + t * 1.8 + wobble);
+                float thin = Noise1(az * 140.0 - t * 3.2 + wobble * 2.0);
+                float rays = pow(wide, 2.2) * 1.3 + pow(thin, 3.5) * 0.9 + 0.1;
+                float flicker = 0.7 + 0.3 * sin(t * 4.5 + az * 25.0 + wide * 6.0);
+                float patches = saturate(0.2 + Noise1(az * 1.3 + t * 0.35) * Noise1(az * 0.6 - t * 0.2 + 7.0) * 1.6);
+
+                half3 tint = lerp(_AuroraColorA.rgb, _AuroraColorB.rgb, saturate(above / 0.7));
+                return tint * (edge * rise * zenith * rays * flicker * patches * _AuroraStrength);
+            }
+
             half4 Frag(Varyings input) : SV_Target
             {
                 float3 d = normalize(input.direction);
@@ -222,20 +273,8 @@ Shader "Icaro/NightSky"
                 if (h < 0.0)
                     sky = lerp(_HorizonColor.rgb * 0.6, half3(0, 0, 0), saturate(-h * 4.0));
 
-                // Aurora: cortinas que ondulam pelo céu, com raios verticais e manchas mais fortes e mais fracas
                 if (_AuroraStrength > 0.0 && h > 0.0)
-                {
-                    float az = atan2(d.x, d.z);
-                    float t = _Time.y * 0.08;
-                    float center = _AuroraHeight + 0.08 * sin(az * 2.0 + t * 3.0) + 0.05 * sin(az * 5.0 - t * 2.0);
-                    float shape = smoothstep(center - 0.08, center, h) * (1.0 - smoothstep(center, center + 0.28, h));
-                    float rays = (0.55 + 0.45 * sin(az * 60.0 + t * 14.0 + sin(az * 7.0) * 3.0)) *
-                                 (0.7 + 0.3 * sin(az * 23.0 - t * 9.0));
-                    float patches = saturate(0.35 + 0.65 * (0.5 + 0.5 * sin(az * 1.0 + t)) *
-                                             (0.5 + 0.5 * sin(az * 3.0 - t * 1.7)));
-                    half3 aurora = lerp(_AuroraColorA.rgb, _AuroraColorB.rgb, saturate((h - center) / 0.28));
-                    sky += aurora * shape * rays * patches * _AuroraStrength;
-                }
+                    sky += Aurora(d);
 
                 half4 planet = Planet(d);
                 half4 stars = Stars(d);

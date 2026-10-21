@@ -103,6 +103,15 @@ namespace Icaro.EditorTools
             return set;
         }
 
+        // A água do Charco (leito, superfície rasa e funda) num conjunto de outro tema (o riacho e o lago do Bosque)
+        internal static void AddWater(GridTextureKit.Set set)
+        {
+            set.WaterBed = GridTextureKit.Surface("Charco_Leito", PaintBed(), Color.black);
+            Paint water = PaintWater();
+            set.WaterSurface = Water("Charco_Agua", water, new Color(0.45f, 0.75f, 0.85f, 0.55f), k_NeonBlue * 0.6f);
+            set.DeepSurface = Water("Charco_Agua_Funda", water, new Color(0.12f, 0.3f, 0.4f, 0.88f), k_NeonBlue * 0.35f);
+        }
+
         // Água: material transparente com ondinhas e algas que brilham (a superfície corre pelo WaterRipple)
         static Material Water(string name, Paint paint, Color color, Color glow)
         {

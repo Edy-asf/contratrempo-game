@@ -49,6 +49,9 @@ namespace Icaro
 
         void UpdatePlayer()
         {
+            // No modo livre (voo para prints) o mar não puxa de volta
+            if (PlayerFreeMode.Instance && PlayerFreeMode.Instance.Active)
+                return;
             Vector3 position = m_Player.transform.position;
             if (position.y < SeaLevel - FallDepth)
             {

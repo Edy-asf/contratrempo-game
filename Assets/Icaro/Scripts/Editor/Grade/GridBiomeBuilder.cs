@@ -68,8 +68,8 @@ namespace Icaro.EditorTools
         // do mapa, para o próximo trecho da Via continuar dali
         public static Vector3 OpenEndPoint { get; private set; }
 
-        [MenuItem("Ícaro/Grade/Gerar Bosque", priority = 45)]
-        static void GenerateBosque() => Generate(GridThemes.Bosque());
+        // Com GridTheme.OpenEnd: começo dessa trilha (na porta de saída da arena do chefe)
+        public static Vector3 OpenEndStart { get; private set; }
 
         [MenuItem("Ícaro/Grade/Gerar Charco (teste)", priority = 46)]
         static void GenerateCharcoTest() => Generate(GridThemes.CharcoTeste());
@@ -128,7 +128,8 @@ namespace Icaro.EditorTools
                     new Vector3(s_Width * k_Cell, 30f, s_Depth * k_Cell));
 
                 // Desenho do cenário só até 300 m (o mar, o céu, as silhuetas e o que se move ficam de fora)
-                GridSceneKit.AddDistanceCulling(world, 300f, "Mar", "Gigantes_Fundo", "Feixe_Farol", "Destroco_");
+                GridSceneKit.AddDistanceCulling(world, 300f, "Mar", "Gigantes_Fundo", "Feixe_Farol", "Destroco_",
+                    "AnelGirando");
 
                 Physics.SyncTransforms();
                 int perches = 0, validPerches = 0;
@@ -267,6 +268,7 @@ namespace Icaro.EditorTools
             if (s_Theme.OpenEnd)
             {
                 CarveColumn(fromX, fromZ, s_Depth - 1);
+                OpenEndStart = GridSceneKit.CellCenter(fromX, fromZ);
                 OpenEndPoint = GridSceneKit.CellCenter(fromX, s_Depth - 1) + Vector3.forward * (k_Cell * 0.5f);
             }
 
@@ -995,7 +997,7 @@ namespace Icaro.EditorTools
         // Espécies: as normais se misturam livremente (pelo peso de cada uma); a de destaque cresce em manchas
         // próprias: centros espalhados numa grade de ~30 m, alguns marcados como mancha de destaque. Perto de um
         // centro desses, a árvore é do destaque na maior parte das vezes.
-        class Groves
+        internal class Groves
         {
             const float k_Spacing = 30f;
             const float k_AccentChance = 0.2f;   // fração dos centros que viram mancha de destaque
@@ -1053,7 +1055,7 @@ namespace Icaro.EditorTools
         }
 
         // Grade espacial simples para manter as árvores do cerco afastadas umas das outras
-        class TreeSpacing
+        internal class TreeSpacing
         {
             const float k_Bucket = 6f;
             readonly Dictionary<Vector2Int, List<(Vector2 position, float radius)>> m_Buckets =

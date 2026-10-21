@@ -631,6 +631,22 @@ namespace Icaro.EditorTools
 
         // Chorão (8 x 10 m na escala 1): tronco índigo curto e grosso, copa verde-azulada em domo e tentáculos com
         // pontas que brilham
+        // Pixel mais baixo da copa na coluna x: o primeiro, de baixo para cima, que mudou desde 'before' (o desenho
+        // antes da copa; o tronco não conta). -1 se a coluna não tem copa.
+        static int CrownBottom(Paint p, Color[] before, int x)
+        {
+            if (x < 0 || x >= p.W)
+                return -1;
+            for (int y = 0; y < p.H; y++)
+            {
+                int i = y * p.W + x;
+                if (p.Pixels[i] != before[i])
+                    return y;
+            }
+
+            return -1;
+        }
+
         static Paint PaintWeepingTree(float k, TreeStyle style)
         {
             Paint p = Transparent(Px(128 * k * Mathf.Max(1f, style.Crown)), Px(160 * k), style.Seed);
@@ -641,6 +657,7 @@ namespace Icaro.EditorTools
 
             Color dome = new Color(0.08f, 0.3f, 0.42f), domeLight = new Color(0.16f, 0.45f, 0.55f),
                 domeDark = new Color(0.04f, 0.17f, 0.27f);
+            var beforeCrown = (Color[])p.Pixels.Clone();
             int blobs = Mathf.RoundToInt(18 * style.Crown);
             for (int i = 0; i < blobs; i++)
             {
@@ -649,17 +666,21 @@ namespace Icaro.EditorTools
                     (12f + p.Range(0, 6)) * k, dome, domeLight, domeDark);
             }
 
-            // Tentáculos a cada 4 px (o espaçamento é de pixel, não cresce com o tamanho)
+            // Tentáculos a cada 4 px (o espaçamento é de pixel, não cresce com o tamanho), cada um preso no ponto mais
+            // baixo da copa na coluna dele (sem copa na coluna, não há tentáculo: nada fica flutuando)
             int count = Mathf.RoundToInt(26 * k * style.Crown);
             float start0 = 12f * k, spread = (p.W - 24f * k) / count;
             for (int i = 0; i < count; i++)
             {
                 int x = Mathf.RoundToInt(start0 + i * spread) + p.Range(-1, 2);
                 int length = Px((30 + p.Range(0, 45)) * k * style.Length);
-                int start = Mathf.RoundToInt(domeY - 4f * k) - Px(p.Range(0, 6) * k);
+                int bottom = CrownBottom(p, beforeCrown, x);
+                if (bottom < 0)
+                    continue;
+                int start = bottom + 1;
                 for (int d = 0; d < length; d++)
                 {
-                    int sx = x + Mathf.RoundToInt(Mathf.Sin(d * 0.15f / k + i) * 1.2f * k);
+                    int sx = x + Mathf.RoundToInt((Mathf.Sin(d * 0.15f / k + i) - Mathf.Sin(i)) * 1.2f * k);
                     bool tip = d >= length - 4;
                     p.Set(sx, start - d, tip ? k_Crystal : domeLight, tip);
                 }
@@ -679,6 +700,7 @@ namespace Icaro.EditorTools
 
             Color crown = new Color(0.1f, 0.27f, 0.4f), crownLight = new Color(0.18f, 0.42f, 0.52f),
                 crownDark = new Color(0.05f, 0.15f, 0.26f);
+            var beforeCrown = (Color[])p.Pixels.Clone();
             for (int i = 0; i < 12; i++)
             {
                 float a = p.Next * Mathf.PI * 2f;
@@ -693,17 +715,20 @@ namespace Icaro.EditorTools
                     (10f + p.Range(0, 5)) * k, crown, crownLight, crownDark);
             }
 
-            // Franjas que caem da copa de baixo
+            // Franjas que caem da copa de baixo, presas no ponto mais baixo da copa na coluna de cada uma
             int count = Mathf.RoundToInt(22 * k);
             float left = 14f * k, spread = (p.W - 28f * k) / count;
             for (int i = 0; i < count; i++)
             {
                 int x = Mathf.RoundToInt(left + i * spread) + p.Range(-1, 2);
-                int start = Mathf.RoundToInt(90f * k);
                 int length = Px((18 + p.Range(0, 28)) * k);
+                int bottom = CrownBottom(p, beforeCrown, x);
+                if (bottom < 0)
+                    continue;
+                int start = bottom + 1;
                 for (int d = 0; d < length; d++)
                 {
-                    int sx = x + Mathf.RoundToInt(Mathf.Sin(d * 0.12f / k + i * 1.7f) * k);
+                    int sx = x + Mathf.RoundToInt((Mathf.Sin(d * 0.12f / k + i * 1.7f) - Mathf.Sin(i * 1.7f)) * k);
                     p.Set(sx, start - d, d > length - 3 ? crownDark : crown);
                 }
             }
@@ -1044,6 +1069,124 @@ namespace Icaro.EditorTools
             material.enableInstancing = true;
             EditorUtility.SetDirty(material);
             return material;
+        }
+
+        // Cópia de um material com a cor multiplicada por 'tint' (transição de cor entre os materiais de dois biomas)
+        internal static Material Tinted(string name, Material source, Color tint)
+        {
+            Material material = LoadOrCreate(name);
+            material.shader = source.shader;
+            material.CopyPropertiesFromMaterial(source);
+            material.shaderKeywords = source.shaderKeywords;
+            material.SetColor("_BaseColor", tint);
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        // Textura que mistura as de dois materiais (transição entre biomas): manchas de ruído repetível que crescem com
+        // 'amount' (0 = só a primeira, 1 = só a segunda; a fração de pixels da segunda é 'amount'), com a borda das
+        // manchas pontilhada. A mesma máscara serve para todos os passos de uma transição (as manchas só crescem de
+        // um passo para o outro). A segunda textura é lida em ladrilho se o tamanho for outro.
+        internal static Material Blend(string name, Material first, Material second, float amount, int seed)
+        {
+            Texture2D a = ReadBaseMap(first), b = ReadBaseMap(second);
+            if (!a || !b)
+            {
+                if (a) Object.DestroyImmediate(a);
+                if (b) Object.DestroyImmediate(b);
+                return amount < 0.5f ? first : second;
+            }
+
+            int w = a.width, h = a.height;
+            Color[] pa = a.GetPixels(), pb = b.GetPixels();
+            float[,] coarse = Lattice(4, seed), fine = Lattice(8, seed + 1);
+            var mask = new float[w * h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                mask[y * w + x] = 0.65f * SampleLattice(coarse, (float)x / w, (float)y / h) +
+                                  0.35f * SampleLattice(fine, (float)x / w, (float)y / h);
+
+            // Posição de cada pixel na ordem da máscara (0 a 1): a fração trocada fica exatamente 'amount'
+            var order = new int[mask.Length];
+            for (int i = 0; i < order.Length; i++)
+                order[i] = i;
+            System.Array.Sort(order, (i, j) => mask[i].CompareTo(mask[j]));
+            var rank = new float[mask.Length];
+            for (int i = 0; i < order.Length; i++)
+                rank[order[i]] = i / (order.Length - 1f);
+
+            var random = new System.Random(seed + 2);
+            var pixels = new Color[w * h];
+            for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                int i = y * w + x;
+                Color ca = pa[i], cb = pb[(y % b.height) * b.width + x % b.width];
+                // Os pixels de máscara mais baixa viram a segunda textura primeiro; perto do limite, pontilhado
+                float edge = rank[i] - amount;
+                pixels[i] = edge < -0.05f ? cb : edge > 0.05f ? ca : random.NextDouble() < 0.5 ? ca : cb;
+            }
+
+            Object.DestroyImmediate(a);
+            Object.DestroyImmediate(b);
+            Texture2D texture = Save(name, w, pixels);
+            Material material = LoadOrCreate(name);
+            Setup(material, texture, null, Color.black);
+            return material;
+        }
+
+        static Texture2D ReadBaseMap(Material material)
+        {
+            string path = material ? AssetDatabase.GetAssetPath(material.GetTexture("_BaseMap")) : null;
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return null;
+            var texture = new Texture2D(2, 2);
+            texture.LoadImage(File.ReadAllBytes(path));
+            return texture;
+        }
+
+        // Grade n x n de valores aleatórios (repetível nas bordas) e a leitura suave dela
+        static float[,] Lattice(int n, int seed)
+        {
+            var random = new System.Random(seed);
+            var values = new float[n, n];
+            for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+                values[x, y] = (float)random.NextDouble();
+            return values;
+        }
+
+        static float SampleLattice(float[,] values, float u, float v)
+        {
+            int n = values.GetLength(0);
+            float fx = u * n, fy = v * n;
+            int x0 = Mathf.FloorToInt(fx), y0 = Mathf.FloorToInt(fy);
+            float tx = Mathf.SmoothStep(0f, 1f, fx - x0), ty = Mathf.SmoothStep(0f, 1f, fy - y0);
+            float V(int x, int y) => values[((x % n) + n) % n, ((y % n) + n) % n];
+            return Mathf.Lerp(Mathf.Lerp(V(x0, y0), V(x0 + 1, y0), tx), Mathf.Lerp(V(x0, y0 + 1), V(x0 + 1, y0 + 1), tx),
+                ty);
+        }
+
+        // Cor média da textura de um material (lida do PNG; pixels transparentes não contam)
+        internal static Color AverageColor(Material material)
+        {
+            string path = AssetDatabase.GetAssetPath(material.GetTexture("_BaseMap"));
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+                return Color.gray;
+            var texture = new Texture2D(2, 2);
+            texture.LoadImage(File.ReadAllBytes(path));
+            Color sum = Color.clear;
+            int count = 0;
+            foreach (Color c in texture.GetPixels())
+            {
+                if (c.a < 0.5f)
+                    continue;
+                sum += c;
+                count++;
+            }
+
+            Object.DestroyImmediate(texture);
+            return count > 0 ? sum / count : Color.gray;
         }
 
         static Material LoadOrCreate(string name)

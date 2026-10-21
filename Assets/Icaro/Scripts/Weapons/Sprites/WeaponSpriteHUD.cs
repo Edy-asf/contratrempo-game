@@ -22,6 +22,11 @@ namespace Icaro
     // grande-angular), com menos ela encolhe um pouco (FovStretch). O canto da tela fica sempre no lugar. O Ion akimbos tem um segundo quad espelhado no canto esquerdo, e cada lado anima no
     // próprio tiro. Os quadros são desenhados numa thread separada (o desenho não usa o Unity) e viram textura aos
     // poucos na principal; até o quadro parado ficar pronto, o modelo 3D continua aparecendo. Criado pelo PlayerStats.
+    // Luz do ambiente (o sprite continua sem iluminação de verdade, para a pixel art não escurecer nem lavar): a cor é
+    // tingida pela luz ambiente do momento (o BiomeZone troca com transição: roxo no Bosque, verde-escuro no
+    // Arquipélago), com um piso de brilho; as luzes pontuais por perto somam a cor delas (braseiros, cristais, a
+    // lanterna da cápsula) e cada disparo dá um clarão rápido (menos nas armas silenciadas). Valores no asset
+    // Resources/WeaponLightSettings (menu "Ícaro > Ajustes da luz da arma").
     public class WeaponSpriteHUD : MonoBehaviour
     {
         [Tooltip("Campo de visão (graus) em que o sprite aparece exatamente como na ficha, sem distorção")]
@@ -113,6 +118,10 @@ namespace Icaro
         Vector2 m_Sway;
         float m_LastYaw;
         float m_LastPitch;
+        float m_FlashTime = -10f;
+        Color m_Glow = Color.black;
+        readonly List<Light> m_Lights = new List<Light>();
+        float m_LightsRefresh;
 
         // Sprite da direita como um quad num espaço de câmera virtual com o campo de visão de referência (canto
         // inferior direito no pivô, x de -1 a 0 e y de 0 a 1), e as tangentes da metade do campo de visão
@@ -307,9 +316,11 @@ namespace Icaro
             var corner = new Vector2(m_TanRef * camera.aspect, -m_TanRef);
             Vector2 anchor = corner + definition.SpriteOffset * unit;
             Vector2 motion = Motion() * height;
+            Color tint = AmbientColor(camera.transform.position);
             foreach (Side side in akimbo ? new[] { m_Right, m_Left } : new[] { m_Right })
             {
                 side.Material.mainTexture = FrameFor(frames, icaro, side);
+                side.Material.SetColor("_BaseColor", tint);
                 Vector2 position = anchor + motion + ImportedMotion(frames, icaro, side) * height;
                 // O balanço nunca puxa o canto para dentro da tela além de onde a ficha o pôs
                 position.x = Mathf.Max(position.x, Mathf.Min(anchor.x, corner.x));
@@ -580,7 +591,60 @@ namespace Icaro
             Side side = left ? m_Left : m_Right;
             side.FireTime = Time.time;
             side.Alt = m_Shots++ % 2 == 1;
+            if (!(icaro && icaro.Definition && icaro.Definition.Suppressed))
+                m_FlashTime = Time.time;
             m_Heat = Mathf.Min(1f, m_Heat + 0.08f);
+        }
+
+        // Cor da arma: tom da luz ambiente (só a matiz, com o piso de brilho), mais a cor das luzes pontuais por perto
+        // (suavizada, sem saltos ao passar por elas) e o clarão do disparo
+        Color AmbientColor(Vector3 eye)
+        {
+            WeaponLightSettings settings = WeaponLightSettings.Current;
+            Color ambient = RenderSettings.ambientMode == AmbientMode.Trilight
+                ? (RenderSettings.ambientSkyColor + RenderSettings.ambientEquatorColor) * 0.5f
+                : RenderSettings.ambientLight;
+            float peak = Mathf.Max(ambient.maxColorComponent, 0.001f);
+            var hue = new Color(ambient.r / peak, ambient.g / peak, ambient.b / peak);
+            float bright = Mathf.Clamp(ambient.grayscale * 2.5f, settings.MinBrightness, 1f);
+            Color color = Color.Lerp(Color.white, hue, settings.AmbientTint) * Mathf.Lerp(1f, bright, settings.AmbientTint);
+
+            Color glow = Color.black;
+            if (settings.NearbyLights > 0f)
+            {
+                if (Time.time >= m_LightsRefresh)
+                {
+                    m_LightsRefresh = Time.time + 1.5f;
+                    m_Lights.Clear();
+                    foreach (Light light in FindObjectsByType<Light>(FindObjectsSortMode.None))
+                    {
+                        if (light.type == LightType.Point || light.type == LightType.Spot)
+                            m_Lights.Add(light);
+                    }
+                }
+
+                foreach (Light light in m_Lights)
+                {
+                    if (!light || !light.isActiveAndEnabled || light.intensity <= 0f)
+                        continue;
+                    float distance = Vector3.Distance(eye, light.transform.position);
+                    if (distance >= light.range)
+                        continue;
+                    float falloff = 1f - distance / light.range;
+                    glow += light.color * (falloff * falloff * Mathf.Clamp01(light.intensity));
+                }
+            }
+
+            m_Glow = Color.Lerp(m_Glow, glow * settings.NearbyLights, Time.deltaTime * settings.NearbySmoothing);
+            color += m_Glow;
+            float flash = settings.ShotFlash *
+                          Mathf.Clamp01(1f - (Time.time - m_FlashTime) / Mathf.Max(0.01f, settings.ShotFlashTime));
+            color = Color.Lerp(color, settings.ShotFlashColor * 1.3f, flash);
+            color.r = Mathf.Min(color.r, 1.6f);
+            color.g = Mathf.Min(color.g, 1.6f);
+            color.b = Mathf.Min(color.b, 1.6f);
+            color.a = 1f;
+            return color;
         }
 
         Texture2D FrameFor(Frames frames, IcaroWeapon icaro, Side side)

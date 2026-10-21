@@ -58,6 +58,9 @@ namespace Icaro
 
         public Transform BossPoint;
 
+        [Tooltip("Onde surgem a loja e o Metrônomo depois do chefe (vazio = o meio da sala)")]
+        public Transform RewardPoint;
+
         [Tooltip("Pontos de spawn da arena (longe da entrada e fora da visão inicial)")]
         public Transform[] SpawnPoints;
 

@@ -116,6 +116,72 @@ namespace Icaro.EditorTools
             }
         }
 
+        // Anel deitado (o topo é uma passarela larga e lisa): blocos chanfrados com canaleta nas faces de dentro e de
+        // fora, aros mais largos dos lados a cada 'collarEvery' blocos (rentes abaixo do topo, sem virar degrau) e
+        // pontas quebradas em dente. 'center' fica na altura do topo; o corpo desce 'depth' ao longo de -normal (com a
+        // normal inclinada, o topo vira uma rampa curva). 'width' é a largura da passarela.
+        public static void LyingRing(RuinMesh mesh, Vector3 center, Vector3 normal, Vector3 zero, float radius,
+            float width, float depth, float fromDeg, float toDeg, System.Random random, bool brokenStart = false,
+            bool brokenEnd = false, int collarEvery = 3)
+        {
+            normal = normal.normalized;
+            float span = toDeg - fromDeg, sign = Mathf.Sign(span);
+            float arcLength = radius * Mathf.Abs(span) * Mathf.Deg2Rad;
+            int blocks = Mathf.Max(2, Mathf.RoundToInt(arcLength / Mathf.Max(width * 1.2f, 2f)));
+            float step = span / blocks;
+            float chamfer = Mathf.Min(width, depth) * 0.08f;
+            Vector2[] body = TopAtZero(BlockMesh.Grooved(depth, width, chamfer, 0.4f, Mathf.Min(0.5f, width * 0.06f)),
+                depth);
+            Vector2[] cap = BlockMesh.Chamfered(width, depth, chamfer, new Vector2(0f, -depth * 0.5f));
+            float collarDepth = depth - 0.25f;
+            Vector2[] collar = BlockMesh.Chamfered(width * 1.08f, collarDepth, chamfer * 1.5f,
+                new Vector2(0f, -0.25f - collarDepth * 0.5f));
+            float collarDeg = width * 0.3f / radius * Mathf.Rad2Deg * sign;
+            int segments = Mathf.Max(1, Mathf.CeilToInt(Mathf.Abs(step) / 4f));
+            Vector2[] inner = BlockMesh.Chamfered(width * 0.5f, depth, chamfer,
+                new Vector2(-width * 0.25f, -depth * 0.5f));
+            Vector2[] outer = BlockMesh.Chamfered(width * 0.5f, depth, chamfer,
+                new Vector2(width * 0.25f, -depth * 0.5f));
+
+            for (int i = 0; i < blocks; i++)
+            {
+                float a0 = fromDeg + i * step, a1 = fromDeg + (i + 1) * step;
+                // Blocos encostados e um pouco desalinhados só no raio (o topo continua no mesmo nível)
+                float r = radius + R(random, -0.02f, 0.02f) * width;
+                bool jagStart = i == 0 && brokenStart, jagEnd = i == blocks - 1 && brokenEnd;
+                if (jagStart || jagEnd)
+                {
+                    float cut = (a1 - a0) * 0.4f;
+                    BlockMesh.SweepArc(mesh.Pick(), center, normal, zero, r, inner, jagStart ? a0 : a0,
+                        jagEnd ? a1 - cut : a1, segments);
+                    BlockMesh.SweepArc(mesh.Pick(), center, normal, zero, r, outer, jagStart ? a0 + cut : a0, a1,
+                        segments);
+                }
+                else
+                    BlockMesh.SweepArc(mesh.Pick(), center, normal, zero, r, body, a0, a1, segments, cap);
+
+                if (collarEvery > 0 && i > 0 && i % collarEvery == 0)
+                {
+                    float a = fromDeg + i * step;
+                    BlockMesh.SweepArc(mesh.Pick(), center, normal, zero, radius, collar, a - collarDeg,
+                        a + collarDeg, 1);
+                }
+            }
+        }
+
+        // Troca os eixos de um perfil (x <-> y), mantém o sentido anti-horário e desce para o topo ficar em y = 0
+        static Vector2[] TopAtZero(Vector2[] profile, float depth)
+        {
+            var result = new Vector2[profile.Length];
+            for (int i = 0; i < profile.Length; i++)
+            {
+                Vector2 p = profile[profile.Length - 1 - i];
+                result[i] = new Vector2(p.y, p.x - depth * 0.5f);
+            }
+
+            return result;
+        }
+
         // ---------- muros, colunas ----------
 
         // Muro de blocos aparelhados (fiadas desencontradas, blocos um pouco fora do prumo) sobre uma base mais larga,
@@ -347,6 +413,23 @@ namespace Icaro.EditorTools
             BlockMesh.ChamferBox(mesh, center, new Vector3(footprint.x, footprint.y, height),
                 rotation * Quaternion.Euler(-90f, 0f, 0f), chamfer);
 
+        // Pedra irregular: dois ou três blocos chanfrados tortos, um entrando no outro
+        public static void IrregularRock(RuinMesh mesh, Vector3 center, float size, System.Random random)
+        {
+            float R(float min, float max) => min + (float)random.NextDouble() * (max - min);
+            int parts = 2 + random.Next(2);
+            for (int k = 0; k < parts; k++)
+            {
+                float scale = k == 0 ? 1f : R(0.45f, 0.8f);
+                var extent = new Vector3(R(0.7f, 1.2f), R(0.5f, 0.95f), R(0.7f, 1.2f)) * (size * scale);
+                Vector3 offset = k == 0 ? Vector3.zero
+                    : new Vector3(R(-0.4f, 0.4f), R(0f, 0.35f), R(-0.4f, 0.4f)) * size;
+                BlockMesh.ChamferBox(mesh.Pick(), center + offset, extent,
+                    Quaternion.Euler(R(-25f, 25f), R(0f, 360f), R(-25f, 25f)),
+                    Mathf.Min(extent.x, Mathf.Min(extent.y, extent.z)) * 0.22f);
+            }
+        }
+
         // ---------- trepadeiras ----------
 
         // Trepadeira pendurada: carta vertical na frente da face 'facing', do ponto 'top' (no topo da face) para baixo
@@ -359,6 +442,38 @@ namespace Icaro.EditorTools
             if (flat.sqrMagnitude < 0.5f)
                 return;
             Vines.Add(VineMaterial, top - Vector3.up * size.y, flat, size, random.NextDouble() < 0.5);
+        }
+
+        // Trepadeiras penduradas da beira de cima de um bloco de rocha (Pillar: 'center', 'footprint', 'height',
+        // 'rotation'), nas faces viradas para 'view' (de onde o jogador olha), espalhadas pela largura da face e com
+        // comprimentos variados (até ~90% da altura do bloco). 'density' multiplica a quantidade.
+        public static void VinesOnBlock(Vector3 center, Vector2 footprint, float height, Quaternion rotation,
+            Vector3 view, System.Random random, float density = 1f)
+        {
+            if (Vines == null)
+                return;
+            Vector3 right = rotation * Vector3.right, forward = rotation * Vector3.forward;
+            (Vector3 normal, float half, float span)[] faces =
+            {
+                (right, footprint.x * 0.5f, footprint.y), (-right, footprint.x * 0.5f, footprint.y),
+                (forward, footprint.y * 0.5f, footprint.x), (-forward, footprint.y * 0.5f, footprint.x),
+            };
+            view = Vector3.ProjectOnPlane(view, Vector3.up).normalized;
+            foreach ((Vector3 normal, float half, float span) in faces)
+            {
+                Vector3 n = Vector3.ProjectOnPlane(normal, Vector3.up).normalized;
+                if (Vector3.Dot(n, view) < 0.15f)
+                    continue;
+                Vector3 along = Vector3.Cross(Vector3.up, n);
+                int count = Mathf.Max(1, Mathf.RoundToInt(span / 2.2f * density));
+                for (int i = 0; i < count; i++)
+                {
+                    float s = ((i + R(random, 0.2f, 0.8f)) / count - 0.5f) * span * 0.85f;
+                    float scale = Mathf.Clamp(height / VineSize.y * R(random, 0.35f, 0.9f), 0.6f, 4f);
+                    HangVine(center + normal * (half + 0.05f) + along * s + Vector3.up * (height * 0.5f - 0.15f), n,
+                        random, scale);
+                }
+            }
         }
     }
 }
