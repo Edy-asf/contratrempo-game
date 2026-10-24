@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69592bb5dd61506448c305576d9eb2fd, type: 3}
+  m_Name: Chefe_Tribal
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.TribalDefinition
+  Prefab: {fileID: 2260243058437102247, guid: 3f365aafcc54fac4f88bfaaeb020741b, type: 3}
+  DisplayName: "Guardi\xE3o Tiki"
+  MinArena: 1
+  MaxAlive: 0
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 8000
+  Damage: 24
+  AttackCooldown: 1
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0
+  CronitaValue: 3
+  MoveSpeed: 4
+  PreferredDistance: 15
+  AttackGap: 1.5
+  PhaseTwoAt: 0.55
+  PhaseThreeAt: 0
+  PhaseGapFactor: 0.75
+  AttackColor: {r: 0.3, g: 0.95, b: 1, a: 0.9}
+  Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  HoverHeight: 1.2
+  Beams: {x: 2, y: 3}
+  BeamLength: 30
+  BeamLowHeight: 0.5
+  BeamHighHeight: 1.5
+  BeamSpeed: 45
+  BeamDuration: 7
+  BeamDamage: 22
+  BeamWarning: 1
+  SpiralArms: {x: 4, y: 5}
+  SpiralShotsPerSecond: 10
+  SpiralTurnSpeed: 80
+  SpiralDuration: 4.5
+  SpiralBulletSpeed: 9
+  SpiralDamage: 9
+  BlinkWarning: 0.8
+  BlinkRange: 16
+  BlinkRingBullets: 20
+  BlinkRingSpeed: 10
+  BlinkRingDamage: 11

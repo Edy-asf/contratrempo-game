@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27bc64e9516ce154b993bb8dcb65d06d, type: 3}
+  m_Name: ItemCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ItemCatalog
+  Items:
+  - {fileID: 11400000, guid: 10d3c2d748cfd904d9dc1c1338b82bc5, type: 2}
+  - {fileID: 11400000, guid: 43b8251c548f0e947a2d4787f68a7593, type: 2}
+  - {fileID: 11400000, guid: 4931355aca814794b823e670670f15e7, type: 2}
+  - {fileID: 11400000, guid: 6c302ce2c9b50f948926dde46c2567a5, type: 2}
+  - {fileID: 11400000, guid: 501af367a928b7a4cbc08778e8cf5e5f, type: 2}
+  - {fileID: 11400000, guid: 27d515b0d3036a44b8caa328a53aeb83, type: 2}
+  - {fileID: 11400000, guid: f0d6f2f44bc7fc7478a606830691e3c3, type: 2}
+  - {fileID: 11400000, guid: dc8a769bdcb16b9449c678acd752a4a6, type: 2}
+  - {fileID: 11400000, guid: c84858759b79a1445977d8d093058ff8, type: 2}
+  - {fileID: 11400000, guid: 41e5bb186c8cc9341a2b2b0d4abe23dc, type: 2}
+  - {fileID: 11400000, guid: 8e39bfb31f8ec944789983c1bb96761a, type: 2}
+  - {fileID: 11400000, guid: 4c12f894c2344cd4680d3840782635ad, type: 2}
+  - {fileID: 11400000, guid: 4327090f5dd0d9845bfc7e6468ba1545, type: 2}
+  - {fileID: 11400000, guid: f397f5d747577c44bbcddf7b5b8f52a5, type: 2}
+  - {fileID: 11400000, guid: 80b4fa6656f02a5429f4789a906644f5, type: 2}
+  - {fileID: 11400000, guid: 6750f1bf768352d4eab7c18b92fff447, type: 2}
+  - {fileID: 11400000, guid: 80c1b977db14c9a4a9cefbd41fd2f586, type: 2}
+  - {fileID: 11400000, guid: 595df05a529869f4784b635c719ea469, type: 2}
+  - {fileID: 11400000, guid: b4f8cb60a5a240f4babb6da8a3bd482d, type: 2}
+  - {fileID: 11400000, guid: b7ce2b7e9b8719f4f9d9ce780601ac2c, type: 2}
+  - {fileID: 11400000, guid: f8e59a69ee245174b9c8e63cb09fa8f9, type: 2}
+  - {fileID: 11400000, guid: 3d766ca4bd58e4447ae8cd72d20869c0, type: 2}
+  - {fileID: 11400000, guid: df9d87c186acdb74cac5d8de02a6b5c2, type: 2}
+  - {fileID: 11400000, guid: 91262db17573eb14390fc07c17c34384, type: 2}
+  - {fileID: 11400000, guid: cc39248490dd332489d78509d69559ce, type: 2}
+  - {fileID: 11400000, guid: 6c6db50e9af4cf548950ddcf4f1c1bf4, type: 2}
+  - {fileID: 11400000, guid: ff3565cc8be4fb94b890ce3e37ba7785, type: 2}
+  - {fileID: 11400000, guid: 30acab21fe9c36042877e85db07cf034, type: 2}
+  - {fileID: 11400000, guid: 84bc9ef8af44ee441bc8aef3516e9256, type: 2}
+  - {fileID: 11400000, guid: 88e877fc570a2a44f8ccebb8ed277746, type: 2}
+  CommonWeight: 70
+  UncommonWeight: 25
+  RareWeight: 5
+  CommonColor: {r: 0.92, g: 0.92, b: 0.92, a: 1}
+  UncommonColor: {r: 0.35, g: 0.9, b: 0.35, a: 1}
+  RareColor: {r: 0.95, g: 0.25, b: 0.22, a: 1}
+  Choices: 4
+  Picks: 2
+  BossRareMultiplier: 2
+  EffectMaterial: {fileID: 2100000, guid: 23bfbf50dc1c2e84d81a4652b77c1a43, type: 2}
+  LightningJumpRange: 15
+  ShieldRechargeDelay: 3
+  ShieldRechargeTime: 1
+  EchoDelay: 0.08
+  MissileSpeed: 28
+  MissileTurnRate: 540
+  DashHitRadius: 1.6
+  DashBarrierDuration: 3
+  MaxTimeSlow: 0.75
+  HeartDamageCap: 2.5
+  SlowDuration: 2
+  MaxSlowAmount: 0.7
+  BossSlowStrength: 0.4
+  SlowColor: {r: 0.75, g: 0.45, b: 1, a: 1}
+  PierceDamage: 0.6
+  BurnDuration: 3
+  MaxBurnStacks: 3
+  BurnTickInterval: 0.5
+  BurnColor: {r: 1, g: 0.45, b: 0.1, a: 1}
+  AdrenalineBonus: 0.15
+  AdrenalineCooldown: 10
+  CloseRangeDistance: 6
+  MinReloadTimeFactor: 0.25

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a4584c4b29545c4faa51d1138a0a12f, type: 3}
+  m_Name: Item_LaminaDeFase
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ItemDefinition
+  DisplayName: "L\xE2mina de Fase"
+  Description: "O dash corta quem atravessa: 120% do dano do tiro."
+  StackRule: "+60% de dano por pilha."
+  Rarity: 0
+  Icon: {fileID: 0}
+  IconLetter: F
+  Effects:
+  - Stat: 20
+    FirstStack: 1.2
+    PerExtraStack: 0.6
+  Consumable: 0
+  Tags: 17
+  Flavor:

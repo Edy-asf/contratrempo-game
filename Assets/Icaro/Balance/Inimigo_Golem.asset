@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a519e271c468e874c8212ce7b96b6249, type: 3}
+  m_Name: Inimigo_Golem
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.GolemDefinition
+  Prefab: {fileID: 5061523519387242703, guid: 9d119695301fe5c4ab2f15dfab04964a, type: 3}
+  DisplayName: 
+  MinArena: 7
+  MaxAlive: 3
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 800
+  Damage: 45
+  AttackCooldown: 5
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 1
+  FragmentDropChance: 0.25
+  CronitaValue: 9
+  LaserRange: 45
+  AimDuration: 2
+  LockDuration: 0.4
+  BeamRadius: 0.45
+  ExplosionRadius: 3
+  ExplosionDamage: 15
+  SlamTriggerRange: 5
+  SlamRadius: 6.5
+  SlamDamage: 30
+  SlamWarning: 0.9
+  SlamCooldown: 3
+  PreferredDistance: 18

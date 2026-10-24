@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1f00b98632e8294c99e8c6eb7ca4664, type: 3}
+  m_Name: MusicSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.MusicSettings
+  Tracks:
+  - Biome: 
+    Clip: {fileID: 0}
+    Bpm: 128
+    Bars: 16
+  Volume: 0.45
+  PitchAtMax: 1.35
+  ClockAtStart: 0.35
+  HatsFade: {x: 1.2, y: 1.8}
+  AcidFade: {x: 1.7, y: 2.6}
+  BreaksFade: {x: 2.5, y: 3.4}
+  LeadFade: {x: 3.4, y: 4.4}
+  OutOfCombatLayers: 0.5
+  CrossfadeTime: 3
+  SampleRate: 44100

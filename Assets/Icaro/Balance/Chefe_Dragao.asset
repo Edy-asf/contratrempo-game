@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfd0583fd428b0b409b2346a4cc51ee3, type: 3}
+  m_Name: Chefe_Dragao
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.DragaoDefinition
+  Prefab: {fileID: 8396300043454703158, guid: b156b92ce79b153409ccc7da12b20859, type: 3}
+  DisplayName: "Drag\xE3o de Magma"
+  MinArena: 1
+  MaxAlive: 0
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 10000
+  Damage: 28
+  AttackCooldown: 1
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0
+  CronitaValue: 3
+  MoveSpeed: 3.5
+  PreferredDistance: 18
+  AttackGap: 1.4
+  PhaseTwoAt: 0.6
+  PhaseThreeAt: 0.25
+  PhaseGapFactor: 0.75
+  AttackColor: {r: 1, g: 0.45, b: 0.1, a: 0.95}
+  Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  AccelerateOnPhaseTwo: 1
+  BreathDuration: 2.6
+  BreathShotsPerSecond: 22
+  BreathArc: 100
+  BreathSpeed: 15
+  BreathDamage: 8
+  Meteors: {x: 9, y: 13, z: 16}
+  MeteorWarning: 1.2
+  MeteorRadius: 3.5
+  MeteorDamage: 30
+  MeteorInterval: 0.18
+  Stomps: {x: 3, y: 4, z: 5}
+  StompInterval: 0.6
+  ShockwaveSpeed: 15
+  ShockwaveDamage: 22
+  FlowerRings: {x: 4, y: 6, z: 7}
+  FlowerBullets: 28
+  FlowerSpeed: 9
+  FlowerDamage: 10
+  FlowerInterval: 0.4

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a4584c4b29545c4faa51d1138a0a12f, type: 3}
+  m_Name: Item_CapacitorDeImpulso
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ItemDefinition
+  DisplayName: Capacitor de Impulso
+  Description: "O dash recarrega 15% mais r\xE1pido."
+  StackRule: "+15% de velocidade de recarga por pilha."
+  Rarity: 0
+  Icon: {fileID: 0}
+  IconLetter: K
+  Effects:
+  - Stat: 18
+    FirstStack: 0.15
+    PerExtraStack: 0.15
+  Consumable: 0
+  Tags: 16
+  Flavor:

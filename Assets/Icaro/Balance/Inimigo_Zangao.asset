@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf6ab97bfde6fb441b03c31289516d46, type: 3}
+  m_Name: Inimigo_Zangao
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ZangaoDefinition
+  Prefab: {fileID: 555392398416865075, guid: 4fbc4869c4ca8464facfcf3fd02212c5, type: 3}
+  DisplayName: 
+  MinArena: 2
+  MaxAlive: 14
+  RequiresHighSpawn: 0
+  GroupMin: 3
+  GroupMax: 5
+  Pooled: 1
+  MaxHealth: 52
+  Damage: 4
+  AttackCooldown: 2.5
+  ProjectileSpeed: 45
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0.015
+  CronitaValue: 1
+  FlySpeed: 8
+  Acceleration: 14
+  HeightMin: 3
+  HeightMax: 6
+  OrbitMin: 27
+  OrbitMax: 33
+  ZigzagIntervalMin: 0.6
+  ZigzagIntervalMax: 1.4
+  ZigzagAngle: 55
+  NoiseStrength: 1.5
+  AvoidDistance: 3
+  SeparationRadius: 2.5
+  AttackRange: 40
+  ShotIntervalMin: 2
+  ShotIntervalMax: 3
+  MuzzleWarning: 0.3
+  MaxShooters: 4
+  ProjectileLifetime: 2.5

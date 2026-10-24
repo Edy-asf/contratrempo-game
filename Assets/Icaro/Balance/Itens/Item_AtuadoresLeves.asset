@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a4584c4b29545c4faa51d1138a0a12f, type: 3}
+  m_Name: Item_AtuadoresLeves
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ItemDefinition
+  DisplayName: Atuadores Leves
+  Description: "+9% de velocidade de movimento."
+  StackRule: "+9% por pilha."
+  Rarity: 0
+  Icon: {fileID: 0}
+  IconLetter: A
+  Effects:
+  - Stat: 3
+    FirstStack: 0.09
+    PerExtraStack: 0.09
+  Consumable: 0
+  Tags: 16
+  Flavor:

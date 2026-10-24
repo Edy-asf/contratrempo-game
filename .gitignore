@@ -1,0 +1,64 @@
+# Pastas geradas pelo Unity (ancoradas na raiz do projeto)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# Ferramentas da Asset Store e plugin do Rider, regenerados automaticamente
+/[Aa]ssets/AssetStoreTools*
+/[Aa]ssets/Plugins/Editor/JetBrains*
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+.gradle/
+.consulo/
+ExportedObj/
+
+# Projetos e soluções gerados pelo Unity / arquivos de IDE
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# .meta de símbolos de debug
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Relatórios de crash e lixo do sistema
+sysinfo.txt
+mono_crash.*
+crashlytics-build.properties
+.DS_Store
+Thumbs.db
+
+# Builds e pacotes exportados
+*.apk
+*.aab
+*.app
+*.unitypackage
+
+# Addressables gerados
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Fontes de arte do Blender (grandes; ficam fora do git)
+/ArteFonte/

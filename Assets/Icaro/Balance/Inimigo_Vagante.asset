@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 846629c76143bf041b2c827f82b0cb90, type: 3}
+  m_Name: Inimigo_Vagante
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.VaganteDefinition
+  Prefab: {fileID: 8828518364046050943, guid: 60cb9bba7f01be846bcab69c4b56406f, type: 3}
+  DisplayName: 
+  MinArena: 4
+  MaxAlive: 3
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 180
+  Damage: 6
+  AttackCooldown: 2.5
+  ProjectileSpeed: 24
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  FragmentDropChance: 0.06
+  CronitaValue: 4
+  MoveSpeed: 3.5
+  WanderMinDistance: 8
+  WanderMaxDistance: 15
+  PauseMin: 1
+  PauseMax: 2
+  AttackRange: 35
+  MuzzleWarning: 0.3
+  ShotsPerBurst: 3
+  TimeBetweenShots: 0.15
+  SpreadMin: 3
+  SpreadMax: 5
+  BurstIntervalMin: 2
+  BurstIntervalMax: 3

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b390b1c3008d1a4595b97a83e163f6f, type: 3}
+  m_Name: ShopSettings
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ShopSettings
+  CrystalPrefab: {fileID: 8200010826125576396, guid: 2e37212e34a1f1f49bdc211110528721, type: 3}
+  TerminalPrefab: {fileID: 8806616765979644266, guid: 9437c294735af094fbbabdf2eda0da6d, type: 3}
+  Weapons: {fileID: 11400000, guid: f6274643a929589488d0edfdebe77ca0, type: 2}
+  EliteMultiplier: 3
+  BossCronitas: 80
+  BonusPerRoom: 0.05
+  MaxCrystalsPerDrop: 5
+  MagnetRadius: 7
+  MagnetSpeed: 22
+  CrystalLifetime: 45
+  CommonItemPrice: 30
+  UncommonItemPrice: 70
+  RareItemPrice: 160
+  HealPrice: 25
+  HealFraction: 0.5
+  RerollPrice: 20
+  DamageUpgradePrice: 45
+  DamageUpgradePriceStep: 25
+  DamageUpgradeAmount: 0.1
+  FireRateUpgradePrice: 45
+  FireRateUpgradePriceStep: 25
+  FireRateUpgradeAmount: 0.08
+  Inflation: 0.15
+  ItemOffers: 3
+  WeaponOffers: 2
+  InteractRadius: 3.5
+  OffsetFromMetronome: 5

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a4584c4b29545c4faa51d1138a0a12f, type: 3}
+  m_Name: Item_CoracaoAeonida
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.ItemDefinition
+  DisplayName: "Cora\xE7\xE3o Ae\xF4nida"
+  Description: "+1% de dano por 0,1x de multiplicador de tempo (m\xE1x. +250%)."
+  StackRule: "+1% por 0,1x por pilha (o limite de +250% n\xE3o muda)."
+  Rarity: 2
+  Icon: {fileID: 0}
+  IconLetter: H
+  Effects:
+  - Stat: 13
+    FirstStack: 0.01
+    PerExtraStack: 0.01
+  Consumable: 0
+  Tags: 257
+  Flavor: "O tempo n\xE3o perdoa ningu\xE9m. Mas com voc\xEA, ele abre uma exce\xE7\xE3o."

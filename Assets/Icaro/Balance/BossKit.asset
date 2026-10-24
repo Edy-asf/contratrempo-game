@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be7f012576a33eb49980a81e0b6c2e76, type: 3}
+  m_Name: BossKit
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.BossKit
+  ShockwavePrefab: {fileID: 8545154234587402960, guid: 1573828d4c5517f47b89c163b5455603, type: 3}
+  ProjectilePrefab: {fileID: 9083895712980757436, guid: 07c0168f990f0b940aef0bf738fc0d8b, type: 3}
+  TelegraphPrefab: {fileID: 7408763432513130350, guid: 1ced05015b8e47a42ae6bdfab946a2c1, type: 3}
+  PuddlePrefab: {fileID: 3474494138497607386, guid: 41d39d110bd0a1743b138ab3f951fdcb, type: 3}
+  BeamPrefab: {fileID: 7103496403541435211, guid: ef0f2a0b8a3493747b89e05c13929adf, type: 3}
+  MaxSpeedMultiplier: 2.5
