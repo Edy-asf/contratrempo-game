@@ -37,3 +37,10 @@ altura). No Unity, as cores dos materiais são ajustadas e a animação é proce
 
 Arte fornecida pelo usuário (feita para o projeto): sprite da Agulha em primeira pessoa com o braço cibernético
 (`Assets/Icaro/Resources/Armas/Agulha/parada.png`).
+
+Menu (trazido da branch do Luciano):
+- Fonte BLANGKON (`Assets/Icaro/Resources/-BLANGKON-.otf`, asset `FonteRE`), de Kotak Kuning Studio. **Licença
+  pendente:** a versão grátis é só para uso pessoal; o uso comercial exige comprar a licença do autor. Não é CC0 nem
+  CC-BY: trocar por uma fonte livre ou comprar a licença antes de publicar o jogo.
+- Vídeo de fundo do título (`Assets/StreamingAssets/bg_title.webm`) e imagem de fundo (`Assets/Icaro/Resources/bg_titleimg.png`):
+  origem e licença a confirmar com o Luciano.

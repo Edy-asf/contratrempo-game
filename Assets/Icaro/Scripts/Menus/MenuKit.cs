@@ -8,9 +8,9 @@ using UnityEngine.UI;
 
 namespace Icaro
 {
-    // Peças dos menus (título, pausa, morte, configurações): botões e linhas de configuração (liga/desliga, barra,
-    // lista de opções, tecla), com clique e arrasto do mouse testados à mão (sem EventSystem, como as cartas de itens
-    // e a loja). Cada tela tem um MenuKit com os controles dela; o GameMenus chama Tick a cada frame.
+    // Peças dos menus (título, pausa, morte, configurações): botões (comuns e em faixa), linhas de configuração
+    // (liga/desliga, barra, lista de opções, tecla), com clique e arrasto do mouse testados à mão (sem EventSystem,
+    // como as cartas de itens e a loja; o projeto usa só o Input System novo). Cada tela tem um MenuKit com os controles dela; o GameMenus chama Tick a cada frame.
     public class MenuKit
     {
         public static readonly Color Accent = new Color(0.45f, 0.9f, 1f);
@@ -98,6 +98,35 @@ namespace Icaro
             {
                 Background.color = hover ? ButtonHover : ButtonColor;
                 Label.color = hover ? Color.white : Text;
+                if (click)
+                    OnClick?.Invoke();
+            }
+        }
+
+        // Botão em faixa dos menus principais (título, pausa, morte, créditos): encostado na borda esquerda da tela, com
+        // o texto recuado; ao passar o mouse, a faixa alarga para a direita, o fundo fica mais opaco e o texto clareia,
+        // com transição suave em tempo sem escala (os menus pausam o jogo)
+        public class StripButton : Control
+        {
+            public static readonly Color Normal = new Color(0.08f, 0.09f, 0.12f, 0.72f);
+            public static readonly Color Hovered = new Color(0.09f, 0.12f, 0.15f, 0.96f);
+            public static readonly Color TextNormal = new Color(0.82f, 0.85f, 0.88f, 1f);
+            public const float Width = 460f;
+            public const float HoverWidth = 640f;
+            public const float Height = 58f;
+
+            public Image Background;
+            public TextMeshProUGUI Label;
+            public Action OnClick;
+
+            public override void Tick(MenuKit kit, bool hover, bool click, bool held, Vector2 mouse)
+            {
+                float t = 1f - Mathf.Exp(-16f * Time.unscaledDeltaTime);
+                Vector2 size = Rect.sizeDelta;
+                size.x = Mathf.Lerp(size.x, hover ? HoverWidth : Width, t);
+                Rect.sizeDelta = size;
+                Background.color = Color.Lerp(Background.color, hover ? Hovered : Normal, t);
+                Label.color = Color.Lerp(Label.color, hover ? Color.white : TextNormal, t);
                 if (click)
                     OnClick?.Invoke();
             }
@@ -376,6 +405,26 @@ namespace Icaro
             text.fontStyle = FontStyles.Bold;
             text.text = label;
             var button = new ButtonControl
+            {
+                Rect = background.rectTransform, Background = background, Label = text, OnClick = onClick,
+            };
+            Add(button);
+            return button;
+        }
+
+        // Botão em faixa com o canto de cima à esquerda em (0, y) do 'parent' (que tem a borda esquerda na da tela)
+        public StripButton Strip(Transform parent, string label, float y, Action onClick)
+        {
+            Image background = ItemUI.Panel("Botao_" + label, parent, new Vector2(0f, 1f), new Vector2(0f, y),
+                new Vector2(StripButton.Width, StripButton.Height), StripButton.Normal);
+            background.rectTransform.pivot = new Vector2(0f, 1f);
+            TextMeshProUGUI text = ItemUI.Text("Texto", background.transform, new Vector2(0f, 0.5f), new Vector2(96f, 0f),
+                new Vector2(StripButton.HoverWidth - 110f, StripButton.Height), 32f, TextAlignmentOptions.MidlineLeft,
+                StripButton.TextNormal);
+            text.rectTransform.pivot = new Vector2(0f, 0.5f);
+            text.fontStyle = FontStyles.Bold;
+            text.text = label;
+            var button = new StripButton
             {
                 Rect = background.rectTransform, Background = background, Label = text, OnClick = onClick,
             };

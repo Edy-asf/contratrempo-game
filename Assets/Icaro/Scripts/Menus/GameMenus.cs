@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using Unity.FPS.Game;
 using Unity.FPS.Gameplay;
@@ -7,6 +8,8 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityEngine.Video;
 
 namespace Icaro
 {
@@ -20,6 +23,11 @@ namespace Icaro
     // Aplica as configurações que dependem da cena (sensibilidade, inverter Y, campo de visão, brilho) e mostra o
     // contador de FPS. Desliga o InGameMenuManager e o GameFlowManager do Microgame (este último antes do Start dele,
     // para não zerar o volume nem carregar a cena de derrota). O PlayerBalance cria este componente.
+    // Visual (feito pelo Luciano): títulos alinhados à esquerda no alto da tela, na fonte FonteRE (Resources) com
+    // contorno branco e sombra; botões em faixa encostados na borda esquerda, que alargam ao passar o mouse
+    // (MenuKit.Strip); no título, "CONTRATEMPO" sobre um vídeo em loop (StreamingAssets/bg_title.webm), com a imagem
+    // Resources/bg_titleimg enquanto o vídeo carrega ou se ele faltar. Com uma tela aberta, o HUD do jogo some (os
+    // outros Canvas ligados são desligados e, ao fechar, só esses voltam).
     [DefaultExecutionOrder(-200)]
     public class GameMenus : MonoBehaviour
     {
@@ -39,6 +47,9 @@ namespace Icaro
         }
 
         const float k_DeathScreenDelay = 1.6f;
+        const string k_TitleVideo = "bg_title.webm";        // em StreamingAssets
+        const string k_TitleImage = "bg_titleimg";          // em Resources
+        const string k_TitleFont = "FonteRE";               // em Resources
 
         Canvas m_Canvas;
         RectTransform m_Layer;
@@ -51,6 +62,9 @@ namespace Icaro
         ColorAdjustments m_Exposure;
         bool m_Dead;
         float m_DeathTime;
+        RenderTexture m_VideoTexture;
+        TMP_FontAsset m_TitleFont;
+        readonly List<Canvas> m_HiddenCanvases = new List<Canvas>();
 
         public bool IsOpen => m_Page != Page.None;
 
@@ -75,7 +89,8 @@ namespace Icaro
                 Destroy(menu);
             }
 
-            m_Canvas = ItemUI.CreateCanvas(transform, "MenusIcaro", 300);
+            m_Canvas = ItemUI.CreateCanvas(transform, "MenusIcaro", 999);
+            m_TitleFont = Resources.Load<TMP_FontAsset>(k_TitleFont);
             m_Layer = (RectTransform)m_Canvas.transform;
             m_Fps = ItemUI.Text("FPS", m_Layer, new Vector2(0f, 1f), new Vector2(16f, -8f), new Vector2(200f, 30f), 20f,
                 TextAlignmentOptions.TopLeft, new Color(0.7f, 1f, 0.7f));
@@ -91,6 +106,11 @@ namespace Icaro
         {
             GameSettings.Changed -= ApplySceneSettings;
             EventManager.RemoveListener<PlayerDeathEvent>(OnPlayerDeath);
+            if (m_VideoTexture)
+            {
+                m_VideoTexture.Release();
+                Destroy(m_VideoTexture);
+            }
             if (Instance == this)
                 Instance = null;
         }
@@ -224,6 +244,7 @@ namespace Icaro
         {
             ClearPage();
             m_Page = page;
+            HideHud();
             switch (page)
             {
                 case Page.Title: BuildTitle(); break;
@@ -277,10 +298,33 @@ namespace Icaro
         {
             ClearPage();
             m_Page = Page.None;
+            RestoreHud();
             AudioListener.pause = false;
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+
+        // Desliga os outros Canvas ligados (HUD, visor, barras) e guarda quais foram, para religar só esses
+        void HideHud()
+        {
+            foreach (Canvas canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            {
+                if (!canvas.enabled || canvas == m_Canvas || canvas.transform.IsChildOf(transform))
+                    continue;
+                canvas.enabled = false;
+                m_HiddenCanvases.Add(canvas);
+            }
+        }
+
+        void RestoreHud()
+        {
+            foreach (Canvas canvas in m_HiddenCanvases)
+            {
+                if (canvas)
+                    canvas.enabled = true;
+            }
+            m_HiddenCanvases.Clear();
         }
 
         void OnPlayerDeath(PlayerDeathEvent evt)
@@ -289,33 +333,100 @@ namespace Icaro
             m_DeathTime = Time.unscaledTime + k_DeathScreenDelay;
         }
 
-        // Fundo escuro de tela cheia e um título
-        RectTransform Backdrop(string title, string subtitle, float alpha, Color titleColor)
+        // Fundo de tela cheia (escuro ou, com 'video', o vídeo em loop) e o título no alto à esquerda
+        RectTransform Backdrop(string title, string subtitle, float alpha, Color titleColor, bool video = false)
         {
-            ItemUI.Fill("Fundo", m_Layer, 0f, new Color(0.02f, 0.03f, 0.05f, alpha));
+            if (video)
+                VideoBackground(alpha);
+            else
+                ItemUI.Fill("Fundo", m_Layer, 0f, new Color(0.02f, 0.03f, 0.05f, alpha));
+
             RectTransform panel = ItemUI.Rect("Painel", m_Layer, new Vector2(0.5f, 0.5f), Vector2.zero,
-                new Vector2(1200f, 1000f));
-            TextMeshProUGUI head = ItemUI.Text("Titulo", panel, new Vector2(0.5f, 1f), new Vector2(0f, -60f),
-                new Vector2(1200f, 130f), 96f, TextAlignmentOptions.Center, titleColor);
+                new Vector2(1920f, 1080f));
+            TextMeshProUGUI head = ItemUI.Text("Titulo", panel, new Vector2(0f, 1f), new Vector2(96f, -70f),
+                new Vector2(1200f, 200f), 120f, TextAlignmentOptions.TopLeft, titleColor);
+            head.rectTransform.pivot = new Vector2(0f, 1f);
             head.fontStyle = FontStyles.Bold;
             head.text = title;
+            if (m_TitleFont)
+                head.font = m_TitleFont;
+            // Contorno branco e sombra deslocada (instância própria do material, destruída com o texto)
+            Material material = head.fontMaterial;
+            material.EnableKeyword(ShaderUtilities.Keyword_Outline);
+            material.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.25f);
+            material.SetColor(ShaderUtilities.ID_OutlineColor, Color.white);
+            material.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+            material.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, 0.6f);
+            material.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.6f);
+            material.SetFloat(ShaderUtilities.ID_UnderlayDilate, 0f);
+            material.SetColor(ShaderUtilities.ID_UnderlayColor, new Color(0.05f, 0.05f, 0.05f, 0.9f));
+
             if (!string.IsNullOrEmpty(subtitle))
-                ItemUI.Text("Subtitulo", panel, new Vector2(0.5f, 1f), new Vector2(0f, -190f), new Vector2(1200f, 50f),
-                    30f, TextAlignmentOptions.Center, MenuKit.Muted).text = subtitle;
+            {
+                TextMeshProUGUI sub = ItemUI.Text("Subtitulo", panel, new Vector2(0f, 1f), new Vector2(100f, -185f),
+                    new Vector2(1200f, 50f), 30f, TextAlignmentOptions.TopLeft, MenuKit.Muted);
+                sub.rectTransform.pivot = new Vector2(0f, 1f);
+                sub.text = subtitle;
+            }
+
             return panel;
         }
 
-        // Coluna de botões centralizada a partir de 'top'
+        // Vídeo de fundo em loop, lido de StreamingAssets (sem som, em tempo sem escala: o menu pausa o jogo). Até o
+        // vídeo ficar pronto (ou se o arquivo faltar ou falhar), aparece a imagem de fundo do título.
+        void VideoBackground(float alpha)
+        {
+            var go = new GameObject("FundoVideo", typeof(RectTransform));
+            go.transform.SetParent(m_Layer, false);
+            go.transform.SetAsFirstSibling();
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.sizeDelta = Vector2.zero;
+
+            var image = go.AddComponent<RawImage>();
+            image.color = new Color(1f, 1f, 1f, alpha);
+            image.raycastTarget = false;
+            Texture2D still = Resources.Load<Texture2D>(k_TitleImage);
+            image.texture = still;
+            if (!still)
+                image.color = new Color(0.02f, 0.03f, 0.05f, alpha);
+
+            if (!m_VideoTexture)
+                m_VideoTexture = new RenderTexture(1920, 1080, 0) { name = "Menu_Video" };
+
+            var player = go.AddComponent<VideoPlayer>();
+            player.playOnAwake = false;
+            player.isLooping = true;
+            player.audioOutputMode = VideoAudioOutputMode.None;
+            player.timeUpdateMode = VideoTimeUpdateMode.UnscaledGameTime;
+            player.renderMode = VideoRenderMode.RenderTexture;
+            player.targetTexture = m_VideoTexture;
+            player.source = VideoSource.Url;
+            player.url = System.IO.Path.Combine(Application.streamingAssetsPath, k_TitleVideo);
+            player.prepareCompleted += source =>
+            {
+                if (image)
+                {
+                    image.texture = m_VideoTexture;
+                    image.color = new Color(1f, 1f, 1f, alpha);
+                }
+                source.Play();
+            };
+            player.errorReceived += (source, message) => Debug.LogWarning("[Ícaro] Vídeo do menu: " + message);
+            player.Prepare();
+        }
+
+        // Coluna de botões em faixa, encostados na borda esquerda, a partir de 'top'
         void Buttons(RectTransform panel, float top, params (string Label, System.Action Action)[] buttons)
         {
             for (int i = 0; i < buttons.Length; i++)
-                m_Kit.Button(panel, buttons[i].Label, new Vector2(0f, top - i * 76f), new Vector2(420f, 62f),
-                    buttons[i].Action, new Vector2(0.5f, 1f));
+                m_Kit.Strip(panel, buttons[i].Label, top - i * 74f, buttons[i].Action);
         }
 
         void BuildTitle()
         {
-            RectTransform panel = Backdrop("ÍCARO", "A Via Aeônida", 0.88f, MenuKit.Accent);
+            RectTransform panel = Backdrop("CONTRATEMPO", null, 1f, new Color(0.05f, 0.15f, 0.55f), video: true);
             Buttons(panel, -320f,
                 ("Jogar", Resume),
                 ("Configurações", () => OpenSettings(Page.Title)),
