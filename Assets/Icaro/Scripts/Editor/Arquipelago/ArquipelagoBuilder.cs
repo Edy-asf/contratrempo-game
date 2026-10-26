@@ -148,7 +148,7 @@ namespace Icaro.EditorTools
             // Travessia da Enseada à Cratera, depois da ilhota das pedras: três ilhotas para o norte, com curvas leves
             new Island { Center = new Vector2(153, 182), RadiusX = 3.2f, RadiusZ = 3f, Height = 2.5f, Seed = 60 },
             new Island { Center = new Vector2(148, 192), RadiusX = 3f, RadiusZ = 3.2f, Height = 3f, Seed = 61 },
-            new Island { Center = new Vector2(154, 201), RadiusX = 3.4f, RadiusZ = 3f, Height = 2.2f, Seed = 62 },
+            new Island { Center = new Vector2(154, 199), RadiusX = 3.4f, RadiusZ = 2.8f, Height = 2.2f, Seed = 62 },
             // Travessia da Cratera ao Farol: três ilhotas para o norte até a praia sul do Farol
             new Island { Center = new Vector2(150, 249), RadiusX = 3f, RadiusZ = 3f, Height = 2.6f, Seed = 67 },
             new Island { Center = new Vector2(146, 260), RadiusX = 3.2f, RadiusZ = 3f, Height = 2.6f, Seed = 68 },
@@ -157,11 +157,12 @@ namespace Icaro.EditorTools
             new Island { Center = new Vector2(-999, -999), RadiusX = 1, RadiusZ = 1, Height = 4f, Seed = 70 },
             // (sobra da rota antiga: fora do mapa)
             new Island { Center = new Vector2(-999, -999), RadiusX = 1, RadiusZ = 1, Height = 2.6f, Seed = 66 },
-            // Ilha da Cratera (sala 11): anel com a borda alta (o terraço) em volta de uma lagoa funda (ShapeCrater)
+            // Ilha da Cratera (sala 11): anel com a borda alta (o terraço) em volta de uma lagoa funda; a forma da borda
+            // e da lagoa segue o contorno da ilha (ShapeCrater), o terraço daqui só dá a altura e o centro das escadas
             new Island
             {
-                Center = new Vector2(152, 224), RadiusX = 16, RadiusZ = 14, Height = 2.5f, Arena = 6, Seed = 80,
-                Terraces = new[] { new Terrace { Center = new Vector2(152, 224), RadiusX = 11.5f, RadiusZ = 10f, Height = 6f } },
+                Center = new Vector2(152, 225), RadiusX = 24, RadiusZ = 18, Height = 2.5f, Arena = 6, Seed = 80,
+                Terraces = new[] { new Terrace { Center = new Vector2(152, 225), RadiusX = 16f, RadiusZ = 12f, Height = 6f } },
             },
             // Estaleiro de Anéis (sala 13): pátio plano com uma rampa de lançamento mais alta a oeste
             new Island
@@ -246,7 +247,7 @@ namespace Icaro.EditorTools
                 EditorUtility.DisplayProgressBar("Arquipélago", "Cena", 0.3f);
                 VisualSettingsBuilder.Result visuals = VisualSettingsBuilder.Apply(BiomePalettes.Bosque);
                 Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-                Transform systems = ViaAeonidaBuilder.BuildSystems(scene, visuals);
+                Transform systems = SceneSystemsBuilder.BuildSystems(scene, visuals);
                 GridSceneKit.ApplyNight(theme, sky, systems);
 
                 var world = new GameObject("Mapa").transform;
@@ -413,9 +414,16 @@ namespace Icaro.EditorTools
             // Desloca o bioma para o lugar dele na cena (o nível do mar é guardado em coordenadas do mundo)
             world.position += offset;
             hazard.SeaLevel = offset.y;
+            // As partículas de brilho começam na primeira ilhota depois da praia, ao pé das escadarias da costa
+            Island firstIslet = k_Islands[k_CoastIslets];
+            var sporeStart = world.gameObject.AddComponent<SporeStartZone>();
+            sporeStart.Center = firstIslet.Center * k_Cell;
+            sporeStart.Radius = Mathf.Max(firstIslet.RadiusX, firstIslet.RadiusZ) * k_Cell + 1f;
 
             EditorUtility.DisplayProgressBar("Arquipélago", "NavMesh e spawns", 0.7f);
+            // Colisores no lugar novo (a máscara do mar livre usa a área deles)
             Physics.SyncTransforms();
+            BuildWaterMask(world);
             GridSceneKit.BakeNavMesh(surface, navMeshFolder, "Arena_1");
             GridSceneKit.BakeNavMesh(enseadaSurface, navMeshFolder, "Arena_2");
             GridSceneKit.BakeNavMesh(farolSurface, navMeshFolder, "Arena_3");
@@ -1499,7 +1507,7 @@ namespace Icaro.EditorTools
             crossing.CraterDoor = c1 + into * 1.5f;
             crossing.CraterForward = into;
 
-            (Vector3 x0, Vector3 x1) = EdgePoints(crater.Center + new Vector2(0f, crater.RadiusZ * 0.6f),
+            (Vector3 x0, Vector3 x1) = EdgePoints(CraterPoint(90f, 0.5f),
                 k_Islands[k_FarolRoute2[0]].Center);
             Vector3 onward = Vector3.ProjectOnPlane(x1 - x0, Vector3.up).normalized;
             crossing.CraterExit = x0 - onward * 1.5f;
@@ -1678,25 +1686,51 @@ namespace Icaro.EditorTools
         // ---------- Ilha da Cratera ----------
 
         // Ilha em anel: borda alta de 6 m em volta de uma lagoa funda (mar: só se cruza pela ponte ou dando a volta pela
-        // borda), terreno de 2,5 m por fora e escadarias para a borda nos quatro lados
-        const float k_CraterLagoon = 0.48f;
+        // borda), terreno de 2,5 m por fora e escadarias para a borda nos quatro lados. A lagoa e a beira da borda alta
+        // seguem o contorno ondulado da ilha (frações do raio dela em cada direção), então a borda alta (10 a 35 m de
+        // largura) e a faixa de fora (10 a 20 m) nunca afinam.
+        const float k_CraterLagoonX = 0.32f, k_CraterLagoonZ = 0.37f, k_CraterRim = 0.66f;
+
+        // Posição de uma célula na ilha da Cratera: 0 no centro, 1 na costa (em cada direção)
+        static float CraterRadial(Vector2 cell, out Vector2 q, out float limit)
+        {
+            Island crater = k_Islands[k_Crater];
+            Vector2 d = cell - crater.Center;
+            q = new Vector2(d.x / crater.RadiusX, d.y / crater.RadiusZ);
+            float angle = Mathf.Atan2(q.y, q.x);
+            limit = 1f + 0.12f * Mathf.Sin(3f * angle + crater.Seed) + 0.07f * Mathf.Sin(5f * angle + crater.Seed * 2f);
+            return q.magnitude / limit;
+        }
+
+        // Célula da Cratera a uma fração 'radial' do caminho do centro à costa, na direção 'angle' (graus)
+        static Vector2 CraterPoint(float angle, float radial)
+        {
+            Island crater = k_Islands[k_Crater];
+            float t = angle * Mathf.Deg2Rad;
+            var dir = new Vector2(Mathf.Cos(t) * crater.RadiusX, Mathf.Sin(t) * crater.RadiusZ);
+            float limit = 1f + 0.12f * Mathf.Sin(3f * t + crater.Seed) + 0.07f * Mathf.Sin(5f * t + crater.Seed * 2f);
+            return crater.Center + dir * (radial * limit);
+        }
 
         static void ShapeCrater()
         {
             Island crater = k_Islands[k_Crater];
+            float high = crater.Terraces[0].Height;
             for (int x = 0; x < k_Size; x++)
             for (int z = 0; z < k_Size; z++)
             {
                 if (s_Island[x, z] != k_Crater + 1)
                     continue;
-                float q = new Vector2((x + 0.5f - crater.Center.x) / crater.RadiusX,
-                    (z + 0.5f - crater.Center.y) / crater.RadiusZ).magnitude;
-                float a = Mathf.Atan2(z + 0.5f - crater.Center.y, x + 0.5f - crater.Center.x);
-                if (q < k_CraterLagoon + 0.05f * Mathf.Sin(3f * a + 1f))
+                float radial = CraterRadial(new Vector2(x + 0.5f, z + 0.5f), out Vector2 q, out float limit);
+                // Lagoa: elipse própria (frações do raio da ilha), ondulando com a costa e um pouco mais
+                float lagoon = new Vector2(q.x / k_CraterLagoonX, q.y / k_CraterLagoonZ).magnitude / limit;
+                if (lagoon < 1f + 0.06f * Mathf.Sin(3f * Mathf.Atan2(q.y, q.x) + 1f))
                 {
                     s_Island[x, z] = 0;
                     s_Height[x, z] = k_SeaBed;
                 }
+                else
+                    s_Height[x, z] = radial < k_CraterRim ? high : crater.Height;
             }
         }
 
@@ -1704,15 +1738,13 @@ namespace Icaro.EditorTools
         static void BuildCrater(RuinMesh mesh)
         {
             var random = new System.Random(808);
-            Island crater = k_Islands[k_Crater];
-            (Vector3 p0, Vector3 p1) = EdgePoints(crater.Center + new Vector2(-crater.RadiusX * 0.62f, 0f),
-                crater.Center + new Vector2(crater.RadiusX * 0.62f, 0f));
+            float midRim = (k_CraterLagoonX + k_CraterRim) * 0.5f;
+            (Vector3 p0, Vector3 p1) = EdgePoints(CraterPoint(180f, midRim), CraterPoint(0f, midRim));
             Bridge(mesh, p0, p1, 0f, 811);
             s_ConnectionPoints.AddRange(new[] { p0, p1 });
             foreach (float angle in new[] { 40f, 135f, 220f, 315f })
             {
-                float t = angle * Mathf.Deg2Rad;
-                var cell = crater.Center + new Vector2(Mathf.Cos(t) * crater.RadiusX, Mathf.Sin(t) * crater.RadiusZ) * 0.6f;
+                Vector2 cell = CraterPoint(angle, midRim);
                 int x = Mathf.FloorToInt(cell.x), z = Mathf.FloorToInt(cell.y);
                 if (!IsLand(x, z))
                     continue;
@@ -3129,11 +3161,11 @@ namespace Icaro.EditorTools
             (k_FarolIsland, 0, new Vector2Int(1, 0), 4f, Vector2.zero),
             (k_FarolIsland, 1, new Vector2Int(0, -1), 3.5f, Vector2.zero),
             (k_FarolIsland, 1, new Vector2Int(-1, 0), 3.5f, Vector2.zero),
-            // Borda da Cratera: descendo para fora nos quatro lados (o centro é a lagoa: começa na borda)
-            (k_Crater, 0, new Vector2Int(-1, 0), 4f, new Vector2(-9.5f, 0f)),
-            (k_Crater, 0, new Vector2Int(1, 0), 4f, new Vector2(9.5f, 0f)),
-            (k_Crater, 0, new Vector2Int(0, 1), 4f, new Vector2(0f, 8.5f)),
-            (k_Crater, 0, new Vector2Int(0, -1), 4f, new Vector2(0f, -8.5f)),
+            // Borda da Cratera: descendo para fora nos quatro lados (o centro é a lagoa: começa no meio da borda)
+            (k_Crater, 0, new Vector2Int(-1, 0), 4f, new Vector2(-13f, 0f)),
+            (k_Crater, 0, new Vector2Int(1, 0), 4f, new Vector2(10.5f, 0f)),
+            (k_Crater, 0, new Vector2Int(0, 1), 4f, new Vector2(0f, 8.8f)),
+            (k_Crater, 0, new Vector2Int(0, -1), 4f, new Vector2(0f, -9.8f)),
             // Rampa de lançamento do Estaleiro, descendo para o pátio
             (k_Shipyard, 0, new Vector2Int(1, 0), 4f, Vector2.zero),
         };
@@ -3956,6 +3988,98 @@ namespace Icaro.EditorTools
 
             GridSceneKit.CreateObject(k_Prefix + "_Placas_Musgo", "Placas_Musgo", patches, s_Materials.MossPatch, parent,
                 false, false, false);
+        }
+
+        // ---------- máscara do mar livre ----------
+
+        const float k_MaskCell = 2f;
+
+        // Marca, numa imagem de 2 m por pixel, onde há terra ou estrutura acima da água (todo triângulo de malha do bioma
+        // que sobe acima da linha d'água marca a área dele, com 1 pixel de folga); as partículas de brilho só nascem
+        // nos pixels livres. A área é a dos colisores (onde o jogador anda) com 100 m de folga.
+        static void BuildWaterMask(Transform world)
+        {
+            Vector3 root = world.position;
+            Bounds area = default;
+            bool any = false;
+            foreach (Collider collider in world.GetComponentsInChildren<Collider>(true))
+            {
+                if (collider.isTrigger)
+                    continue;
+                if (any)
+                    area.Encapsulate(collider.bounds);
+                else
+                {
+                    area = collider.bounds;
+                    any = true;
+                }
+            }
+
+            if (!any)
+                return;
+            area.Expand(new Vector3(200f, 0f, 200f));
+            float minX = area.min.x - root.x, minZ = area.min.z - root.z;
+            int width = Mathf.Min(4096, Mathf.CeilToInt(area.size.x / k_MaskCell));
+            int height = Mathf.Min(4096, Mathf.CeilToInt(area.size.z / k_MaskCell));
+            var blocked = new bool[width * height];
+            float waterTop = root.y + 0.15f;
+
+            foreach (MeshFilter filter in world.GetComponentsInChildren<MeshFilter>(true))
+            {
+                Mesh mesh = filter.sharedMesh;
+                if (!mesh || filter.GetComponent<ParticleSystemRenderer>())
+                    continue;
+                Matrix4x4 matrix = filter.transform.localToWorldMatrix;
+                Vector3[] vertices = mesh.vertices;
+                for (int i = 0; i < vertices.Length; i++)
+                    vertices[i] = matrix.MultiplyPoint3x4(vertices[i]);
+                int[] triangles = mesh.triangles;
+                for (int t = 0; t < triangles.Length; t += 3)
+                {
+                    Vector3 a = vertices[triangles[t]], b = vertices[triangles[t + 1]], c = vertices[triangles[t + 2]];
+                    if (Mathf.Max(a.y, Mathf.Max(b.y, c.y)) < waterTop)
+                        continue;
+                    int x0 = Mathf.FloorToInt((Mathf.Min(a.x, Mathf.Min(b.x, c.x)) - root.x - minX) / k_MaskCell) - 1;
+                    int x1 = Mathf.FloorToInt((Mathf.Max(a.x, Mathf.Max(b.x, c.x)) - root.x - minX) / k_MaskCell) + 1;
+                    int z0 = Mathf.FloorToInt((Mathf.Min(a.z, Mathf.Min(b.z, c.z)) - root.z - minZ) / k_MaskCell) - 1;
+                    int z1 = Mathf.FloorToInt((Mathf.Max(a.z, Mathf.Max(b.z, c.z)) - root.z - minZ) / k_MaskCell) + 1;
+                    if (x1 < 0 || z1 < 0 || x0 >= width || z0 >= height)
+                        continue;
+                    x0 = Mathf.Max(0, x0);
+                    z0 = Mathf.Max(0, z0);
+                    x1 = Mathf.Min(width - 1, x1);
+                    z1 = Mathf.Min(height - 1, z1);
+                    for (int z = z0; z <= z1; z++)
+                    for (int x = x0; x <= x1; x++)
+                        blocked[z * width + x] = true;
+                }
+            }
+
+            var pixels = new Color32[blocked.Length];
+            for (int i = 0; i < pixels.Length; i++)
+                pixels[i] = blocked[i] ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 255);
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            string path = IcaroAssetUtility.Root + "/Art/Grade/Texturas/" + k_Prefix + "_MascaraAgua.png";
+            System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            importer.textureType = TextureImporterType.Default;
+            importer.isReadable = true;
+            importer.sRGBTexture = false;
+            importer.mipmapEnabled = false;
+            importer.filterMode = FilterMode.Point;
+            importer.npotScale = TextureImporterNPOTScale.None;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.maxTextureSize = 8192;
+            importer.SaveAndReimport();
+
+            var mask = world.gameObject.AddComponent<WaterSurfaceMask>();
+            mask.Mask = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+            mask.Origin = new Vector2(minX, minZ);
+            mask.CellSize = k_MaskCell;
         }
 
         // ---------- decoração ----------

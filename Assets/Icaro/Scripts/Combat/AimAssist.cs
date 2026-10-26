@@ -82,8 +82,12 @@ namespace Icaro
             if (zone <= 0f || !camera)
                 return null;
 
-            // Prioridade: o raio do centro da tela já acerta um inimigo
+            // Mira em cima de um orbe do tempo: o tiro sai reto nele, sem desviar para um inimigo perto
             Transform view = camera.transform;
+            if (TimeOrb.UnderCrosshair(view.position, view.forward, Settings.MaxRange))
+                return null;
+
+            // Prioridade: o raio do centro da tela já acerta um inimigo
             if (Physics.Raycast(view.position, view.forward, out RaycastHit direct, Settings.MaxRange,
                     Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {

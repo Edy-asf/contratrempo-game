@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Inimigo_Zangao
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.ZangaoDefinition
   Prefab: {fileID: 555392398416865075, guid: 4fbc4869c4ca8464facfcf3fd02212c5, type: 3}
-  DisplayName: 
+  DisplayName: Mariposa-lanterna
   MinArena: 2
   MaxAlive: 14
   RequiresHighSpawn: 0
@@ -26,7 +26,6 @@ MonoBehaviour:
   ProjectileSpeed: 45
   MovementMultiplierCap: 0
   MaxHitFraction: 0
-  FragmentDropChance: 0.015
   CronitaValue: 1
   FlySpeed: 8
   Acceleration: 14

@@ -59,12 +59,13 @@ namespace Icaro.EditorTools
             // 10/8/25 de dano)
             CreateIfMissing<EnemyDefinition>(BrotoPath, d =>
             {
-                d.MinArena = 1; d.MaxAlive = 10; d.FragmentDropChance = 0.03f; d.CronitaValue = 1;
+                d.MinArena = 1; d.MaxAlive = 10; d.CronitaValue = 1;
                 d.MaxHealth = 56f; d.Damage = 14f; d.AttackCooldown = 0.8f;
             });
             CreateIfMissing<EspinhentoDefinition>(EspinhentoPath, d =>
             {
-                d.MinArena = 3; d.MaxAlive = 4; d.FragmentDropChance = 0.06f; d.CronitaValue = 3;
+                d.DisplayName = "Flor-canhão";
+                d.MinArena = 3; d.MaxAlive = 4; d.CronitaValue = 3;
                 d.MaxHealth = 210f; d.Damage = 11f; d.AttackCooldown = 2.2f;
             });
 
@@ -73,13 +74,14 @@ namespace Icaro.EditorTools
             EditorUtility.SetDirty(Espinhento);
             CreateIfMissing<PredadorDefinition>(PredadorPath, d =>
             {
-                d.MinArena = 5; d.MaxAlive = 3; d.FragmentDropChance = 0.08f; d.CronitaValue = 5;
+                d.DisplayName = "Galhada";
+                d.MinArena = 5; d.MaxAlive = 3; d.CronitaValue = 5;
                 d.MaxHealth = 250f; d.Damage = 35f; d.AttackCooldown = 4f;
                 d.MaxHitFraction = 1f; // sem limite de dano por acerto: escala normalmente
             });
             CreateIfMissing<GolemDefinition>(GolemPath, d =>
             {
-                d.MinArena = 7; d.MaxAlive = 3; d.FragmentDropChance = 0.25f; d.CronitaValue = 9;
+                d.MinArena = 7; d.MaxAlive = 3; d.CronitaValue = 9;
                 d.MaxHealth = 800f; d.Damage = 45f; d.AttackCooldown = 5f;
                 d.MaxHitFraction = 1f; // sem limite de dano por acerto (laser, pancada, chefe)
             });
@@ -87,7 +89,8 @@ namespace Icaro.EditorTools
             // Cascudo: o dobro da vida de um inimigo comum; substitui o Broto nas salas
             CreateIfMissing<CascudoDefinition>(CascudoPath, d =>
             {
-                d.MinArena = 1; d.MaxAlive = 6; d.FragmentDropChance = 0.04f; d.CronitaValue = 3;
+                d.DisplayName = "Tatu-lanterna";
+                d.MinArena = 1; d.MaxAlive = 6; d.CronitaValue = 3;
                 d.MaxHealth = 420f; d.Damage = 22f; d.AttackCooldown = 1.6f;
                 // Base = 1/3 do jogador: com teto de movimento 6, chega no máximo ao dobro da velocidade do jogador
                 d.MovementMultiplierCap = 6f;
@@ -95,7 +98,8 @@ namespace Icaro.EditorTools
             // Vagante: vida média, dano baixo por projétil
             CreateIfMissing<VaganteDefinition>(VagantePath, d =>
             {
-                d.MinArena = 4; d.MaxAlive = 3; d.FragmentDropChance = 0.06f; d.CronitaValue = 4;
+                d.DisplayName = "Explorador Tomado";
+                d.MinArena = 4; d.MaxAlive = 3; d.CronitaValue = 4;
                 d.MaxHealth = 180f; d.Damage = 6f; d.AttackCooldown = 2.5f; d.ProjectileSpeed = 24f;
             });
 
@@ -103,8 +107,9 @@ namespace Icaro.EditorTools
             // tiros normais), dano baixo por projétil rápido; reaproveitado pelo PrefabPool
             CreateIfMissing<ZangaoDefinition>(ZangaoPath, d =>
             {
+                d.DisplayName = "Mariposa-lanterna";
                 d.MinArena = 2; d.MaxAlive = 14; d.GroupMin = 3; d.GroupMax = 5; d.Pooled = true;
-                d.FragmentDropChance = 0.015f; d.CronitaValue = 1;
+                d.CronitaValue = 1;
                 d.MaxHealth = 52f; d.Damage = 4f; d.AttackCooldown = 2.5f; d.ProjectileSpeed = 45f;
             });
 
@@ -119,7 +124,8 @@ namespace Icaro.EditorTools
                 balance.SpawnTables = DefaultSpawnTables();
             AddToTables(balance, Zangao, k_ZangaoWeights);
             balance.SpawnWarningPrefab = spawnWarning;
-            balance.FragmentPrefab = MetronomeFragmentBuilder.Build();
+            balance.TimeOrbs.Prefab = TimeOrbBuilder.Build();
+            ArenaDomeBuilder.Build();
             balance.Items = ItemAssetsBuilder.EnsureAll();
             CreateIfMissing<AimAssistSettings>(AimAssistPath, s => { });
             balance.AimAssist = AssetDatabase.LoadAssetAtPath<AimAssistSettings>(AimAssistPath);
@@ -158,7 +164,7 @@ namespace Icaro.EditorTools
             });
             CreateIfMissing<TribalDefinition>(TribalPath, d =>
             {
-                d.DisplayName = "Guardião Tiki"; d.MaxHealth = 8000f; d.Damage = 24f;
+                d.DisplayName = "Oráculo"; d.MaxHealth = 8000f; d.Damage = 24f;
                 d.MoveSpeed = 4f; d.PreferredDistance = 15f; d.AttackGap = 1.5f; d.PhaseTwoAt = 0.55f;
                 d.AttackColor = new Color(0.3f, 0.95f, 1f, 0.9f);
             });

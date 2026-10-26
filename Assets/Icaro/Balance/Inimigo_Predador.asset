@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Inimigo_Predador
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.PredadorDefinition
   Prefab: {fileID: 891958272568350334, guid: 24ffeda4bd1f00f4eb926241c4cd0a75, type: 3}
-  DisplayName: 
+  DisplayName: Galhada
   MinArena: 5
   MaxAlive: 3
   RequiresHighSpawn: 0
@@ -26,7 +26,6 @@ MonoBehaviour:
   ProjectileSpeed: 0
   MovementMultiplierCap: 0
   MaxHitFraction: 1
-  FragmentDropChance: 0.08
   CronitaValue: 5
   AttackRange: 25
   WarningDuration: 0.8

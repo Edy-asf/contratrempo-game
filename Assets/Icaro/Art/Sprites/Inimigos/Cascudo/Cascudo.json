@@ -1,0 +1,20 @@
+{
+  "name": "Cascudo",
+  "cellWidth": 44,
+  "cellHeight": 36,
+  "columns": 5,
+  "rows": 24,
+  "pixelsPerMeter": 16,
+  "pivotX": 22,
+  "pivotY": 1,
+  "emission": "Cascudo_Brilho.png",
+  "bodyGlow": 0.25,
+  "clips": [
+    {"name": "Idle", "row": 0, "frames": 4, "fps": 4, "loop": true},
+    {"name": "Move", "row": 4, "frames": 4, "fps": 8, "loop": true},
+    {"name": "Windup", "row": 8, "frames": 3, "fps": 8, "loop": false},
+    {"name": "Attack", "row": 12, "frames": 3, "fps": 10, "loop": false},
+    {"name": "Hit", "row": 16, "frames": 2, "fps": 10, "loop": false},
+    {"name": "Death", "row": 20, "frames": 5, "fps": 9, "loop": false}
+  ]
+}

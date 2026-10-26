@@ -94,7 +94,7 @@ namespace Icaro.EditorTools
                 BiomePalettes.Current = BiomePalettes.Bosque;
                 VisualSettingsBuilder.Result visuals = VisualSettingsBuilder.Apply(BiomePalettes.Bosque);
                 Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-                Transform systems = ViaAeonidaBuilder.BuildSystems(scene, visuals);
+                Transform systems = SceneSystemsBuilder.BuildSystems(scene, visuals);
                 GridSceneKit.ApplyNight(theme, sky, systems);
 
                 var world = new GameObject("Mapa").transform;

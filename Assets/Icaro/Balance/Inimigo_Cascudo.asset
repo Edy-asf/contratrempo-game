@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Inimigo_Cascudo
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.CascudoDefinition
   Prefab: {fileID: 8931990137486767754, guid: bcf492125f10de249b440d90bfbe0509, type: 3}
-  DisplayName: 
+  DisplayName: Tatu-lanterna
   MinArena: 1
   MaxAlive: 6
   RequiresHighSpawn: 0
@@ -26,7 +26,6 @@ MonoBehaviour:
   ProjectileSpeed: 0
   MovementMultiplierCap: 6
   MaxHitFraction: 0
-  FragmentDropChance: 0.04
   CronitaValue: 3
   PlayerSpeedDivisor: 3
   FallbackSpeed: 4.3

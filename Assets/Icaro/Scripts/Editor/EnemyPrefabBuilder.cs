@@ -79,7 +79,7 @@ namespace Icaro.EditorTools
                 new Color(0.6f, 1.2f, 0.2f));
 
             GameObject root = CreateEnemyRoot("Broto", reference, body, CombatAssetsBuilder.Broto.MaxHealth, height: 1f,
-                dropRate: 0.15f, detectionRange: 25f, attackRange: 1.5f);
+                detectionRange: 25f, attackRange: 1.5f);
             AddCapsule(root, radius: 0.45f, height: 1f);
             ConfigureAgent(root, radius: 0.45f, height: 1f, speed: 7f, acceleration: 25f, stoppingDistance: 0.3f);
 
@@ -110,39 +110,53 @@ namespace Icaro.EditorTools
                 new Color(0.3f, 0.25f, 0.1f));
 
             GameObject root = CreateEnemyRoot("Espinhento", reference, body, CombatAssetsBuilder.Espinhento.MaxHealth,
-                height: 2.4f, dropRate: 0.35f, detectionRange: k_EspinhentoRange, attackRange: k_EspinhentoRange);
+                height: 2.4f, detectionRange: k_EspinhentoRange, attackRange: k_EspinhentoRange);
             AddCapsule(root, radius: 0.7f, height: 2.4f);
             ConfigureAgent(root, radius: 0.7f, height: 2.4f, speed: 0f, acceleration: 0f, stoppingDistance: 0f);
 
-            var visual = new GameObject("Corpo").transform;
-            visual.SetParent(root.transform, false);
-            Part(PrimitiveType.Cylinder, "Raiz", visual, new Vector3(0f, 0.15f, 0f), new Vector3(1.5f, 0.15f, 1.5f),
-                baseMaterial);
-            Part(PrimitiveType.Cylinder, "Caule", visual, new Vector3(0f, 0.95f, 0f), new Vector3(1f, 0.8f, 1f), body);
-
-            // Anel de espinhos decorativos que gira em volta do caule
-            var ring = new GameObject("AnelDeEspinhos").transform;
-            ring.SetParent(visual, false);
-            ring.localPosition = new Vector3(0f, 1f, 0f);
-            for (int i = 0; i < 8; i++)
+            // Com a folha de sprites, o visual é a Flor-canhão e a cabeça vira um ponto vazio que gira para mirar (a
+            // arma é filha dela); sem ela, as primitivas
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor("Espinhento");
+            Transform head, ring = null;
+            if (sprites)
             {
-                GameObject s = Part(PrimitiveType.Cube, "Espinho", ring, Vector3.zero, new Vector3(0.1f, 0.1f, 1.7f),
-                    spikeMaterial);
-                s.transform.localRotation = Quaternion.Euler(-15f, i * 45f, 0f);
+                AddSpriteVisual(root, sprites);
+                head = new GameObject("Cabeca").transform;
+                head.SetParent(root.transform, false);
+                head.localPosition = new Vector3(0f, 1.95f, 0f);
             }
-
-            // Cabeça que gira para mirar; a arma é filha dela
-            var head = new GameObject("Cabeca").transform;
-            head.SetParent(visual, false);
-            head.localPosition = new Vector3(0f, 1.95f, 0f);
-            Part(PrimitiveType.Sphere, "Bulbo", head, Vector3.zero, new Vector3(1.1f, 0.9f, 1.1f), body);
-            for (int i = 0; i < 5; i++)
+            else
             {
-                GameObject s = Part(PrimitiveType.Cube, "Espinho", head, new Vector3(0f, 0.35f, 0f),
-                    new Vector3(0.08f, 0.08f, 0.8f), spikeMaterial);
-                s.transform.localRotation = Quaternion.Euler(-50f, i * 72f, 0f);
+                var visual = new GameObject("Corpo").transform;
+                visual.SetParent(root.transform, false);
+                Part(PrimitiveType.Cylinder, "Raiz", visual, new Vector3(0f, 0.15f, 0f), new Vector3(1.5f, 0.15f, 1.5f),
+                    baseMaterial);
+                Part(PrimitiveType.Cylinder, "Caule", visual, new Vector3(0f, 0.95f, 0f), new Vector3(1f, 0.8f, 1f), body);
+
+                // Anel de espinhos decorativos que gira em volta do caule
+                ring = new GameObject("AnelDeEspinhos").transform;
+                ring.SetParent(visual, false);
+                ring.localPosition = new Vector3(0f, 1f, 0f);
+                for (int i = 0; i < 8; i++)
+                {
+                    GameObject s = Part(PrimitiveType.Cube, "Espinho", ring, Vector3.zero, new Vector3(0.1f, 0.1f, 1.7f),
+                        spikeMaterial);
+                    s.transform.localRotation = Quaternion.Euler(-15f, i * 45f, 0f);
+                }
+
+                // Cabeça que gira para mirar; a arma é filha dela
+                head = new GameObject("Cabeca").transform;
+                head.SetParent(visual, false);
+                head.localPosition = new Vector3(0f, 1.95f, 0f);
+                Part(PrimitiveType.Sphere, "Bulbo", head, Vector3.zero, new Vector3(1.1f, 0.9f, 1.1f), body);
+                for (int i = 0; i < 5; i++)
+                {
+                    GameObject s = Part(PrimitiveType.Cube, "Espinho", head, new Vector3(0f, 0.35f, 0f),
+                        new Vector3(0.08f, 0.08f, 0.8f), spikeMaterial);
+                    s.transform.localRotation = Quaternion.Euler(-50f, i * 72f, 0f);
+                }
+                Part(PrimitiveType.Cube, "Boca", head, new Vector3(0f, 0f, 0.55f), new Vector3(0.3f, 0.3f, 0.2f), spikeMaterial);
             }
-            Part(PrimitiveType.Cube, "Boca", head, new Vector3(0f, 0f, 0.55f), new Vector3(0.3f, 0.3f, 0.2f), spikeMaterial);
 
             WeaponController weapon = AddWeapon(root, head, new Vector3(0f, 0f, 0.75f), spike);
             weapon.ShootType = WeaponShootType.Automatic;
@@ -163,7 +177,8 @@ namespace Icaro.EditorTools
         }
 
         // Cascudo: corpo largo e baixo com uma casca em cima. O visual fica no filho "Visual" (trocável por modelo);
-        // o CascudoAI anima o Visual (recua e avança no golpe) e a "Casca" (ergue na preparação).
+        // o CascudoAI anima o Visual (recua e avança no golpe) e a "Casca" (ergue na preparação). Com a folha de
+        // sprites importada (Art/Sprites/Inimigos/Cascudo), o Visual vira o sprite animado (EnemySpriteView).
         static void BuildCascudo(EnemyController reference)
         {
             CascudoDefinition definition = CombatAssetsBuilder.Cascudo;
@@ -174,7 +189,7 @@ namespace Icaro.EditorTools
                 new Color(0.6f, 1.2f, 0.2f));
 
             GameObject root = CreateEnemyRoot("Cascudo", reference, body, definition.MaxHealth, height: 1.4f,
-                dropRate: 0.3f, detectionRange: 40f, attackRange: definition.AttackRange);
+                detectionRange: 40f, attackRange: definition.AttackRange);
             var box = root.AddComponent<BoxCollider>();
             box.center = new Vector3(0f, 0.75f, 0.05f);
             box.size = new Vector3(1.9f, 1.5f, 2f);
@@ -182,8 +197,21 @@ namespace Icaro.EditorTools
             ConfigureAgent(root, radius: 0.9f, height: 1.4f, speed: definition.FallbackSpeed, acceleration: 20f,
                 stoppingDistance: 1.5f);
 
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor("Cascudo");
+            var ai = root.AddComponent<CascudoAI>();
+            if (sprites)
+            {
+                ai.Visual = AddSpriteVisual(root, sprites);
+                AddEmptyWeapon(root, root.transform, new Vector3(0f, 0.6f, 1.2f));
+                AddStats(root, definition);
+                AddHitReaction(root, recoil: 0.12f, centerHeight: 0.7f, burstScale: 1.3f);
+                Save(root, CascudoPath);
+                return;
+            }
+
             var visual = new GameObject("Visual").transform;
             visual.SetParent(root.transform, false);
+            ai.Visual = visual;
             Part(PrimitiveType.Cube, "Corpo", visual, new Vector3(0f, 0.55f, 0f), new Vector3(1.8f, 0.75f, 1.7f), body);
             Part(PrimitiveType.Cube, "Cabeca", visual, new Vector3(0f, 0.55f, 1.0f), new Vector3(0.8f, 0.5f, 0.5f), body);
             Part(PrimitiveType.Cube, "Olho_E", visual, new Vector3(-0.2f, 0.65f, 1.26f), new Vector3(0.14f, 0.1f, 0.05f), eye);
@@ -205,8 +233,6 @@ namespace Icaro.EditorTools
 
             AddEmptyWeapon(root, root.transform, new Vector3(0f, 0.6f, 1.2f));
 
-            var ai = root.AddComponent<CascudoAI>();
-            ai.Visual = visual;
             ai.Shell = shell;
             AddStats(root, definition);
             AddHitReaction(root, recoil: 0.12f, centerHeight: 0.7f, burstScale: 1.3f);
@@ -227,10 +253,30 @@ namespace Icaro.EditorTools
                 new Color(0.6f, 1.2f, 0.2f));
 
             GameObject root = CreateEnemyRoot("Vagante", reference, body, definition.MaxHealth, height: 1.9f,
-                dropRate: 0.3f, detectionRange: 40f, attackRange: definition.AttackRange);
+                detectionRange: 40f, attackRange: definition.AttackRange);
             AddCapsule(root, radius: 0.4f, height: 1.9f);
             ConfigureAgent(root, radius: 0.45f, height: 1.9f, speed: definition.MoveSpeed, acceleration: 10f,
                 stoppingDistance: 0.5f);
+
+            // Com a folha de sprites, o visual é o Explorador Tomado; o pivô da mira e o cano ficam como pontos vazios
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor("Vagante");
+            if (sprites)
+            {
+                AddSpriteVisual(root, sprites);
+                var aimPoint = new GameObject("Mira").transform;
+                aimPoint.SetParent(root.transform, false);
+                aimPoint.localPosition = new Vector3(0.3f, 1.3f, 0.1f);
+                WeaponController gun = AddWeapon(root, aimPoint, new Vector3(0f, 0.04f, 0.88f), BuildVaganteProjectile());
+                gun.ShootType = WeaponShootType.Manual;
+                var spriteAi = root.AddComponent<VaganteAI>();
+                spriteAi.AimPivot = aimPoint;
+                spriteAi.Muzzle = gun.WeaponMuzzle;
+                spriteAi.ShotSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_VaganteShotSound);
+                AddStats(root, definition);
+                AddHitReaction(root, recoil: 0.3f, centerHeight: 1f, burstScale: 1f);
+                Save(root, VagantePath);
+                return;
+            }
 
             var visual = new GameObject("Visual").transform;
             visual.SetParent(root.transform, false);
@@ -312,6 +358,27 @@ namespace Icaro.EditorTools
             rigidbody.isKinematic = true;
             rigidbody.useGravity = false;
 
+            // Com a folha de sprites, o visual é a Mariposa-lanterna (pivô no centro do corpo); o cano fica vazio
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor("Zangao");
+            if (sprites)
+            {
+                Transform spriteVisual = AddSpriteVisual(root, sprites);
+                var spriteMuzzle = new GameObject("Cano").transform;
+                spriteMuzzle.SetParent(root.transform, false);
+                spriteMuzzle.localPosition = new Vector3(0f, -0.1f, 0.4f);
+                var spriteAi = root.AddComponent<ZangaoAI>();
+                spriteAi.Visual = spriteVisual;
+                spriteAi.Wings = new Transform[0];
+                spriteAi.Muzzle = spriteMuzzle;
+                spriteAi.ProjectilePrefab = BuildZangaoProjectile(glow);
+                spriteAi.ShotSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_VaganteShotSound);
+                spriteAi.FlashRenderers = new Renderer[0];
+                AddStats(root, definition);
+                AddHitReaction(root, recoil: 0f, centerHeight: 0f, burstScale: 0.45f);
+                Save(root, ZangaoPath);
+                return;
+            }
+
             var visual = new GameObject("Visual").transform;
             visual.SetParent(root.transform, false);
             // Um pouco maior que as medidas das peças (o colisor acompanha)
@@ -381,12 +448,28 @@ namespace Icaro.EditorTools
                 new Color(1.2f, 0.6f, 0.1f));
 
             GameObject root = CreateEnemyRoot("Predador", reference, body, CombatAssetsBuilder.Predador.MaxHealth,
-                height: 1.6f, dropRate: 0.35f, detectionRange: 30f, attackRange: 25f);
+                height: 1.6f, detectionRange: 30f, attackRange: 25f);
             var box = root.AddComponent<BoxCollider>();
             box.center = new Vector3(0f, 0.85f, 0.1f);
             box.size = new Vector3(1.1f, 1.5f, 2f);
             root.AddComponent<Damageable>();
             ConfigureAgent(root, radius: 0.7f, height: 1.6f, speed: 4.5f, acceleration: 12f, stoppingDistance: 1f);
+
+            // Com a folha de sprites, o visual é a Galhada (o sprite já se encolhe e acende no aviso)
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor("Predador");
+            if (sprites)
+            {
+                AddSpriteVisual(root, sprites);
+                AddEmptyWeapon(root, root.transform, new Vector3(0f, 0.9f, 1f));
+                var spriteAi = root.AddComponent<PredadorAI>();
+                spriteAi.WarningRenderers = new Renderer[0];
+                spriteAi.LineMaterial = CombatAssetsBuilder.LineMaterial;
+                spriteAi.WarningSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_WarningSound);
+                AddStats(root, CombatAssetsBuilder.Predador);
+                AddHitReaction(root, recoil: 0.25f, centerHeight: 0.9f, burstScale: 1.1f);
+                Save(root, PredadorPath);
+                return;
+            }
 
             var visual = new GameObject("Corpo").transform;
             visual.SetParent(root.transform, false);
@@ -455,7 +538,7 @@ namespace Icaro.EditorTools
         // Componentes comuns: Health, Actor, NavMeshAgent, EnemyController, DetectionModule, pontos de mira e
         // de explosão. Flash de dano, som e explosão vêm do HoverBot para manter o mesmo feedback.
         internal static GameObject CreateEnemyRoot(string name, EnemyController reference, Material bodyMaterial,
-            float maxHealth, float height, float dropRate, float detectionRange, float attackRange)
+            float maxHealth, float height, float detectionRange, float attackRange)
         {
             var root = new GameObject(name);
 
@@ -484,8 +567,9 @@ namespace Icaro.EditorTools
             controller.DamageTick = reference.DamageTick;
             controller.DeathVfx = reference.DeathVfx;
             controller.DeathVfxSpawnPoint = deathPoint;
-            controller.LootPrefab = reference.LootPrefab;
-            controller.DropRate = dropRate;
+            // Sem cura no chão: o Ícaro regenera sozinho (CombatBalance.PlayerBaseRegen)
+            controller.LootPrefab = null;
+            controller.DropRate = 0f;
 
             var detectionObject = new GameObject("DetectionModule");
             detectionObject.transform.SetParent(root.transform, false);
@@ -497,6 +581,15 @@ namespace Icaro.EditorTools
 
             root.AddComponent<EnemyTimeScaler>();
             return root;
+        }
+
+        // Visual em sprite animado (folha desenhada em código ou trocada à mão, Art/Sprites/Inimigos)
+        static Transform AddSpriteVisual(GameObject root, EnemySpriteSet sprites)
+        {
+            var visual = new GameObject("Visual").transform;
+            visual.SetParent(root.transform, false);
+            visual.gameObject.AddComponent<EnemySpriteView>().Set = sprites;
+            return visual;
         }
 
         // Recuo ao levar dano e explosão de partículas ao morrer (feedback de combate)

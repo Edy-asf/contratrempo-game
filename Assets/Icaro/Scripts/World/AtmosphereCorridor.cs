@@ -42,6 +42,7 @@ namespace Icaro
         Material m_Sky;
         Material m_Hidden;
         float m_Last = -1f;
+        int m_Version = -1;
 
         void Update()
         {
@@ -50,6 +51,13 @@ namespace Icaro
                 m_Player = FindAnyObjectByType<PlayerCharacterController>();
                 if (!m_Player)
                     return;
+            }
+
+            // Ajustes do céu mudaram: reaplica no ponto atual
+            if (m_Version != SkySettings.Version)
+            {
+                m_Version = SkySettings.Version;
+                m_Last = -1f;
             }
 
             Vector3 path = To - From;
@@ -75,19 +83,28 @@ namespace Icaro
             // preto)
             float middle = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(t * Mathf.PI)), 1.5f);
 
-            Color fog = Color.Lerp(A.FogColor, B.FogColor, k);
+            // Claridade do mapa de cada lado (SkySettings), misturada ao longo do trecho
+            SkySettings settings = SkySettings.Current;
+            BiomeSkyTuning ta = settings.TuningFor(A.Sky), tb = settings.TuningFor(B.Sky);
+            float ambient = Mathf.Lerp(ta != null ? ta.AmbientBrightness : 1f, tb != null ? tb.AmbientBrightness : 1f, k);
+            float fogLight = Mathf.Lerp(ta != null ? ta.FogBrightness : 1f, tb != null ? tb.FogBrightness : 1f, k);
+            float density = Mathf.Lerp(ta != null ? ta.FogDensity : 1f, tb != null ? tb.FogDensity : 1f, k);
+            float moonLight = Mathf.Lerp(ta != null ? ta.MoonBrightness : 1f, tb != null ? tb.MoonBrightness : 1f, k);
+
+            Color fog = Color.Lerp(A.FogColor, B.FogColor, k) * fogLight;
             RenderSettings.fogColor = Color.Lerp(fog, fog * (1f - MidDarken), middle);
-            RenderSettings.fogDensity = Mathf.Lerp(Mathf.Lerp(A.FogDensity, B.FogDensity, k), MidFogDensity, middle);
-            RenderSettings.ambientSkyColor = Color.Lerp(A.AmbientSky, B.AmbientSky, k);
-            RenderSettings.ambientEquatorColor = Color.Lerp(A.AmbientEquator, B.AmbientEquator, k);
-            RenderSettings.ambientGroundColor = Color.Lerp(A.AmbientGround, B.AmbientGround, k);
+            RenderSettings.fogDensity = Mathf.Lerp(Mathf.Lerp(A.FogDensity, B.FogDensity, k) * density, MidFogDensity,
+                middle);
+            RenderSettings.ambientSkyColor = Color.Lerp(A.AmbientSky, B.AmbientSky, k) * ambient;
+            RenderSettings.ambientEquatorColor = Color.Lerp(A.AmbientEquator, B.AmbientEquator, k) * ambient;
+            RenderSettings.ambientGroundColor = Color.Lerp(A.AmbientGround, B.AmbientGround, k) * ambient;
             BiomeZone.RefreshAmbient(t <= 0f || t >= 1f);
 
             Light moon = RenderSettings.sun;
             if (moon)
             {
                 moon.color = Color.Lerp(A.MoonColor, B.MoonColor, k);
-                moon.intensity = Mathf.Lerp(A.MoonIntensity, B.MoonIntensity, k);
+                moon.intensity = Mathf.Lerp(A.MoonIntensity, B.MoonIntensity, k) * moonLight;
             }
 
             UpdateSky(t, fog);

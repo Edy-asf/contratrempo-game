@@ -9,11 +9,13 @@ using Random = UnityEngine.Random;
 
 namespace Icaro
 {
-    // Sala de combate: quando o jogador entra no trigger, tranca as portas e os inimigos começam a surgir de forma
+    // Sala de combate: quando o jogador entra no trigger, o domo de energia (ArenaDome) sela a arena e os inimigos
+    // começam a surgir de forma
     // contínua. A sala tem uma cota total e um limite de vivos ao mesmo tempo, que crescem pelo índice global da
     // sala (CombatBalance.QuotaFor e AliveLimitFor): enquanto houver vaga e cota, surge o próximo (sorteado pelo
     // SpawnDirector), a cada 0,5 a 1 s. Quando um morre, outro pode entrar no lugar. A sala termina quando toda a
-    // cota surgiu e todos morreram; então o jogador escolhe 2 itens entre 4 e as portas destrancam. Uma sala limpa não
+    // cota surgiu e todos morreram; então o jogador escolhe 2 itens entre 4 e o domo se estilhaça. Os portões das
+    // cenas geradas (Doors) ficam desligados. Uma sala limpa não
     // reativa. Cada inimigo surge num ponto de spawn longe do jogador, depois de um aviso de 1 s; o Espinhento só em
     // pontos altos válidos. Na sala do chefe, o chefe entra primeiro pelo ponto BossPoint, com uma cota pequena de
     // reforços. Vida e dano dos inimigos crescem pelo índice da sala (ArenaNumber).
@@ -82,6 +84,9 @@ namespace Icaro
 
         // Vida do chefe vivo (para o HUD); null sem chefe ou depois que ele morre
         public Health Boss { get; private set; }
+
+        // Domo de energia da sala (limite da arena para as IAs; montado no Start)
+        public ArenaDome Dome => m_Dome;
         public string BossName { get; private set; }
 
         // Chefe desta sala: o do bioma no CombatBalance ou, sem ele, o BossEnemy da cena
@@ -101,13 +106,35 @@ namespace Icaro
         readonly Dictionary<EnemyDefinition, int> m_Active = new Dictionary<EnemyDefinition, int>();
         int m_ToSpawn;
         int m_Pending;
+
+        // Inimigos marcados (soltam o orbe do tempo): espalhados pela cota, a cada m_MarkSpacing surgidos
+        int m_Spawned;
+        int m_MarksLeft;
+        float m_MarkSpacing;
+        float m_NextMarkAt;
         bool m_BossPending;
         Transform m_Player;
+        ArenaDome m_Dome;
         int m_LastSpawnPoint = -1;
 
         void Awake()
         {
             GetComponent<Collider>().isTrigger = true;
+        }
+
+        // O domo de energia prende o jogador na luta (no lugar dos portões, que ficam desligados)
+        void Start()
+        {
+            if (Doors != null)
+            {
+                foreach (RoomDoor door in Doors)
+                {
+                    if (door)
+                        door.gameObject.SetActive(false);
+                }
+            }
+
+            m_Dome = ArenaDome.Create(this);
         }
 
         void OnDisable()
@@ -138,9 +165,10 @@ namespace Icaro
         {
             State = RoomState.Active;
             Active = this;
-            SetDoorsOpen(false);
+            if (m_Dome)
+                m_Dome.Lock(m_Player);
             OnRoomActivated?.Invoke(this);
-            VisorBanner.Show(RoomName, "Portas trancadas", BannerTone.Warning);
+            VisorBanner.Show(RoomName, "Arena selada", BannerTone.Warning);
 
             yield return RunQuota();
 
@@ -150,10 +178,11 @@ namespace Icaro
             State = RoomState.Cleared;
             if (Active == this)
                 Active = null;
-            SetDoorsOpen(true);
+            if (m_Dome)
+                m_Dome.Shatter();
             OnRoomCleared?.Invoke(this);
             OnAnyRoomCleared?.Invoke(this);
-            VisorBanner.Show("Arena limpa", "Portas abertas", BannerTone.Success);
+            VisorBanner.Show("Arena limpa", "Domo desfeito", BannerTone.Success);
         }
 
         // ---------- cota contínua ----------
@@ -169,6 +198,16 @@ namespace Icaro
             m_Alive.Clear();
             m_PendingByType.Clear();
             TotalEnemies = Quota + (bossRoom ? 1 : 0);
+
+            // Marcados: um a cada MarkEvery da cota (no mínimo MarkMin), no meio de cada trecho; a sala do chefe não
+            // tem (o chefe solta os orbes dele)
+            TimeOrbSettings orbs = Balance.TimeOrbs;
+            m_Spawned = 0;
+            m_MarksLeft = bossRoom || orbs == null || Quota <= 0
+                ? 0
+                : Mathf.Min(Quota, Mathf.Max(orbs.MarkMin, Mathf.RoundToInt(Quota / (float)orbs.MarkEvery)));
+            m_MarkSpacing = m_MarksLeft > 0 ? Quota / (float)m_MarksLeft : 0f;
+            m_NextMarkAt = m_MarkSpacing * 0.5f;
 
             if (bossRoom)
             {
@@ -306,10 +345,11 @@ namespace Icaro
                     // Chefe derrotado: fragmentos garantidos, espalhados em volta dele
                     Vector3 center = Boss ? Boss.transform.position + Vector3.up : position;
                     ShopDirector.DropFor(BossDefinitionForRoom, center, ArenaNumber, false, true);
-                    for (int i = 0; i < Balance.BossFragmentDrops; i++)
+                    TimeOrbSettings orbs = Balance.TimeOrbs;
+                    for (int i = 0; orbs != null && i < orbs.BossOrbs; i++)
                     {
-                        Vector2 spread = Random.insideUnitCircle * 2.5f;
-                        DropFragment(center + new Vector3(spread.x, 0f, spread.y));
+                        float angle = i * Mathf.PI * 2f / Mathf.Max(1, orbs.BossOrbs);
+                        TimeOrb.Spawn(orbs, center + new Vector3(Mathf.Cos(angle), 0.5f, Mathf.Sin(angle)) * 3f);
                     }
                     Boss = null;
                 };
@@ -431,6 +471,18 @@ namespace Icaro
             if (!boss && !definition.Pooled && Random.value < Balance.EliteChance(ArenaNumber))
                 EliteAffix.Apply(enemy, (EliteModifier)Random.Range(1, 4), Balance);
 
+            // Marcado (solta o orbe do tempo ao morrer); os voadores do pool passam a vez para o próximo
+            if (!boss)
+            {
+                m_Spawned++;
+                if (m_MarksLeft > 0 && !definition.Pooled && m_Spawned >= m_NextMarkAt)
+                {
+                    TimeMark.Apply(enemy, Balance.TimeOrbs);
+                    m_MarksLeft--;
+                    m_NextMarkAt += m_MarkSpacing;
+                }
+            }
+
             // Sai da lista ao morrer (e desinscreve, porque instâncias do pool voltam a nascer)
             var health = enemy.GetComponent<Health>();
             if (health && !boss)
@@ -440,25 +492,12 @@ namespace Icaro
                 {
                     m_Alive.Remove(enemy);
                     health.OnDie -= onDie;
-                    if (Random.value < definition.FragmentDropChance)
-                        DropFragment(enemy.transform.position + Vector3.up);
                     ShopDirector.DropFor(definition, enemy.transform.position + Vector3.up, ArenaNumber,
                         stats.Elite != EliteModifier.None, false);
                 };
                 health.OnDie += onDie;
             }
             return enemy;
-        }
-
-        // Fragmento de metrônomo no chão abaixo de 'position' (valores do CombatBalance)
-        void DropFragment(Vector3 position)
-        {
-            if (!Balance.FragmentPrefab)
-                return;
-            GameObject instance = PrefabPool.Get(Balance.FragmentPrefab, position, Quaternion.identity);
-            var fragment = instance ? instance.GetComponent<MetronomeFragment>() : null;
-            if (fragment)
-                fragment.Drop(position, Balance.FragmentReduction, Balance.FragmentLifetime, Balance.FragmentBlinkTime);
         }
 
         // Ponto de spawn aleatório entre os que estão longe do jogador (o mais longe, se nenhum estiver),
@@ -569,20 +608,6 @@ namespace Icaro
 
         // Vivos com o chefe
         int CountAlive() => RegularAlive() + (Boss ? 1 : 0);
-
-        void SetDoorsOpen(bool open)
-        {
-            foreach (RoomDoor door in Doors)
-            {
-                if (!door)
-                    continue;
-
-                if (open)
-                    door.Open();
-                else
-                    door.Close();
-            }
-        }
 
         void OnDrawGizmosSelected()
         {

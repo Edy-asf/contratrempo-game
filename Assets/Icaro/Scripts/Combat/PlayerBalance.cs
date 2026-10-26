@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Icaro
 {
     // Aplica ao jogador os valores do CombatBalance: vida máxima e os valores iniciais do PlayerStats (crítico,
-    // multiplicador de dano, catálogo de itens). Roda no Awake, antes do Health.Start copiar a vida máxima para a
+    // multiplicador de dano, regeneração base, catálogo de itens). Roda no Awake, antes do Health.Start copiar a vida máxima para a
     // vida atual. Também liga a vida do jogador ao evento central de dano, depois do PlayerStats (as defesas dos
     // itens precisam ver o dano antes do evento).
     [DefaultExecutionOrder(-100)]
@@ -26,6 +26,7 @@ namespace Icaro
                 stats.BaseCritChance = Balance.PlayerCritChance;
                 stats.CritMultiplier = Balance.PlayerCritMultiplier;
                 stats.BaseDamageMultiplier = Balance.PlayerDamageMultiplier;
+                stats.BaseRegen = Balance.PlayerBaseRegen;
                 if (Balance.Items)
                     stats.Catalog = Balance.Items;
             }

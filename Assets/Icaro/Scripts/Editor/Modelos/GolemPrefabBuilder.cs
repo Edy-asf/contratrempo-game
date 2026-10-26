@@ -34,7 +34,7 @@ namespace Icaro.EditorTools
             Material stone = model ? ConfigureMaterials() : PlaceholderMaterials(out _, out _);
 
             GameObject root = EnemyPrefabBuilder.CreateEnemyRoot("Golem", reference, stone, definition.MaxHealth,
-                height: k_Height, dropRate: 1f, detectionRange: 50f, attackRange: definition.LaserRange);
+                height: k_Height, detectionRange: 50f, attackRange: definition.LaserRange);
             EnemyPrefabBuilder.AddCapsule(root, radius: k_Radius, height: k_Height);
             EnemyPrefabBuilder.ConfigureAgent(root, radius: k_Radius, height: k_Height, speed: k_Speed, acceleration: 4f,
                 stoppingDistance: 2f);
@@ -43,7 +43,25 @@ namespace Icaro.EditorTools
 
             Transform torso;
             Transform muzzle;
-            if (model)
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor("Golem");
+            if (sprites)
+            {
+                // Sprite: o visual é desenhado; o tronco que gira para mirar e a origem do laser viram pontos vazios
+                // na altura do núcleo do desenho
+                var visual = new GameObject("Visual").transform;
+                visual.SetParent(root.transform, false);
+                visual.gameObject.AddComponent<EnemySpriteView>().Set = sprites;
+                torso = new GameObject("Golem_Tronco").transform;
+                torso.SetParent(root.transform, false);
+                torso.localPosition = new Vector3(0f, 2.45f, 0f);
+                var coreSpot = new GameObject("Golem_Nucleo").transform;
+                coreSpot.SetParent(torso, false);
+                coreSpot.localPosition = new Vector3(0f, 0.3f, 0.55f);
+                muzzle = new GameObject("Laser_Origem").transform;
+                muzzle.SetParent(coreSpot, false);
+                muzzle.localPosition = new Vector3(0f, 0f, 0.35f);
+            }
+            else if (model)
             {
                 var body = (GameObject)PrefabUtility.InstantiatePrefab(model, root.transform);
                 PrefabUtility.UnpackPrefabInstance(body, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);

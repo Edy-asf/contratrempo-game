@@ -52,11 +52,11 @@ namespace Icaro.EditorTools
                 return;
             }
 
-            if (EditorSceneManager.GetActiveScene().path != ViaBakes.ScenePath)
+            if (EditorSceneManager.GetActiveScene().path != SceneSystemsBuilder.ViaScenePath)
             {
                 if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                     return;
-                EditorSceneManager.OpenScene(ViaBakes.ScenePath);
+                EditorSceneManager.OpenScene(SceneSystemsBuilder.ViaScenePath);
             }
 
             PlayerPrefs.SetInt(ViaDebugTeleport.StartRoomKey, room);

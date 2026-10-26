@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16edf49f9d4735840918bc39dded5674, type: 3}
+  m_Name: Cascudo_Sprites
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.EnemySpriteSet
+  Atlas: {fileID: 2800000, guid: 4fe57a983c46a9848aedc483bbfafe37, type: 3}
+  Emission: {fileID: 2800000, guid: 71b725c50d03b544a84b611245fe0080, type: 3}
+  BodyGlow: 0.25
+  Material: {fileID: 2100000, guid: 93380df4c44802d4fa81d8fd95e2450c, type: 2}
+  CellWidth: 44
+  CellHeight: 36
+  Columns: 5
+  Rows: 24
+  PixelsPerMeter: 16
+  Pivot: {x: 22, y: 1}
+  Clips:
+  - Name: Idle
+    Row: 0
+    Frames: 4
+    Fps: 4
+    Loop: 1
+  - Name: Move
+    Row: 4
+    Frames: 4
+    Fps: 8
+    Loop: 1
+  - Name: Windup
+    Row: 8
+    Frames: 3
+    Fps: 8
+    Loop: 0
+  - Name: Attack
+    Row: 12
+    Frames: 3
+    Fps: 10
+    Loop: 0
+  - Name: Hit
+    Row: 16
+    Frames: 2
+    Fps: 10
+    Loop: 0
+  - Name: Death
+    Row: 20
+    Frames: 5
+    Fps: 9
+    Loop: 0

@@ -9,7 +9,7 @@ namespace Icaro
     // multiplicador mas nunca fica abaixo de MinShotInterval. Valores da ficha (EspinhentoDefinition); os campos
     // abaixo valem sem ficha.
     [RequireComponent(typeof(EnemyController))]
-    public class EspinhentoAI : MonoBehaviour
+    public class EspinhentoAI : MonoBehaviour, ISpriteActionSource
     {
         [Tooltip("Parte que gira para mirar; a arma deve ser filha dela")]
         public Transform Head;
@@ -29,8 +29,20 @@ namespace Icaro
 
         const float k_ChestHeight = 1.1f;
 
+        // Quanto tempo o sprite mostra a flor aberta depois de cada rajada
+        const float k_AttackShow = 0.35f;
+
         EnemyController m_Controller;
         float m_NextShotTime;
+        float m_LastShotTime = -10f;
+
+        // Para o sprite (EnemySpriteView): sem aviso de mira, a flor abre logo depois de cada rajada
+        public SpriteAction SpriteAction =>
+            Time.time - m_LastShotTime < k_AttackShow ? SpriteAction.Attack : SpriteAction.Idle;
+
+        public float SpriteActionProgress => Time.time - m_LastShotTime < k_AttackShow
+            ? (Time.time - m_LastShotTime) / k_AttackShow
+            : -1f;
 
         void Start()
         {
@@ -70,6 +82,7 @@ namespace Icaro
             if (m_Controller.IsSeeingTarget && Time.time >= m_NextShotTime)
             {
                 m_Controller.TryAtack(aimPosition);
+                m_LastShotTime = Time.time;
                 ThreatSignals.Report(transform, 1f);
                 m_NextShotTime = Time.time + Mathf.Max(MinShotInterval, CombatTiming.Scaled(ShotInterval));
             }

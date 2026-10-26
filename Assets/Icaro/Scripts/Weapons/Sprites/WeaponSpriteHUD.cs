@@ -461,7 +461,8 @@ namespace Icaro
         }
 
         // Arte importada sem quadros próprios: coice (recua para o canto) e recarga (abaixa e volta), em fração da
-        // altura do sprite
+        // altura do sprite. Um quadro de tiro só (a mesma pose com o clarão) ainda recua; uma animação de tiro com
+        // vários quadros traz o próprio movimento
         Vector2 ImportedMotion(Frames frames, IcaroWeapon icaro, Side side)
         {
             if (!frames.Imported)
@@ -471,7 +472,7 @@ namespace Icaro
             // Coice de cada lado no próprio tiro (recua para o canto)
             float sinceShot = Time.time - side.FireTime;
             float kickTime = FireFrameTime * 2f;
-            if (frames.Fire.Length > 0 || side.FireTime < 0f || sinceShot >= kickTime)
+            if (frames.Fire.Length > 1 || side.FireTime < 0f || sinceShot >= kickTime)
                 return Vector2.zero;
             float kick = (1f - sinceShot / kickTime) * 0.02f;
             return new Vector2(kick, -kick * 0.8f);

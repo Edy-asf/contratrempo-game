@@ -6,7 +6,8 @@ using UnityEngine;
 namespace Icaro
 {
     // Gatilho de entrada de bioma: ao passar por ele, névoa, ambiente e sol transitam suavemente para a
-    // atmosfera do bioma. Só uma transição fica ativa por vez.
+    // atmosfera do bioma. Só uma transição fica ativa por vez. A claridade do mapa do bioma (SkySettings, menu "Ícaro >
+    // Ajustes do céu") multiplica a névoa, o ambiente e o luar.
     [RequireComponent(typeof(Collider))]
     public class BiomeZone : MonoBehaviour
     {
@@ -62,6 +63,17 @@ namespace Icaro
         // Aplica a atmosfera na hora (usado pelo teleporte de depuração)
         public void ApplyInstant() => Enter(0f);
 
+        // Reaplica a atmosfera do bioma na hora, sem trocar o bioma atual nem anunciar (ajustes do céu mudaram)
+        public void ReapplyLighting()
+        {
+            if (s_Blend != null)
+                return;   // no meio de uma transição: ela já termina com os valores novos
+            Light sun = RenderSettings.sun;
+            Apply(1f, RenderSettings.fogColor, RenderSettings.fogDensity, RenderSettings.ambientSkyColor,
+                RenderSettings.ambientEquatorColor, RenderSettings.ambientGroundColor, sun,
+                sun ? sun.color : SunColor, sun ? sun.intensity : SunIntensity);
+        }
+
         void Enter(float duration)
         {
             if (s_Blend != null && s_BlendOwner)
@@ -97,11 +109,16 @@ namespace Icaro
         void Apply(float k, Color fogColor, float fogDensity, Color sky, Color equator, Color ground, Light sun,
             Color sunColor, float sunIntensity)
         {
-            RenderSettings.fogColor = Color.Lerp(fogColor, FogColor, k);
-            RenderSettings.fogDensity = Mathf.Lerp(fogDensity, FogDensity, k);
-            RenderSettings.ambientSkyColor = Color.Lerp(sky, AmbientSky, k);
-            RenderSettings.ambientEquatorColor = Color.Lerp(equator, AmbientEquator, k);
-            RenderSettings.ambientGroundColor = Color.Lerp(ground, AmbientGround, k);
+            BiomeSkyTuning tuning = SkySettings.Current.TuningFor(BiomeName);
+            float ambient = tuning != null ? tuning.AmbientBrightness : 1f;
+            float fog = tuning != null ? tuning.FogBrightness : 1f;
+            float density = tuning != null ? tuning.FogDensity : 1f;
+            float moon = tuning != null ? tuning.MoonBrightness : 1f;
+            RenderSettings.fogColor = Color.Lerp(fogColor, FogColor * fog, k);
+            RenderSettings.fogDensity = Mathf.Lerp(fogDensity, FogDensity * density, k);
+            RenderSettings.ambientSkyColor = Color.Lerp(sky, AmbientSky * ambient, k);
+            RenderSettings.ambientEquatorColor = Color.Lerp(equator, AmbientEquator * ambient, k);
+            RenderSettings.ambientGroundColor = Color.Lerp(ground, AmbientGround * ambient, k);
 
             // O ambiente trilight só chega aos objetos dinâmicos depois de recalcular a probe ambiente
             RefreshAmbient(k >= 1f);
@@ -109,7 +126,7 @@ namespace Icaro
             if (sun)
             {
                 sun.color = Color.Lerp(sunColor, SunColor, k);
-                sun.intensity = Mathf.Lerp(sunIntensity, SunIntensity, k);
+                sun.intensity = Mathf.Lerp(sunIntensity, SunIntensity * moon, k);
             }
         }
 

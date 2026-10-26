@@ -33,6 +33,9 @@ namespace Icaro
         public float CritMultiplier = 2f;
         public float BaseDamageMultiplier = 1f;
 
+        // Vida regenerada por segundo sem itens (CombatBalance.PlayerBaseRegen, copiado pelo PlayerBalance)
+        public float BaseRegen = 1f;
+
         [SerializeField] List<ItemStack> m_Items = new List<ItemStack>();
 
         public IReadOnlyList<ItemStack> Items => m_Items;
@@ -356,10 +359,10 @@ namespace Icaro
             weapon.MaxAmmo = Mathf.Max(1, Mathf.RoundToInt(original.MaxAmmo * (1f + Get(PlayerStat.AmmoCapacity))));
         }
 
-        // Soro de Biomassa: sobe a vida direto (Heal piscaria a tela de cura a cada frame)
+        // Regeneração base mais a do Soro de Biomassa: sobe a vida direto (Heal piscaria a tela de cura a cada frame)
         void ApplyRegen()
         {
-            float regen = Get(PlayerStat.HealthRegen);
+            float regen = BaseRegen + Get(PlayerStat.HealthRegen);
             if (regen <= 0f || !m_Health || m_Health.CurrentHealth <= 0f || m_Health.CurrentHealth >= m_Health.MaxHealth)
                 return;
             m_Health.CurrentHealth = Mathf.Min(m_Health.MaxHealth, m_Health.CurrentHealth + regen * Time.deltaTime);

@@ -12,7 +12,7 @@ namespace Icaro
     // lida no Start (sem os itens de velocidade do jogador, via PlayerStats.BaseGroundSpeed), e o EnemyTimeScaler a
     // multiplica pelo multiplicador de tempo. O aviso do golpe encurta com o multiplicador, mas nunca abaixo de 60%. Valores da ficha (CascudoDefinition).
     [RequireComponent(typeof(EnemyController))]
-    public class CascudoAI : MonoBehaviour
+    public class CascudoAI : MonoBehaviour, ISpriteActionSource
     {
         public enum State
         {
@@ -49,6 +49,18 @@ namespace Icaro
 
         // Velocidade base usada (m/s a 1,0x), para conferência
         public float BaseSpeed { get; private set; }
+
+        // Para o sprite (EnemySpriteView): preparação e golpe presos à duração; fora deles, parado ou andando
+        public SpriteAction SpriteAction => CurrentState switch
+        {
+            State.Windup => SpriteAction.Windup,
+            State.Strike => SpriteAction.Attack,
+            _ => m_Agent && m_Agent.velocity.sqrMagnitude > 0.04f ? SpriteAction.Move : SpriteAction.Idle,
+        };
+
+        public float SpriteActionProgress => CurrentState == State.Windup || CurrentState == State.Strike
+            ? Mathf.Clamp01(m_StateTime / Mathf.Max(0.0001f, m_StateDuration))
+            : -1f;
 
         EnemyController m_Controller;
         NavMeshAgent m_Agent;

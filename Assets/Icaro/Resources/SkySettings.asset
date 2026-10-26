@@ -1,0 +1,121 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d3f8c082b94e3b4cbef9bf70c5c5bbf, type: 3}
+  m_Name: SkySettings
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.SkySettings
+  Density: 0.28
+  Brightness: 0.94
+  Thickness: 0.5
+  DegreesPerSecond: 2
+  SpeedExponent: 1
+  TrailSeconds: 3.84
+  MaxTrailDegrees: 24
+  PoleAzimuth: 120
+  PoleElevation: 30.1
+  PoleFadeDegrees: 18
+  AuroraIntensity: 0.68
+  AuroraBands: 3
+  AuroraSpacing: 2.52
+  AuroraOffset: 1.18
+  AuroraWaviness: 0.47
+  AuroraWaveLength: 12
+  AuroraHeight: 1.94
+  AuroraSpeed: 0.68
+  AuroraRays: 0.751
+  AuroraRayDensity: 22.3
+  AuroraPieces: 5
+  AuroraPieceLength: 6.51
+  AuroraPieceHeight: 1.5
+  AuroraPieceIntensity: 0.6
+  AuroraPieceDistance: 1.99
+  AuroraPieceOffsetEastWest: 0.13
+  AuroraPieceOffsetSouthNorth: 0.65
+  AuroraPieceSpread: 16
+  AuroraPieceDrift: 2.65
+  Bosque:
+    SkyBrightness: 1
+    SkyHorizon: {r: 0.11999995, g: 0.27999997, b: 0.62, a: 1}
+    SkyMiddle: {r: 0.23999995, g: 0.06999998, b: 0.37999994, a: 1}
+    SkyTop: {r: 0.01, g: 0.01, b: 0.035, a: 1}
+    GradientLow: 0.22
+    GradientHigh: 0.55
+    HorizonHaze: 0.2
+    AmbientBrightness: 1
+    MoonBrightness: 1
+    FogBrightness: 1
+    FogDensity: 1
+    m_Captured: 1
+    Planet: 0
+    PlanetSize: 11.2
+    PlanetAzimuth: 325
+    PlanetElevation: 17
+    PlanetColorA: {r: 0.6904806, g: 0.6531684, b: 0.7735849, a: 1}
+    PlanetColorB: {r: 0.68457496, g: 0.61636704, b: 0.764151, a: 1}
+    RingColor: {r: 0.8301887, g: 0.8301887, b: 0.8301887, a: 1}
+    GlowStrength: 0.79
+    GlowHeight: 0.479
+    GlowFalloff: 0.82
+    GlowUseAuroraColors: 0
+    GlowColorLow: {r: 0.45, g: 0.25, b: 0.75, a: 1}
+    GlowColorHigh: {r: 0.15, g: 0.35, b: 0.55, a: 1}
+    GlowAzimuth: 0
+    GlowDirectional: 0
+    GlowWidth: 70
+    GlowOverFog: 0
+  Arquipelago:
+    SkyBrightness: 1
+    SkyHorizon: {r: 0.05, g: 0.28, b: 0.26, a: 1}
+    SkyMiddle: {r: 0.03, g: 0.12, b: 0.16, a: 1}
+    SkyTop: {r: 0.01, g: 0.01, b: 0.035, a: 1}
+    GradientLow: 0.25
+    GradientHigh: 0.65
+    HorizonHaze: 0.2
+    AmbientBrightness: 1
+    MoonBrightness: 1
+    FogBrightness: 1
+    FogDensity: 1
+    m_Captured: 1
+    Planet: 1
+    PlanetSize: 1
+    PlanetAzimuth: 0
+    PlanetElevation: 14
+    PlanetColorA: {r: 0.16, g: 0.48, b: 0.5, a: 1}
+    PlanetColorB: {r: 0.08, g: 0.22, b: 0.36, a: 1}
+    RingColor: {r: 0.55, g: 0.82, b: 0.85, a: 1}
+    GlowStrength: 0.03
+    GlowHeight: 0.177
+    GlowFalloff: 2
+    GlowUseAuroraColors: 1
+    GlowColorLow: {r: 0.45, g: 0.25, b: 0.75, a: 1}
+    GlowColorHigh: {r: 0.15, g: 0.35, b: 0.55, a: 1}
+    GlowAzimuth: 0
+    GlowDirectional: 0.35
+    GlowWidth: 90
+    GlowOverFog: 0.344
+  ArchipelagoSpores:
+    Enabled: 1
+    Count: 640
+    Radius: 150
+    FromWater: 1
+    RiseSpeed: 0.63
+    WaterLevelOffset: -0.01
+    Height: {x: -30, y: 8}
+    Size: {x: 0.1, y: 0.2}
+    Brightness: 1
+    Speed: 0.15
+    Wander: 0.5
+    Lifetime: {x: 8, y: 12}
+    ColorA: {r: 0.6, g: 1, b: 0.95, a: 1}
+    ColorB: {r: 0.85, g: 1, b: 0.9, a: 1}
+    ColorC: {r: 0.3, g: 0.95, b: 0.7, a: 1}
+  BosqueSky: {fileID: 2100000, guid: 938ce953629beb14f8f50c80ca18f119, type: 2}
+  ArquipelagoSky: {fileID: 2100000, guid: 59e1961c27143c348bda076079703ff0, type: 2}

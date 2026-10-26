@@ -254,6 +254,17 @@ namespace Icaro
             for (int i = 0; i < count; i++)
             {
                 RaycastHit hit = s_Hits[i];
+
+                // Orbe do tempo: o acerto conta pela precisão do momento e o tiro some
+                var orb = hit.collider.GetComponent<TimeOrb>();
+                if (orb)
+                {
+                    if (!orb.Hit())
+                        continue;
+                    PrefabPool.Release(gameObject);
+                    return true;
+                }
+
                 if (!IsHitValid(hit.collider))
                     continue;
 
@@ -265,6 +276,9 @@ namespace Icaro
                 // Começou dentro de um colisor: o ponto é a posição atual
                 Vector3 point = hit.distance <= 0f ? start : hit.point;
                 Vector3 normal = hit.distance <= 0f ? -direction : hit.normal;
+                // Domo da arena: ondula onde o tiro bate (e o tiro para, como numa parede)
+                if (!health && hit.collider.TryGetComponent(out ArenaDome dome))
+                    dome.Ripple(point);
                 HitResponse response = health
                     ? OnEnemyHit(damageable, health, point, normal)
                     : OnWallHit(point, normal, hit.collider);

@@ -1,3 +1,4 @@
+using Unity.FPS.AI;
 using Unity.FPS.Game;
 using UnityEngine;
 
@@ -66,6 +67,16 @@ namespace Icaro
             // Todo inimigo publica o dano que recebe no evento central
             if (GetComponent<Health>() && !GetComponent<DamageReporter>())
                 gameObject.AddComponent<DamageReporter>();
+
+            // O EnemyController do Microgame mata quem fica abaixo de uma altura fixa (-20 m); na Via o Arquipélago
+            // fica abaixo disso (o mar a -26 m), então o limite passa a ser relativo a onde o inimigo nasceu
+            var controller = GetComponent<EnemyController>();
+            if (controller)
+            {
+                controller.SelfDestructYHeight = Mathf.Min(controller.SelfDestructYHeight, transform.position.y - 40f);
+                // Inimigos não deixam cura (o Ícaro regenera sozinho, CombatBalance.PlayerBaseRegen)
+                controller.DropRate = 0f;
+            }
         }
 
         void Start()

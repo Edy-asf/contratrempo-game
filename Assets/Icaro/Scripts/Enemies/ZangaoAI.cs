@@ -13,7 +13,7 @@ namespace Icaro
     // (MuzzleWarning, nunca abaixo de 60%) e dispara um projétil pequeno e rápido; no máximo MaxShooters Zangões
     // atiram ao mesmo tempo, os outros esperam a vez. Velocidade de voo, cadência e projétil seguem o multiplicador.
     [RequireComponent(typeof(Health))]
-    public class ZangaoAI : MonoBehaviour
+    public class ZangaoAI : MonoBehaviour, ISpriteActionSource
     {
         [Tooltip("Objeto visual (trocável por um modelo)")]
         public Transform Visual;
@@ -69,6 +69,20 @@ namespace Icaro
         float m_ReleaseTimer = -1f;
         bool m_HoldsShooterSlot;
         float m_WingPhase;
+        float m_LastShotTime = -10f;
+
+        // Quanto tempo o sprite mostra o disparo
+        const float k_AttackShow = 0.2f;
+
+        // Para o sprite (EnemySpriteView): ferrão acendendo no aviso, disparo logo depois; senão voando
+        public SpriteAction SpriteAction => m_WarningTimer >= 0f ? SpriteAction.Windup
+            : Time.time - m_LastShotTime < k_AttackShow ? SpriteAction.Attack
+            : SpriteAction.Move;
+
+        public float SpriteActionProgress => m_WarningTimer >= 0f
+            ? 1f - Mathf.Clamp01(m_WarningTimer / Mathf.Max(0.0001f, CombatTiming.Warning(m_Definition.MuzzleWarning)))
+            : Time.time - m_LastShotTime < k_AttackShow ? (Time.time - m_LastShotTime) / k_AttackShow
+            : -1f;
         Quaternion[] m_WingRest;
         MaterialPropertyBlock m_Block;
 
@@ -140,6 +154,14 @@ namespace Icaro
             if (!room)
             {
                 m_ArenaRadius = float.MaxValue;
+                return;
+            }
+
+            // O domo da sala é o limite (com folga para o voo não raspar na parede); sem domo, o raio do trigger
+            if (room.Dome)
+            {
+                m_ArenaCenter = room.Dome.Center;
+                m_ArenaRadius = room.Dome.Radius - 3f;
                 return;
             }
 
@@ -320,6 +342,7 @@ namespace Icaro
                 {
                     SetGlow(false, 0f);
                     Fire(aimPoint);
+                    m_LastShotTime = Time.time;
                     ReleaseShooterSlot();
                     m_ShotTimer = CombatTiming.Scaled(Random.Range(d.ShotIntervalMin, d.ShotIntervalMax));
                 }

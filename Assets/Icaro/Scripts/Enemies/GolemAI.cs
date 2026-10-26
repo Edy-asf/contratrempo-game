@@ -13,7 +13,7 @@ namespace Icaro
     // Valores da ficha (GolemDefinition); os campos abaixo valem só sem ficha. Avisos encurtam com o multiplicador
     // até 60%; recargas seguem o multiplicador inteiro.
     [RequireComponent(typeof(EnemyController))]
-    public class GolemAI : MonoBehaviour
+    public class GolemAI : MonoBehaviour, ISpriteActionSource
     {
         public enum State
         {
@@ -68,6 +68,56 @@ namespace Icaro
         public AudioClip SlamSound;
 
         public State CurrentState { get; private set; } = State.Move;
+
+        // Quanto tempo o sprite mostra os punhos no chão depois da pancada
+        const float k_SlamShow = 0.45f;
+        float m_SlamTime = -10f;
+
+        // Para o sprite (EnemySpriteView): laser = mira (Windup, até a trava) e disparo (Attack); pancada = braços
+        // erguidos (Windup2) e punhos no chão (Attack2); senão parado ou andando
+        public SpriteAction SpriteAction
+        {
+            get
+            {
+                switch (CurrentState)
+                {
+                    case State.Aim:
+                    case State.Lock:
+                        return SpriteAction.Windup;
+                    case State.Fire:
+                        return SpriteAction.Attack;
+                    case State.SlamWarning:
+                        return SpriteAction.Windup2;
+                }
+
+                if (Time.time - m_SlamTime < k_SlamShow)
+                    return SpriteAction.Attack2;
+                return m_Agent && m_Agent.velocity.sqrMagnitude > 0.04f ? SpriteAction.Move : SpriteAction.Idle;
+            }
+        }
+
+        public float SpriteActionProgress
+        {
+            get
+            {
+                float state = Mathf.Clamp01(m_StateTime / Mathf.Max(0.0001f, m_StateDuration));
+                switch (CurrentState)
+                {
+                    case State.Aim:
+                        return 0.85f * state;
+                    case State.Lock:
+                        return 0.85f + 0.15f * state;
+                    case State.SlamWarning:
+                        return state;
+                    case State.Move:
+                        if (Time.time - m_SlamTime < k_SlamShow)
+                            return (Time.time - m_SlamTime) / k_SlamShow;
+                        break;
+                }
+
+                return -1f;
+            }
+        }
 
         const float k_BeamShowTime = 0.3f;
         const float k_TorsoLift = 0.35f;
@@ -387,6 +437,7 @@ namespace Icaro
             }
 
             SpawnImpact(transform.position, SlamRadius / 4f);
+            m_SlamTime = Time.time;
             if (SlamSound)
                 AudioUtility.CreateSFX(SlamSound, transform.position, AudioUtility.AudioGroups.Impact, 1f, 10f);
 

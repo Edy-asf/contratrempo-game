@@ -122,16 +122,21 @@ namespace Icaro.EditorTools
             var health = root.AddComponent<Health>();
             health.MaxHealth = definition.MaxHealth;
 
-            // Modelo (ou placeholder) no filho "Visual"
+            // Sprite desenhado em código (Art/Sprites/Inimigos/<model>), modelo ou placeholder no filho "Visual"
             var visual = new GameObject("Visual").transform;
             visual.SetParent(root.transform, false);
+            EnemySpriteSet sprites = EnemySpriteImporter.SetFor(model);
             string fbxPath = $"{ModelLibrary.ModelsFolder}/{k_Group}/{model}.fbx";
             // FBX importado antes de o grupo Chefes existir: reimporta para valerem os ajustes (sem animação)
             if (AssetImporter.GetAtPath(fbxPath) is ModelImporter importer &&
                 importer.animationType != ModelImporterAnimationType.None)
                 AssetDatabase.ImportAsset(fbxPath, ImportAssetOptions.ForceUpdate);
             var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
-            if (fbx)
+            if (sprites)
+            {
+                visual.gameObject.AddComponent<EnemySpriteView>().Set = sprites;
+            }
+            else if (fbx)
             {
                 var body = (GameObject)PrefabUtility.InstantiatePrefab(fbx, visual);
                 PrefabUtility.UnpackPrefabInstance(body, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
@@ -148,6 +153,13 @@ namespace Icaro.EditorTools
             Bounds bounds = ModelBounds(visual);
             float height = Mathf.Max(1f, bounds.size.y);
             float radius = Mathf.Max(0.8f, Mathf.Min(bounds.extents.x, bounds.extents.z) * 0.9f);
+            if (sprites)
+            {
+                // O desenho ocupa quase toda a célula acima do chão; o corpo, uns 45% da largura
+                height = (sprites.CellHeight - sprites.Pivot.y) / sprites.PixelsPerMeter * 0.85f;
+                radius = Mathf.Clamp(sprites.WorldWidth * 0.22f, 1f, 4.5f);
+                bounds = new Bounds(new Vector3(0f, height * 0.5f, 0f), new Vector3(radius * 2f, height, radius * 2f));
+            }
 
             var aimPoint = new GameObject("AimPoint").transform;
             aimPoint.SetParent(root.transform, false);
@@ -179,7 +191,8 @@ namespace Icaro.EditorTools
             ai.Visual = visual;
             ai.Muzzle = muzzle;
             ai.BodyRadius = radius;
-            ai.FlashRenderers = visual.GetComponentsInChildren<Renderer>();
+            // O sprite pisca sozinho (EnemySpriteView); o piscar do BossAI apagaria a célula dele
+            ai.FlashRenderers = sprites ? new Renderer[0] : visual.GetComponentsInChildren<Renderer>();
 
             root.AddComponent<EnemyStats>().Definition = definition;
             var reaction = root.AddComponent<HitReaction>();

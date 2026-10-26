@@ -6,20 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Icaro/Scenes/ViaAeonida.unity
-    guid: eeba719310643c34e9f43088885de573
-  - enabled: 0
-    path: Assets/FPS/Scenes/IntroMenu.unity
-    guid: 56e3faabc5bb30f49a68bb8f1292f988
-  - enabled: 0
-    path: Assets/FPS/Scenes/WinScene.unity
-    guid: 037d06fbede2b4041a843d9ee6fe750c
-  - enabled: 0
-    path: Assets/FPS/Scenes/LoseScene.unity
-    guid: 72e5c65a45893714484002914e3fd521
-  - enabled: 0
-    path: Assets/FPS/Scenes/MainScene.unity
-    guid: d794a2ef8ba31d847ad3c19d03e2ddb9
+    path: Assets/Icaro/Scenes/Via_Grade.unity
+    guid: c3a16ca3392a9394ebae6632792cb226
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 05b4aeda8533b704f9be24b556a43d98, type: 3}

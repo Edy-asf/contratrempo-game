@@ -963,7 +963,7 @@ namespace Icaro.EditorTools
 
         // ---------- assets ----------
 
-        static Texture2D Save(string name, int width, Color[] pixels, bool cutout = false)
+        internal static Texture2D Save(string name, int width, Color[] pixels, bool cutout = false)
         {
             int height = pixels.Length / width;
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);

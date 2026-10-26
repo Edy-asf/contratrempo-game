@@ -478,8 +478,8 @@ MonoBehaviour:
   DamageTick: {fileID: 8300000, guid: a7fae22399a6e1d448dc0dd2210f1dac, type: 3}
   DeathVfx: {fileID: 8950624839484268180, guid: 2a8f5052fe50f7b41b17149abb0f7414, type: 3}
   DeathVfxSpawnPoint: {fileID: 7675489476552314903}
-  LootPrefab: {fileID: 2529580269645609534, guid: 9973c412032becb4ca116ca08be62edf, type: 3}
-  DropRate: 0.15
+  LootPrefab: {fileID: 0}
+  DropRate: 0
   PathReachingRangeColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   AttackRangeColor: {r: 1, g: 0, b: 0, a: 1}
   DetectionRangeColor: {r: 0, g: 0, b: 1, a: 1}

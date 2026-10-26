@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Inimigo_Vagante
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.VaganteDefinition
   Prefab: {fileID: 8828518364046050943, guid: 60cb9bba7f01be846bcab69c4b56406f, type: 3}
-  DisplayName: 
+  DisplayName: Explorador Tomado
   MinArena: 4
   MaxAlive: 3
   RequiresHighSpawn: 0
@@ -26,7 +26,6 @@ MonoBehaviour:
   ProjectileSpeed: 24
   MovementMultiplierCap: 0
   MaxHitFraction: 0
-  FragmentDropChance: 0.06
   CronitaValue: 4
   MoveSpeed: 3.5
   WanderMinDistance: 8

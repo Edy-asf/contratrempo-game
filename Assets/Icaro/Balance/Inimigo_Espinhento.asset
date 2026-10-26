@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Inimigo_Espinhento
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.EnemyDefinition
   Prefab: {fileID: 3577798923503137001, guid: c0ac36f8a86672c45a2288830d6c2d5b, type: 3}
-  DisplayName: 
+  DisplayName: "Flor-canh\xE3o"
   MinArena: 3
   MaxAlive: 4
   RequiresHighSpawn: 1
@@ -26,6 +26,5 @@ MonoBehaviour:
   ProjectileSpeed: 0
   MovementMultiplierCap: 0
   MaxHitFraction: 0
-  FragmentDropChance: 0.06
   CronitaValue: 3
   MinShotInterval: 1.4

@@ -1,0 +1,20 @@
+{
+  "name": "Chefe_Sapo",
+  "cellWidth": 184,
+  "cellHeight": 150,
+  "columns": 6,
+  "rows": 24,
+  "pixelsPerMeter": 16,
+  "pivotX": 92,
+  "pivotY": 1,
+  "emission": "Chefe_Sapo_Brilho.png",
+  "bodyGlow": 0.25,
+  "clips": [
+    {"name": "Idle", "row": 0, "frames": 4, "fps": 3, "loop": true},
+    {"name": "Move", "row": 4, "frames": 4, "fps": 6, "loop": true},
+    {"name": "Windup", "row": 8, "frames": 3, "fps": 6, "loop": false},
+    {"name": "Attack", "row": 12, "frames": 4, "fps": 10, "loop": true},
+    {"name": "Hit", "row": 16, "frames": 2, "fps": 10, "loop": false},
+    {"name": "Death", "row": 20, "frames": 6, "fps": 7, "loop": false}
+  ]
+}

@@ -11,7 +11,7 @@ namespace Icaro
     // Os valores vêm da ficha (PredadorDefinition); os campos abaixo valem só sem ficha.
     // O aviso encurta com o multiplicador de tempo até 60%; investida e recarga seguem o multiplicador inteiro.
     [RequireComponent(typeof(EnemyController))]
-    public class PredadorAI : MonoBehaviour
+    public class PredadorAI : MonoBehaviour, ISpriteActionSource
     {
         public enum State
         {
@@ -54,6 +54,18 @@ namespace Icaro
         static readonly int k_EmissionColor = Shader.PropertyToID("_EmissionColor");
 
         public State CurrentState { get; private set; } = State.Approach;
+
+        // Para o sprite (EnemySpriteView): aviso preso à duração; investida em galope; senão parado ou andando
+        public SpriteAction SpriteAction => CurrentState switch
+        {
+            State.Warning => SpriteAction.Windup,
+            State.Dash => SpriteAction.Attack,
+            _ => m_Agent && m_Agent.velocity.sqrMagnitude > 0.04f ? SpriteAction.Move : SpriteAction.Idle,
+        };
+
+        public float SpriteActionProgress => CurrentState == State.Warning
+            ? Mathf.Clamp01(m_StateTime / Mathf.Max(0.0001f, m_StateDuration))
+            : -1f;
 
         EnemyController m_Controller;
         NavMeshAgent m_Agent;

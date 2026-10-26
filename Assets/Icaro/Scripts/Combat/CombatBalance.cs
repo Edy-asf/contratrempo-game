@@ -150,6 +150,9 @@ namespace Icaro
         [Tooltip("Vida máxima do Ícaro (o Player do Microgame tem 100)")]
         public float PlayerMaxHealth = 125f;
 
+        [Tooltip("Vida que o Ícaro regenera por segundo, sempre (os inimigos não deixam cura); o Soro de Biomassa soma")]
+        [Min(0f)] public float PlayerBaseRegen = 1f;
+
         [Tooltip("Chance de cada tiro do jogador ser crítico (0 a 1)")]
         [Range(0f, 1f)] public float PlayerCritChance = 0.1f;
 
@@ -165,20 +168,9 @@ namespace Icaro
         [Tooltip("Assistência de mira do jogador (zona, alcance, giro, intensidade)")]
         public AimAssistSettings AimAssist;
 
-        [Header("Fragmento de metrônomo")]
-        [Tooltip("Prefab do fragmento (MetronomeFragment)")]
-        public GameObject FragmentPrefab;
-
-        [Tooltip("Quanto o fragmento reduz o multiplicador de tempo ao ser pego")]
-        [Min(0f)] public float FragmentReduction = 0.5f;
-
-        [Tooltip("Segundos até o fragmento sumir (pisca nos últimos FragmentBlinkTime)")]
-        [Min(1f)] public float FragmentLifetime = 20f;
-
-        [Min(0f)] public float FragmentBlinkTime = 5f;
-
-        [Tooltip("Fragmentos garantidos ao derrotar o chefe")]
-        [Min(0)] public int BossFragmentDrops = 2;
+        [Header("Orbe do tempo")]
+        [Tooltip("Inimigos marcados, orbes do chefe, redução pela precisão e o ritmo do anel que fecha")]
+        public TimeOrbSettings TimeOrbs = new TimeOrbSettings();
 
         [Header("Dash do Ícaro")]
         [Tooltip("Distância do dash, em metros")]

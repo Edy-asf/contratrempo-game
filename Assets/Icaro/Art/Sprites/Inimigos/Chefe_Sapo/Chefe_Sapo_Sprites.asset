@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16edf49f9d4735840918bc39dded5674, type: 3}
+  m_Name: Chefe_Sapo_Sprites
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.EnemySpriteSet
+  Atlas: {fileID: 2800000, guid: 92d2cb9631871d64bb1b0eaed7ad4cdf, type: 3}
+  Emission: {fileID: 2800000, guid: 49cfc05d7c6375a418b85fabfc0db5d5, type: 3}
+  BodyGlow: 0.25
+  Material: {fileID: 2100000, guid: 67ca431f53a3aef4196506399c2a9a53, type: 2}
+  CellWidth: 184
+  CellHeight: 150
+  Columns: 6
+  Rows: 24
+  PixelsPerMeter: 16
+  Pivot: {x: 92, y: 1}
+  Clips:
+  - Name: Idle
+    Row: 0
+    Frames: 4
+    Fps: 3
+    Loop: 1
+  - Name: Move
+    Row: 4
+    Frames: 4
+    Fps: 6
+    Loop: 1
+  - Name: Windup
+    Row: 8
+    Frames: 3
+    Fps: 6
+    Loop: 0
+  - Name: Attack
+    Row: 12
+    Frames: 4
+    Fps: 10
+    Loop: 1
+  - Name: Hit
+    Row: 16
+    Frames: 2
+    Fps: 10
+    Loop: 0
+  - Name: Death
+    Row: 20
+    Frames: 6
+    Fps: 7
+    Loop: 0

@@ -168,20 +168,20 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 1
+      time: 0
       value: 1
       inSlope: 0
-      outSlope: 0.06999999
-      tangentMode: 0
+      outSlope: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 20
-      value: 2.33
-      inSlope: 0.06999999
+      time: 1
+      value: 1
+      inSlope: 0
       outSlope: 0
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
@@ -252,16 +252,32 @@ MonoBehaviour:
   Shop: {fileID: 11400000, guid: 686d477454adaf44a882c176dd3ac87e, type: 2}
   Items: {fileID: 11400000, guid: 9c64be95b20b2e242b10f052387c2f20, type: 2}
   PlayerMaxHealth: 125
+  PlayerBaseRegen: 1
   PlayerCritChance: 0.1
   PlayerCritMultiplier: 2
   PlayerDamageMultiplier: 1
   Music: {fileID: 11400000, guid: 29538b54426f1e8479fbd23fdef40250, type: 2}
   AimAssist: {fileID: 11400000, guid: 77bd3b279f7159244a00724cabd2ed2f, type: 2}
-  FragmentPrefab: {fileID: 6138055235487434397, guid: 785bc5e2d32c83d418f114658852aaae, type: 3}
-  FragmentReduction: 0.5
-  FragmentLifetime: 20
-  FragmentBlinkTime: 5
-  BossFragmentDrops: 2
+  TimeOrbs:
+    Prefab: {fileID: 853382367624116709, guid: 320f8592837392049ad99047fed5e3e5, type: 3}
+    MarkEvery: 8
+    MarkMin: 1
+    BossOrbs: 2
+    PerfectReduction: 0.5
+    GoodReduction: 0.3
+    OffReduction: 0.1
+    RingDuration: 2
+    CycleGap: 0.35
+    Cycles: 3
+    PerfectWindow: 0.12
+    GoodWindow: 0.25
+    RiseHeight: 1.6
+    RiseSpeed: 0.7
+    Wander: 1.5
+    WanderSpeed: 1
+    RingStartRadius: 2.4
+    OrbRadius: 0.4
+    HitRadius: 0.6
   DashDistance: 7
   DashDuration: 0.18
   DashCooldown: 2.5

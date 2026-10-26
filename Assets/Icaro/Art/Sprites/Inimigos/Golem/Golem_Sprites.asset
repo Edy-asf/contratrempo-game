@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16edf49f9d4735840918bc39dded5674, type: 3}
+  m_Name: Golem_Sprites
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.EnemySpriteSet
+  Atlas: {fileID: 2800000, guid: c08db07d13b495046a484d2e99a3796e, type: 3}
+  Emission: {fileID: 2800000, guid: a5164cbb33ebf08468825912dddf072e, type: 3}
+  BodyGlow: 0.25
+  Material: {fileID: 2100000, guid: 3e92961c3b84c5744864e534c66914d0, type: 2}
+  CellWidth: 124
+  CellHeight: 92
+  Columns: 6
+  Rows: 32
+  PixelsPerMeter: 16
+  Pivot: {x: 62, y: 1}
+  Clips:
+  - Name: Idle
+    Row: 0
+    Frames: 4
+    Fps: 3
+    Loop: 1
+  - Name: Move
+    Row: 4
+    Frames: 4
+    Fps: 5
+    Loop: 1
+  - Name: Windup
+    Row: 8
+    Frames: 3
+    Fps: 6
+    Loop: 0
+  - Name: Attack
+    Row: 12
+    Frames: 2
+    Fps: 12
+    Loop: 1
+  - Name: Windup2
+    Row: 16
+    Frames: 3
+    Fps: 6
+    Loop: 0
+  - Name: Attack2
+    Row: 20
+    Frames: 3
+    Fps: 10
+    Loop: 0
+  - Name: Hit
+    Row: 24
+    Frames: 2
+    Fps: 10
+    Loop: 0
+  - Name: Death
+    Row: 28
+    Frames: 6
+    Fps: 8
+    Loop: 0

@@ -46,7 +46,6 @@ namespace Icaro.EditorTools
             BuildPlayerVariant(BuildBlasterVariant());
             CombatFeedbackBuilder.BuildAll();
             EnemyPrefabBuilder.BuildAll();
-            ScenePropKit.EnsureAll();
 
             AssetDatabase.SaveAssets();
             Debug.Log("[Ícaro] Prefabs gerados em " + IcaroAssetUtility.PrefabsFolder);

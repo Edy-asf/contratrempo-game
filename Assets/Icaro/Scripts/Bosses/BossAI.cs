@@ -13,7 +13,7 @@ namespace Icaro
     // (ondas, projéteis, marcas, poças, feixes); cadências e avisos seguem o multiplicador de tempo
     // (CombatTiming.Scaled e Warning). Usa Health/Damageable/Actor do Microgame, sem EnemyController.
     [RequireComponent(typeof(Health))]
-    public abstract class BossAI : MonoBehaviour
+    public abstract class BossAI : MonoBehaviour, ISpriteActionSource
     {
         [Tooltip("Modelo (trocável); é ele que a animação procedural move")]
         public Transform Visual;
@@ -45,6 +45,30 @@ namespace Icaro
         protected float HoverHeight { get; set; }
 
         readonly List<SweepBeam> m_Beams = new List<SweepBeam>();
+        float m_ThreatStart = -10f;
+        float m_ThreatEnd = -10f;
+
+        // Para o sprite (EnemySpriteView): cada ataque marca a janela dele com Threat; a primeira parte é o aviso
+        // (Windup, preso à duração) e o resto o golpe (Attack, pelo relógio); fora dela, parado ou andando
+        const float k_WindupShare = 0.45f;
+
+        float ThreatProgress =>
+            Mathf.Clamp01((Time.time - m_ThreatStart) / Mathf.Max(0.01f, m_ThreatEnd - m_ThreatStart));
+
+        public SpriteAction SpriteAction
+        {
+            get
+            {
+                if (Time.time < m_ThreatEnd)
+                    return ThreatProgress < k_WindupShare ? SpriteAction.Windup : SpriteAction.Attack;
+                return Agent && Agent.enabled && Agent.velocity.sqrMagnitude > 0.25f ? SpriteAction.Move
+                    : SpriteAction.Idle;
+            }
+        }
+
+        public float SpriteActionProgress => Time.time < m_ThreatEnd && ThreatProgress < k_WindupShare
+            ? ThreatProgress / k_WindupShare
+            : -1f;
         Vector3 m_VisualPosition;
         Vector3 m_VisualScale = Vector3.one;
         Quaternion m_VisualRotation = Quaternion.identity;
@@ -276,7 +300,12 @@ namespace Icaro
         // projéteis passarem por onde ele está (os tiros mirados saem da boca, MuzzlePosition)
         protected Vector3 RingOrigin => new Vector3(transform.position.x, GroundY + 1.2f, transform.position.z);
 
-        protected void Threat(float seconds) => ThreatSignals.Report(transform, seconds);
+        protected void Threat(float seconds)
+        {
+            ThreatSignals.Report(transform, seconds);
+            m_ThreatStart = Time.time;
+            m_ThreatEnd = Time.time + seconds;
+        }
 
         protected BossProjectile Shoot(Vector3 from, Vector3 direction, float speed, float damage, float size = 0.6f,
             float homing = 0f, float lifetime = 7f, float impactRadius = 0f) =>

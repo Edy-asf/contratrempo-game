@@ -12,7 +12,7 @@ namespace Icaro
     // depois espera BurstIntervalMin..Max. Movimento, cadência e projétil seguem o multiplicador de tempo.
     // Valores da ficha (VaganteDefinition); os campos abaixo valem sem ficha.
     [RequireComponent(typeof(EnemyController))]
-    public class VaganteAI : MonoBehaviour
+    public class VaganteAI : MonoBehaviour, ISpriteActionSource
     {
         enum MoveState
         {
@@ -72,6 +72,18 @@ namespace Icaro
         float m_AttackTimer;
         int m_ShotsLeft;
 
+        // Para o sprite (EnemySpriteView): cano acendendo no aviso, coice na rajada; senão parado ou andando
+        public SpriteAction SpriteAction => m_AttackState switch
+        {
+            AttackState.Warning => SpriteAction.Windup,
+            AttackState.Firing => SpriteAction.Attack,
+            _ => m_Agent && m_Agent.velocity.sqrMagnitude > 0.04f ? SpriteAction.Move : SpriteAction.Idle,
+        };
+
+        public float SpriteActionProgress => m_AttackState == AttackState.Warning
+            ? 1f - Mathf.Clamp01(m_AttackTimer / Mathf.Max(0.0001f, CombatTiming.Warning(MuzzleWarning)))
+            : -1f;
+
         void Start()
         {
             m_Controller = GetComponent<EnemyController>();
@@ -110,7 +122,8 @@ namespace Icaro
             m_Controller.onLostTarget += () => { };
         }
 
-        // A arena é a sala (RoomManager) mais próxima; o raio é o do trigger dela
+        // A arena é a sala (RoomManager) mais próxima: o domo dela (com folga para não andar colado na parede) ou, sem
+        // domo, o raio do trigger
         void FindArena()
         {
             float best = float.MaxValue;
@@ -120,6 +133,13 @@ namespace Icaro
                 if (distance >= best)
                     continue;
                 best = distance;
+                if (room.Dome)
+                {
+                    m_ArenaCenter = room.Dome.Center;
+                    m_ArenaRadius = room.Dome.Radius - 3f;
+                    continue;
+                }
+
                 m_ArenaCenter = room.transform.position;
                 var capsule = room.GetComponent<CapsuleCollider>();
                 m_ArenaRadius = capsule ? capsule.radius + 6f : 50f;

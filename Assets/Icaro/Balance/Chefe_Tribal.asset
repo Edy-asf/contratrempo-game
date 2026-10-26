@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Chefe_Tribal
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.TribalDefinition
   Prefab: {fileID: 2260243058437102247, guid: 3f365aafcc54fac4f88bfaaeb020741b, type: 3}
-  DisplayName: "Guardi\xE3o Tiki"
+  DisplayName: "Or\xE1culo"
   MinArena: 1
   MaxAlive: 0
   RequiresHighSpawn: 0
@@ -26,7 +26,6 @@ MonoBehaviour:
   ProjectileSpeed: 0
   MovementMultiplierCap: 0
   MaxHitFraction: 0
-  FragmentDropChance: 0
   CronitaValue: 3
   MoveSpeed: 4
   PreferredDistance: 15

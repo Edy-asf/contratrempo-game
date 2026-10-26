@@ -53,10 +53,6 @@ namespace Icaro
         [Range(0f, 1f)] public float MaxHitFraction;
 
 
-        [Header("Fragmento de metrônomo")]
-        [Tooltip("Chance (0 a 1) de deixar cair um fragmento de metrônomo ao morrer")]
-        [Range(0f, 1f)] public float FragmentDropChance;
-
         [Header("Cronitas")]
         [Tooltip("Cronitas (moeda da run) que este inimigo solta ao morrer, antes dos bônus de sala e de elite")]
         [Min(0)] public int CronitaValue = 3;
