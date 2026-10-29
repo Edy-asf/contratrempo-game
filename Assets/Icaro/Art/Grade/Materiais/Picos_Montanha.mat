@@ -37,22 +37,38 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _CavityDark: 0.35
     - _Cutoff: 0.5
+    - _DriftAmount: 0.55
+    - _DriftScale: 7
+    - _EdgeLight: 0.35
     - _EdgeWidth: 0.06
     - _HeightBonus: 0.1
     - _HeightHigh: 80
     - _HeightLow: -110
     - _NoiseScale: 3
+    - _RippleAmount: 0.35
     - _RockEdge: 0.55
+    - _ShelfSnowCut: 1.2
+    - _SideSnow: 1.1
     - _SnowAmount: 0.42
     - _SnowNoise: 0.3
+    - _SparkleAmount: 1.4
+    - _Stains: 0.35
+    - _StrataScale: 9
+    - _StrataWave: 5
     - _Streaks: 0.08
     - _TexelsPerMeter: 16
     - _Tile: 4
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FillColor: {r: 0.09999997, g: 0.11999995, b: 0.21999997, a: 1}
     - _RockTint: {r: 1, g: 1, b: 1, a: 1}
     - _SnowEdge: {r: 0.72, g: 0.76, b: 0.92, a: 1}
+    - _SnowShade: {r: 0.62, g: 0.68, b: 0.9, a: 1}
     - _SnowTint: {r: 1, g: 1, b: 1, a: 1}
+    - _StrataA: {r: 1.06, g: 0.97999996, b: 0.88, a: 1}
+    - _StrataB: {r: 0.9, g: 0.91, b: 0.96, a: 1}
+    - _StrataC: {r: 1.1, g: 0.92, b: 0.74, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -28,6 +28,8 @@ Material:
     - _AuroraHeight: 0.42
     - _AuroraSpeed: 1
     - _AuroraStrength: 0
+    - _CoronaSize: 2.5
+    - _EclipseSize: 0
     - _GlowAzimuth: 0
     - _GlowDirectional: 0
     - _GlowFalloff: 0.82
@@ -38,7 +40,7 @@ Material:
     - _GradientBlue: 0.22
     - _GradientTop: 0.55
     - _HorizonFog: 0.2
-    - _PlanetSize: 0
+    - _PlanetSize: 0.17
     - _SkyBrightness: 1
     - _StarBrightness: 2.2
     - _StarDensity: 0.22
@@ -46,17 +48,19 @@ Material:
     m_Colors:
     - _AuroraColorA: {r: 0.2, g: 1.4, b: 0.8, a: 1}
     - _AuroraColorB: {r: 0.5, g: 0.3, b: 1.2, a: 1}
+    - _CoronaColor: {r: 3, g: 2.2, b: 1.2, a: 1}
+    - _EclipseDir: {r: 0.3, g: 0.35, b: 0.89, a: 0}
     - _GlowColor: {r: 0.19999996, g: 0.059999965, b: 0.27999997, a: 1}
     - _GlowColorHigh: {r: 0.15, g: 0.35, b: 0.55, a: 1}
     - _GlowColorLow: {r: 0.45, g: 0.25, b: 0.75, a: 1}
     - _HorizonColor: {r: 0.06999998, g: 0.035, b: 0.11999995, a: 1}
-    - _HorizonTint: {r: 0.11999995, g: 0.27999997, b: 0.62, a: 1}
-    - _MidColor: {r: 0.23999995, g: 0.06999998, b: 0.37999994, a: 1}
+    - _HorizonTint: {r: 0.12, g: 0.28, b: 0.62, a: 1}
+    - _MidColor: {r: 0.24, g: 0.07, b: 0.38, a: 1}
     - _NebulaColor: {r: 0.11999995, g: 0.059999965, b: 0.19999996, a: 1}
-    - _PlanetColorA: {r: 0.6904806, g: 0.6531684, b: 0.7735849, a: 1}
-    - _PlanetColorB: {r: 0.68457496, g: 0.61636704, b: 0.764151, a: 1}
-    - _PlanetDir: {r: -0.548514, g: 0.2923717, b: 0.78335893, a: 0}
-    - _RingColor: {r: 0.8301887, g: 0.8301887, b: 0.8301887, a: 1}
+    - _PlanetColorA: {r: 0.55, g: 0.32, b: 0.72, a: 1}
+    - _PlanetColorB: {r: 0.2, g: 0.55, b: 0.62, a: 1}
+    - _PlanetDir: {r: -0.55, g: 0.3, b: 0.78, a: 0}
+    - _RingColor: {r: 0.75, g: 0.68, b: 0.9, a: 1}
     - _TopColor: {r: 0.01, g: 0.01, b: 0.035, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
