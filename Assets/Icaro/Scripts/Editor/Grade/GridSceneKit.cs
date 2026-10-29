@@ -29,7 +29,17 @@ namespace Icaro.EditorTools
             public readonly List<Vector2> Uvs = new List<Vector2>();
             public readonly List<int> Triangles = new List<int>();
 
+            // Cor por vértice (opcional; vazia na maioria das malhas). Quem usa chama PadColors antes de somar
+            // vértices com cor, para os vértices sem cor ficarem brancos (o branco quer dizer "sem efeito" nos shaders)
+            public readonly List<Color> Colors = new List<Color>();
+
             public int Count => Vertices.Count;
+
+            public void PadColors()
+            {
+                while (Colors.Count < Vertices.Count)
+                    Colors.Add(Color.white);
+            }
 
             // Quadrado da célula na altura y, virado para cima
             public void AddHorizontal(int x, int z, float y)
@@ -142,6 +152,8 @@ namespace Icaro.EditorTools
             if (data.Count == 0)
                 return null;
 
+            if (data.Colors.Count > 0)
+                data.PadColors();
             if (split && data.Count > k_ChunkVertices)
             {
                 Dictionary<Vector2Int, MeshData> chunks = SplitByArea(data, k_ChunkSize);
@@ -171,6 +183,8 @@ namespace Icaro.EditorTools
             mesh.SetVertices(data.Vertices);
             mesh.SetNormals(data.Normals);
             mesh.SetUVs(0, data.Uvs);
+            if (data.Colors.Count == data.Count)
+                mesh.SetColors(data.Colors);
             mesh.SetTriangles(data.Triangles, 0);
             mesh.RecalculateBounds();
             mesh.RecalculateTangents();
@@ -214,6 +228,8 @@ namespace Icaro.EditorTools
                     chunk.Vertices.Add(data.Vertices[index]);
                     chunk.Normals.Add(data.Normals[index]);
                     chunk.Uvs.Add(data.Uvs[index]);
+                    if (data.Colors.Count > 0)
+                        chunk.Colors.Add(data.Colors[index]);
                 }
             }
 

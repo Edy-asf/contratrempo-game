@@ -6,16 +6,19 @@ namespace Icaro.EditorTools
 {
     // Montanhas dos Picos acima das Nuvens no estilo dos pilares de arenito de Zhangjiajie: colunas de paredes quase
     // verticais (o alargamento fica escondido dentro da nuvem), sem pontas. Cada montanha junta vários pilares que se
-    // sobrepõem, de alturas e larguras diferentes. Cada pilar é uma malha em anéis do topo até dentro da nuvem fechada,
-    // com normais suaves, e o contorno em cada altura soma:
+    // sobrepõem, de alturas e larguras diferentes, e um pilar largo vira um feixe de colunas mais finas coladas (com
+    // fendas fundas entre elas), para nada ficar com cara de tronco. Cada coluna é uma malha em anéis do topo até dentro
+    // da nuvem fechada, facetada (cada face com a própria normal: rocha angulosa), e o contorno em cada altura soma:
     // - planta de blocos: um polígono irregular de 4 a 7 cantos (faces retas e quinas levemente arredondadas);
-    // - camadas empilhadas: a cada camada (10 a 26 m) o bloco muda um pouco (cantos, giro e centro deslocados), o que
-    //   dá os degraus, saliências e reentrâncias das pilhas de blocos;
-    // - cinturas (o pilar afina e engrossa ao longo da altura), fendas verticais estreitas que serpenteiam, e aspereza.
-    // Topos: penhasco (ombro arredondado em dois degraus e o alto irregular, um pouco mais alto em partes), mesa (borda
-    // e meio quase plano) ou partido (inclinado, mais alto de um lado). Os anéis ficam mais espaçados abaixo das nuvens,
-    // onde nada aparece. UV0.x marca o alto (o shader Icaro/SnowRock põe mais neve ali); a textura é projetada pelo
-    // mundo, então não há UV de verdade.
+    // - camadas fortes empilhadas (lajes de alturas diferentes): cada camada tem a planta, o giro, o centro e a largura
+    //   um pouco diferentes da de baixo, e entre duas camadas há uma junta recuada e escura; onde a de baixo é mais
+    //   larga sobra um degrau (os estreitos ficam marcados para não pegar neve), onde é mais estreita, uma saliência;
+    // - cinturas (a coluna afina e engrossa ao longo da altura), fendas verticais estreitas que serpenteiam, aspereza.
+    // Topos: penhasco (ombro em dois degraus e o alto irregular), mesa (borda e meio quase plano) ou partido
+    // (inclinado). Os anéis ficam mais espaçados abaixo das nuvens, onde nada aparece. UV0.x marca o alto (o shader
+    // Icaro/SnowRock põe mais neve ali); a cor do vértice leva o que o shader precisa (branco = nada): R = quanto
+    // escurece (juntas e fendas), G = 1 - quanto clareia (beira de cada camada), B = 0 nos degraus estreitos (sem
+    // neve), A = 0 na capa de neve dos topos (sempre neve). A textura é projetada pelo mundo, então não há UV de verdade.
     public static class PicosMountainKit
     {
         public enum Kind { Column, Tower, Cluster, Crown, Ridge, Broken }
@@ -40,6 +43,9 @@ namespace Icaro.EditorTools
 
         public static readonly List<Placed> Pillars = new List<Placed>();
 
+        // Malha do gelo (pingentes sob as cornijas de neve); o gerador do mapa liga antes de montar as montanhas
+        public static MeshData Ice;
+
         public class PillarSpec
         {
             public Vector3 Top;                 // centro do topo do corpo (o ombro do penhasco sobe um pouco acima)
@@ -61,7 +67,13 @@ namespace Icaro.EditorTools
             public float Roughness = 0.06f;
             public float Seed;
             public bool Track = true;           // entra na lista de pilares (fiapos)
+            public bool Bundle = true;          // largo (e sem topo de mesa): vira um feixe de colunas
+
+            public PillarSpec Clone() => (PillarSpec)MemberwiseClone();
         }
+
+        const float k_BundleRadius = 12f;       // acima disso, um pilar sem topo de mesa vira feixe
+        const float k_NarrowStep = 2.5f;        // degraus mais estreitos que isso não pegam neve
 
         static System.Random s_Random;
 
@@ -70,9 +82,8 @@ namespace Icaro.EditorTools
         // Detalhe pela distância: 0 perto do caminho, 1 meio, 2 longe
         static void Detail(PillarSpec spec, int detail, float radius)
         {
-            int maxSides = detail == 0 ? 48 : detail == 1 ? 32 : 20;
-            spec.Sides = Mathf.Clamp(Mathf.RoundToInt(radius * (detail == 0 ? 2.4f : detail == 1 ? 1.5f : 1f)), 14, maxSides);
-            spec.RingStep = detail == 0 ? 2.5f : detail == 1 ? 4f : 7f;
+            spec.Sides = detail == 0 ? 30 : detail == 1 ? 22 : 15;
+            spec.RingStep = detail == 0 ? 3f : detail == 1 ? 6f : 0f;     // anéis no meio das camadas (0 = nenhum)
         }
 
         // Montanha inteira de um tipo, com 'size' de raio do corpo principal no alto e o topo em 'top'
@@ -245,138 +256,312 @@ namespace Icaro.EditorTools
             return Mathf.Lerp(best == float.MaxValue ? round : best, round, 0.18f);
         }
 
-        // Um pilar: anéis do topo à base, o topo pela forma pedida e as normais suaves pela grade
+        // Um pilar: uma coluna ou, se for largo, um feixe de colunas
         public static void Pillar(MeshData mesh, PillarSpec spec)
         {
             if (spec.Track)
                 Pillars.Add(new Placed { Top = spec.Top, TopRadius = spec.TopRadius, BaseRadius = spec.BaseRadius, Taper = spec.Taper });
+            if (spec.Bundle && spec.Cap != Cap.Flat && spec.TopRadius > k_BundleRadius)
+                BuildBundle(mesh, spec);
+            else
+                Column(mesh, spec);
+        }
 
-            int sides = spec.Sides;
-            var heights = new List<float>();
-            for (float y = spec.Top.y; y > spec.BottomY; y -= y > k_HiddenBelow ? spec.RingStep : k_HiddenStep)
-                heights.Add(y);
-            heights.Add(spec.BottomY);
+        // Feixe: colunas mais finas coladas (a do meio mais alta e as outras espalhadas em espiral, caindo de altura
+        // para fora), cada uma com as próprias camadas, cantos e topo
+        static void BuildBundle(MeshData mesh, PillarSpec spec)
+        {
+            int count = Mathf.Clamp(Mathf.RoundToInt(spec.TopRadius / 7f), 3, 10);
+            float baseRatio = spec.BaseRadius / spec.TopRadius;
+            float capRatio = spec.TopRadius > 0f ? spec.CapHeight / spec.TopRadius : 0.25f;
+            for (int i = 0; i < count; i++)
+            {
+                float angle = (i * 137.5f + spec.Seed * 7f) * Mathf.Deg2Rad;
+                float distance = i == 0 ? 0f : spec.TopRadius * 0.62f * Mathf.Sqrt(i / (float)(count - 1));
+                float radius = spec.TopRadius * (i == 0 ? 0.56f : Mathf.Lerp(0.36f, 0.52f, R01(spec.Seed, i * 3.3f)));
+                float drop = i == 0 ? 0f : spec.TopRadius * Mathf.Lerp(0.1f, 1.2f, R01(spec.Seed, i * 5.1f)) * (0.5f + distance / spec.TopRadius);
+                PillarSpec sub = spec.Clone();
+                sub.Top = spec.Top + new Vector3(Mathf.Cos(angle) * distance, -drop, Mathf.Sin(angle) * distance);
+                sub.TopRadius = radius;
+                sub.BaseRadius = radius * baseRatio;
+                sub.CapHeight = radius * capRatio;
+                sub.Seed = spec.Seed + i * 13.7f;
+                sub.Corners = 4 + Mathf.FloorToInt(R01(sub.Seed, 9.2f) * 4f);
+                sub.Bundle = false;
+                sub.Track = false;
+                Column(mesh, sub);
+            }
+        }
 
-            // Penhasco: dois anéis do ombro acima do topo do corpo (altura e encolhimento), do mais alto para baixo
-            var shoulder = new List<Vector2>();
+        struct Ring
+        {
+            public float Y;
+            public int Bed;
+            public float Scale;     // largura extra deste anel (a junta é mais estreita)
+            public float Cavity;    // quanto escurece (1 = nada)
+            public float Edge;      // quanto clareia (0 = nada)
+            public bool Cap;
+            public float Shrink;
+        }
+
+        // Anéis do topo à base: o ombro do penhasco (se houver) e, em cada camada, a beira de cima (clara), anéis do
+        // meio, o pé da camada e a junta recuada (escura) antes da camada de baixo
+        static List<Ring> Rings(PillarSpec spec)
+        {
+            var rings = new List<Ring>();
             if (spec.Cap == Cap.Crag)
             {
-                shoulder.Add(new Vector2(1f, 0.74f));
-                shoulder.Add(new Vector2(0.62f, 0.94f));
+                rings.Add(new Ring { Y = spec.Top.y + spec.CapHeight, Cap = true, Shrink = 0.74f, Scale = 1f, Cavity = 1f, Edge = 0.4f });
+                rings.Add(new Ring { Y = spec.Top.y + spec.CapHeight * 0.62f, Cap = true, Shrink = 0.94f, Scale = 1f, Cavity = 1f, Edge = 0.25f });
             }
 
-            int rings = shoulder.Count + heights.Count;
-            var grid = new Vector3[rings, sides];
-            var bias = new float[rings];
+            float y = spec.Top.y;
+            for (int bed = 0; y > spec.BottomY; bed++)
+            {
+                if (y < k_HiddenBelow)
+                {
+                    rings.Add(new Ring { Y = y, Bed = bed, Scale = 1f, Cavity = 1f });
+                    y -= k_HiddenStep;
+                    continue;
+                }
+
+                float height = spec.BedHeight * Mathf.Lerp(0.55f, 1.45f, R01(spec.Seed, bed * 2.3f + 0.7f));
+                float bottom = Mathf.Max(y - height, spec.BottomY);
+                rings.Add(new Ring { Y = y, Bed = bed, Scale = 1f, Cavity = 1f, Edge = 0.55f });
+                if (spec.RingStep > 0.5f)
+                    for (float inner = y - spec.RingStep; inner > bottom + 1f; inner -= spec.RingStep)
+                        rings.Add(new Ring { Y = inner, Bed = bed, Scale = 1f, Cavity = 1f });
+                rings.Add(new Ring { Y = bottom + 0.5f, Bed = bed, Scale = 1f, Cavity = 0.85f });
+                rings.Add(new Ring { Y = bottom, Bed = bed, Scale = 0.9f, Cavity = 0.45f });
+                y = bottom - 0.35f;
+            }
+
+            rings.Add(new Ring { Y = spec.BottomY, Bed = rings.Count, Scale = 1f, Cavity = 1f });
+            return rings;
+        }
+
+        // Uma coluna: os anéis pela forma das camadas, as faces facetadas com a cor do vértice e o fecho do alto
+        static void Column(MeshData mesh, PillarSpec spec)
+        {
+            int sides = Mathf.Clamp(spec.Corners * 3 + Mathf.RoundToInt(spec.TopRadius * 0.5f), spec.Corners * 2, Mathf.Max(spec.Sides, spec.Corners * 2));
+            List<Ring> rings = Rings(spec);
+            int count = rings.Count;
+            var grid = new Vector3[count, sides];
+            var colors = new Color[count, sides];
+            var radii = new float[count, sides];
+            var bias = new float[count];
             float height = spec.Top.y - spec.BottomY;
             float tilt = R01(spec.Seed, 3.1f) * Mathf.PI * 2f;
             var angles = new float[spec.Corners];
-            var radii = new float[spec.Corners];
+            var radiiPlan = new float[spec.Corners];
             int planBed = int.MinValue;
             Vector2 bedOffset = Vector2.zero;
+            float bedScale = 1f;
 
-            for (int i = 0; i < rings; i++)
+            for (int i = 0; i < count; i++)
             {
-                bool cap = i < shoulder.Count;
-                float y, t, shrink = 1f;
-                if (cap)
+                Ring ring = rings[i];
+                float t = ring.Cap ? 0f : Mathf.Clamp01((spec.Top.y - ring.Y) / height);
+                if (!ring.Cap && ring.Bed != planBed)
                 {
-                    y = spec.Top.y + spec.CapHeight * shoulder[i].x;
-                    shrink = shoulder[i].y;
-                    t = 0f;
+                    planBed = ring.Bed;
+                    Plan(spec, planBed, angles, radiiPlan, out bedOffset);
+                    // Largura de cada camada: umas mais largas, outras mais estreitas (degraus e saliências)
+                    bedScale = 1f + (R01(spec.Seed, planBed * 1.7f + 0.3f) - 0.5f) * spec.BedShift * 3.2f;
                 }
-                else
+                else if (ring.Cap && planBed == int.MinValue)
                 {
-                    y = heights[i - shoulder.Count];
-                    t = (spec.Top.y - y) / height;
-                }
-
-                // Camada de blocos (a borda entre camadas ondula de leve)
-                int bed = Mathf.FloorToInt((spec.Top.y - y) / spec.BedHeight + 0.0001f);
-                if (bed != planBed)
-                {
-                    planBed = bed;
-                    Plan(spec, bed, angles, radii, out bedOffset);
+                    planBed = 0;
+                    Plan(spec, 0, angles, radiiPlan, out bedOffset);
+                    bedScale = 1f + (R01(spec.Seed, 0.3f) - 0.5f) * spec.BedShift * 3.2f;
                 }
 
-                float waist = 1f + spec.Waist * (Mathf.PerlinNoise(spec.Seed * 0.7f, y * 0.018f) - 0.5f) * 2f;
+                float waist = 1f + spec.Waist * (Mathf.PerlinNoise(spec.Seed * 0.7f, ring.Y * 0.018f) - 0.5f) * 2f;
                 Vector2 center = new Vector2(spec.Top.x, spec.Top.z) - spec.Lean * Mathf.Pow(t, 0.7f);
-                float radius = Mathf.Lerp(spec.TopRadius, spec.BaseRadius, Mathf.Pow(t, spec.Taper)) * shrink * waist;
+                float radius = Mathf.Lerp(spec.TopRadius, spec.BaseRadius, Mathf.Pow(t, spec.Taper)) * waist * bedScale * ring.Scale *
+                               (ring.Cap ? ring.Shrink : 1f);
                 center += bedOffset * radius;
-                bias[i] = Mathf.Clamp01(1f - (spec.Top.y - y) / 6f) * 0.6f + (cap ? 0.4f : 0f);
+                bias[i] = Mathf.Clamp01(1f - (spec.Top.y - ring.Y) / 6f) * 0.6f + (ring.Cap ? 0.4f : 0f);
 
                 for (int j = 0; j < sides; j++)
                 {
                     float a = j * Mathf.PI * 2f / sides;
                     float ca = Mathf.Cos(a), sa = Mathf.Sin(a);
 
-                    // Fendas: estreitas, serpenteando com a altura, espaçamento irregular
-                    float warp = (Mathf.PerlinNoise(spec.Seed + y * 0.012f, spec.Seed * 0.5f) - 0.5f) * 2f;
+                    // Fendas: estreitas, serpenteando com a altura; o fundo delas escurece
+                    float warp = (Mathf.PerlinNoise(spec.Seed + ring.Y * 0.012f, spec.Seed * 0.5f) - 0.5f) * 2f;
                     float phase = a * spec.Flutes + Mathf.Sin(a * 2f + spec.Seed) * 1.1f + warp;
-                    float s = Mathf.Abs(Mathf.Sin(phase * 0.5f));
-                    float flute = 1f - spec.FluteDepth * Mathf.Pow(1f - s, 12f);
+                    float dip = Mathf.Pow(1f - Mathf.Abs(Mathf.Sin(phase * 0.5f)), 8f);
+                    float flute = 1f - spec.FluteDepth * 1.6f * dip;
 
-                    float rough = 1f + spec.Roughness * (Mathf.PerlinNoise(a * 3f + spec.Seed, y * 0.06f) - 0.5f) +
-                                  spec.Roughness * 0.5f * (Mathf.PerlinNoise(a * 9f + spec.Seed, y * 0.2f) - 0.5f);
-
-                    float r = radius * PlanRadius(a, angles, radii) * flute * rough;
-                    float yy = y;
-                    if (cap)
-                        // O alto do penhasco fica irregular: partes mais altas que outras
+                    float rough = 1f + spec.Roughness * (Mathf.PerlinNoise(a * 3f + spec.Seed, ring.Y * 0.06f) - 0.5f);
+                    float r = radius * PlanRadius(a, angles, radiiPlan) * flute * rough;
+                    float yy = ring.Y;
+                    if (ring.Cap)
                         yy += spec.CapHeight * 0.6f * (Mathf.PerlinNoise(spec.Seed + ca * 1.4f, spec.Seed + sa * 1.4f) - 0.5f);
                     else if (spec.Cap == Cap.Tilted && i == 0)
                         yy += spec.CapHeight * (0.5f + 0.5f * Mathf.Cos(a - tilt));
                     grid[i, j] = new Vector3(center.x + ca * r, yy, center.y + sa * r);
+                    radii[i, j] = r;
+                    colors[i, j] = new Color(Mathf.Min(ring.Cavity, 1f - 0.55f * dip), 1f - ring.Edge, 1f, 1f);
                 }
             }
 
-            // Vértices com normais suaves (diferenças pela grade; a volta fecha)
-            int start = mesh.Vertices.Count;
-            for (int i = 0; i < rings; i++)
-            for (int j = 0; j <= sides; j++)
-            {
-                int jj = j % sides;
-                Vector3 around = grid[i, (jj + 1) % sides] - grid[i, (jj + sides - 1) % sides];
-                Vector3 down = grid[Mathf.Min(i + 1, rings - 1), jj] - grid[Mathf.Max(i - 1, 0), jj];
-                Vector3 normal = Vector3.Cross(around, down).normalized;
-                Vector3 outward = grid[i, jj] - new Vector3(spec.Top.x, grid[i, jj].y, spec.Top.z);
-                if (Vector3.Dot(normal, outward) < 0f)
-                    normal = -normal;
-                mesh.Vertices.Add(grid[i, jj]);
-                mesh.Normals.Add(normal);
-                mesh.Uvs.Add(new Vector2(bias[i], 0f));
-            }
-
-            for (int i = 0; i + 1 < rings; i++)
+            // Faces facetadas; os degraus estreitos (face virada para cima e pouca largura) não pegam neve
+            for (int i = 0; i + 1 < count; i++)
             for (int j = 0; j < sides; j++)
             {
-                int a = start + i * (sides + 1) + j, b = a + 1, c = a + sides + 2, d = a + sides + 1;
-                AddTri(mesh, a, b, c);
-                AddTri(mesh, a, c, d);
+                int k = (j + 1) % sides;
+                Vector3 a = grid[i, j], b = grid[i, k], c = grid[i + 1, k], d = grid[i + 1, j];
+                Color ca = colors[i, j], cb = colors[i, k], cc = colors[i + 1, k], cd = colors[i + 1, j];
+                Vector3 normal = Vector3.Cross(b - d, c - a).normalized;
+                // O ombro do penhasco faz parte do alto: sempre neve (estreito, ele virava um anel de rocha em volta da capa)
+                if (rings[i].Cap || rings[i + 1].Cap)
+                    ca.a = cb.a = cc.a = cd.a = 0f;
+                else if (normal.y > 0.45f)
+                {
+                    float width = Mathf.Max(Mathf.Abs(radii[i + 1, j] - radii[i, j]), Mathf.Abs(radii[i + 1, k] - radii[i, k]));
+                    if (width < k_NarrowStep)
+                        ca.b = cb.b = cc.b = cd.b = 0f;
+                }
+                FacetQuad(mesh, a, b, c, d, normal, ca, cb, cc, cd, bias[i], bias[i + 1]);
             }
 
-            // Fecho do alto: leque até o meio, que sobe um pouco; a borda ganha vértices próprios virados para cima
+            // Fecho do alto: na mesa (embaixo de praças e ressaltos), um leque plano; nos outros, a capa de neve
             Vector3 sum = Vector3.zero;
+            var rim = new Vector3[sides];
             for (int j = 0; j < sides; j++)
-                sum += grid[0, j];
-            Vector3 apex = sum / sides + Vector3.up * (spec.Cap == Cap.Crag ? spec.CapHeight * 0.25f : spec.Dome);
-
-            int rim = mesh.Vertices.Count;
-            for (int j = 0; j <= sides; j++)
             {
-                Vector3 p = grid[0, j % sides];
-                Vector3 outward = new Vector3(p.x - apex.x, 0f, p.z - apex.z).normalized;
-                mesh.Vertices.Add(p);
-                mesh.Normals.Add((Vector3.up * 3f + outward).normalized);
-                mesh.Uvs.Add(new Vector2(1f, 0f));
+                rim[j] = grid[0, j];
+                sum += rim[j];
+            }
+            Vector3 middle = sum / sides;
+            if (spec.Cap != Cap.Flat)
+            {
+                SnowCap(mesh, spec, rim, middle);
+                return;
             }
 
-            int apexIndex = mesh.Vertices.Count;
-            mesh.Vertices.Add(apex);
-            mesh.Normals.Add(Vector3.up);
-            mesh.Uvs.Add(new Vector2(1f, 0f));
+            Vector3 apex = middle + Vector3.up * spec.Dome;
             for (int j = 0; j < sides; j++)
-                AddTri(mesh, rim + j, apexIndex, rim + j + 1);
+            {
+                Vector3 a = rim[j], b = rim[(j + 1) % sides];
+                Vector3 normal = Vector3.Cross(b - a, apex - a).normalized;
+                if (normal.y < 0f)
+                    normal = -normal;
+                FacetTri(mesh, a, b, apex, normal, new Color(1f, 0.6f, 1f, 1f), 1f);
+            }
+        }
+
+        // Capa de neve no alto de uma coluna, toda coberta (cor do vértice com A = 0: o shader põe neve até nas faces
+        // íngremes da cornija): uma cornija que deborda na beira (o pé dela fica para fora e abaixo da rocha), montes
+        // ondulados subindo até o meio e pingentes de gelo pendurados sob a cornija
+        static void SnowCap(MeshData mesh, PillarSpec spec, Vector3[] rim, Vector3 middle)
+        {
+            int sides = rim.Length;
+            float depth = Mathf.Clamp(spec.TopRadius * 0.07f, 0.4f, 2.4f);
+            float lip = Mathf.Clamp(spec.TopRadius * 0.05f, 0.3f, 1.4f);
+            var rings = new Vector3[4, sides];
+            for (int j = 0; j < sides; j++)
+            {
+                Vector3 edge = rim[j];
+                Vector3 outward = new Vector3(edge.x - middle.x, 0f, edge.z - middle.z).normalized;
+                float a = j * Mathf.PI * 2f / sides;
+                float Dune(float t) => depth * 0.9f * (Mathf.PerlinNoise(spec.Seed + Mathf.Cos(a) * 2.2f * t + 3f,
+                    spec.Seed + Mathf.Sin(a) * 2.2f * t) - 0.5f);
+                Vector3 inner = new Vector3(middle.x, edge.y, middle.z);
+                float sag = R01(spec.Seed, j * 0.71f) * 0.3f;   // a cornija não é uniforme
+                rings[0, j] = edge + outward * lip * (1f + sag) + Vector3.down * lip * 0.6f;
+                rings[1, j] = edge + outward * lip * 0.55f + Vector3.up * depth * (0.5f + sag);
+                rings[2, j] = Vector3.Lerp(inner, edge, 0.72f) + Vector3.up * (depth + Dune(0.72f));
+                rings[3, j] = Vector3.Lerp(inner, edge, 0.4f) + Vector3.up * (depth * 1.15f + Dune(0.4f));
+            }
+            Vector3 apex = middle + Vector3.up * (depth * 1.25f + (spec.Cap == Cap.Crag ? spec.CapHeight * 0.2f : 0f));
+
+            for (int j = 0; j < sides; j++)
+            {
+                int k = (j + 1) % sides;
+                Vector3 outward = new Vector3(rim[j].x - middle.x, 0f, rim[j].z - middle.z).normalized;
+                // Embaixo da cornija (da beira da rocha até o pé dela), a face da cornija e os montes
+                SnowQuad(mesh, rim[j], rim[k], rings[0, k], rings[0, j], outward + Vector3.down, 0f);
+                SnowQuad(mesh, rings[0, j], rings[0, k], rings[1, k], rings[1, j], outward + Vector3.up * 0.5f, 1f);
+                SnowQuad(mesh, rings[1, j], rings[1, k], rings[2, k], rings[2, j], Vector3.up, 1f);
+                SnowQuad(mesh, rings[2, j], rings[2, k], rings[3, k], rings[3, j], Vector3.up, 1f);
+                Vector3 normal = Vector3.Cross(rings[3, k] - rings[3, j], apex - rings[3, j]).normalized;
+                if (normal.y < 0f)
+                    normal = -normal;
+                FacetTri(mesh, rings[3, j], rings[3, k], apex, normal, k_SnowCover, 1f);
+
+                // Pingentes pendurados sob a cornija
+                if (Ice != null && j % 2 == 0 && R01(spec.Seed, j * 1.9f) > 0.3f)
+                    Icicle(rings[0, j] + Vector3.down * 0.05f, lip * Mathf.Lerp(1.5f, 4.5f, R01(spec.Seed, j * 2.7f)),
+                        lip * 0.35f);
+            }
+        }
+
+        static readonly Color k_SnowCover = new Color(1f, 1f, 1f, 0f);     // A = 0: sempre neve
+
+        // Quadrilátero da capa de neve virado para o lado 'facing' ('bias' 1 = mais neve em volta)
+        static void SnowQuad(MeshData mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 facing, float bias)
+        {
+            Vector3 normal = Vector3.Cross(b - d, c - a).normalized;
+            if (Vector3.Dot(normal, facing) < 0f)
+                normal = -normal;
+            FacetQuad(mesh, a, b, c, d, normal, k_SnowCover, k_SnowCover, k_SnowCover, k_SnowCover, bias, bias);
+        }
+
+        // Pingente de gelo: cone de quatro faces apontando para baixo
+        static void Icicle(Vector3 top, float length, float radius)
+        {
+            Vector3 tip = top + Vector3.down * length;
+            for (int c = 0; c < 4; c++)
+            {
+                float a0 = c * Mathf.PI * 0.5f, a1 = (c + 1) * Mathf.PI * 0.5f;
+                Vector3 a = top + new Vector3(Mathf.Cos(a0), 0f, Mathf.Sin(a0)) * radius;
+                Vector3 b = top + new Vector3(Mathf.Cos(a1), 0f, Mathf.Sin(a1)) * radius;
+                Vector3 normal = Vector3.Cross(b - a, tip - a).normalized;
+                if (Vector3.Dot(normal, (a + b) * 0.5f - top) < 0f)
+                    normal = -normal;
+                FacetTri(Ice, a, b, tip, normal, Color.white, 0f);
+            }
+        }
+
+        // Quadrilátero facetado (4 vértices próprios com a normal da face), virado para a normal
+        static void FacetQuad(MeshData mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 normal, Color ca, Color cb,
+            Color cc, Color cd, float biasTop, float biasBottom)
+        {
+            mesh.PadColors();
+            int start = mesh.Vertices.Count;
+            mesh.Vertices.Add(a);
+            mesh.Vertices.Add(b);
+            mesh.Vertices.Add(c);
+            mesh.Vertices.Add(d);
+            for (int i = 0; i < 4; i++)
+                mesh.Normals.Add(normal);
+            mesh.Uvs.Add(new Vector2(biasTop, 0f));
+            mesh.Uvs.Add(new Vector2(biasTop, 0f));
+            mesh.Uvs.Add(new Vector2(biasBottom, 0f));
+            mesh.Uvs.Add(new Vector2(biasBottom, 0f));
+            mesh.Colors.Add(ca);
+            mesh.Colors.Add(cb);
+            mesh.Colors.Add(cc);
+            mesh.Colors.Add(cd);
+            AddTri(mesh, start, start + 1, start + 2);
+            AddTri(mesh, start, start + 2, start + 3);
+        }
+
+        static void FacetTri(MeshData mesh, Vector3 a, Vector3 b, Vector3 c, Vector3 normal, Color color, float bias)
+        {
+            mesh.PadColors();
+            int start = mesh.Vertices.Count;
+            foreach (Vector3 p in new[] { a, b, c })
+            {
+                mesh.Vertices.Add(p);
+                mesh.Normals.Add(normal);
+                mesh.Uvs.Add(new Vector2(bias, 0f));
+                mesh.Colors.Add(color);
+            }
+            AddTri(mesh, start, start + 1, start + 2);
         }
 
         // Triângulo virado para fora (pela normal dos vértices)

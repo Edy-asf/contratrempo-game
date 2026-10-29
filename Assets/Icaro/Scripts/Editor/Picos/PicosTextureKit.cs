@@ -10,12 +10,26 @@ namespace Icaro.EditorTools
     // neve é só visual (nada muda no movimento). As nuvens não são textura: o mar de nuvens é volume (Icaro/CloudVolume) e os
     // fiapos são tufos de fumaça (Icaro/CloudWisp), com materiais próprios.
     // As montanhas usam o Icaro/SnowRock (Mountain): rocha de colunas e neve em pixel art misturadas por pixel.
-    public static class PicosTextureKit
+    public static partial class PicosTextureKit
     {
         public class Set
         {
-            public Material Rock, Snow, Floor, Rune, Ice, Portal, Dark, CloudVolume, Wisp, Mountain, Iron;
+            public Material Rock, Snow, Rune, Ice, Portal, Dark, CloudVolume, Wisp, Mountain, Iron, Wood;
             public Material[] Stones;
+
+            // Pisos das construções (como o musgo do Arquipélago): três variações de laje, cinco passos de transição
+            // laje-neve (as manchas de neve só crescem de um passo para o outro) e a neve cheia do chão
+            public Material[] Pavings, PavingSnow;
+            public Material FloorSnow;
+
+            // Bairro voador (sala 20, PicosVillageTextures): paredes (reboco em quatro cores, tijolo, enxaimel e pedra
+            // escura), telha em três tons, calçamento das ruas (três variações e cinco passos até a neve) e vitral
+            public Material[] HouseWalls, Roofs, Cobble, CobbleSnow;
+            public Material Glass;
+
+            // Kit gótico do Blender (PicosGothicKit): escamas de pedra cinza das cúpulas e agulhas; tecido violeta dos
+            // estandartes e o claro (emblemas, lona, cordas e sacos)
+            public Material Scales, Cloth, ClothLight;
         }
 
         static readonly Color k_Rock = new Color(0.16f, 0.15f, 0.17f);
@@ -35,11 +49,10 @@ namespace Icaro.EditorTools
         public static Set Build()
         {
             GridTextureKit.BeginSession();
-            return new Set
+            var set = new Set
             {
                 Rock = GridTextureKit.Surface("Picos_Rocha", PaintRock(), Color.black),
-                Snow = GridTextureKit.Surface("Picos_Neve", PaintSnow(), Color.black),
-                Floor = GridTextureKit.Surface("Picos_Piso", PaintFloor(), Color.black),
+                Snow = GridTextureKit.Surface("Picos_Neve", PaintMountainSnow(), Color.black),
                 Rune = GridTextureKit.Surface("Picos_Runas", PaintRunes(), k_Cyan * 3f),
                 Ice = GridTextureKit.Surface("Picos_Gelo", PaintIce(), k_Ice * 0.6f),
                 Portal = GridTextureKit.Surface("Picos_Portal", PaintPortal(), k_Cyan * 2.6f),
@@ -49,6 +62,7 @@ namespace Icaro.EditorTools
                 Wisp = ShaderMaterial("Picos_Nuvens_Fiapos", "Icaro/CloudWisp"),
                 Mountain = MountainMaterial(),
                 Iron = GridTextureKit.Surface("Picos_Ferro", PaintIron(), Color.black),
+                Wood = GridTextureKit.Surface("Picos_Madeira", PaintWood(), Color.black),
                 Stones = new[]
                 {
                     GridTextureKit.Surface("Picos_Pedra_1", PaintStone(1101, 1f), Color.black),
@@ -56,6 +70,116 @@ namespace Icaro.EditorTools
                     GridTextureKit.Surface("Picos_Pedra_3", PaintStone(1103, 1.08f), Color.black),
                 },
             };
+            BuildPavings(set);
+            BuildVillage(set);
+            return set;
+        }
+
+        // Pisos: as três lajes, a neve do chão (a mesma neve das montanhas, em 128 px para 8 m) e os cinco passos de
+        // transição entre a primeira laje e a neve
+        public static void BuildPavings(Set set)
+        {
+            set.Pavings = new[]
+            {
+                GridTextureKit.Surface("Picos_Laje_1", PaintPaving(1301, 0), Color.black),
+                GridTextureKit.Surface("Picos_Laje_2", PaintPaving(1302, 1), Color.black),
+                GridTextureKit.Surface("Picos_Laje_3", PaintPaving(1303, 2), Color.black),
+            };
+            set.FloorSnow = GridTextureKit.Surface("Picos_Neve_Chao", Twice(PaintMountainSnow()), Color.black);
+            set.PavingSnow = new Material[5];
+            for (int k = 0; k < 5; k++)
+                set.PavingSnow[k] = GridTextureKit.Blend($"Picos_Laje_Neve_{k + 1}", set.Pavings[0], set.FloorSnow, (k + 1) / 6f, 1310);
+        }
+
+        // A imagem repetida 2 x 2 (mesma densidade de pixels numa área maior)
+        static Paint Twice(Paint source)
+        {
+            Paint p = GridTextureKit.Tile(source.W * 2, source.H * 2, 1, Color.white);
+            for (int y = 0; y < p.H; y++)
+            for (int x = 0; x < p.W; x++)
+                p.Set(x, y, source.Pixels[(y % source.H) * source.W + x % source.W]);
+            return p;
+        }
+
+        static readonly Color k_Paving = new Color(0.46f, 0.47f, 0.53f);
+
+        // Laje do piso (128 px = 8 m, 16 px/m): lajes de 2 m (e algumas de 4 m) em fiadas desencontradas, cada uma num
+        // tom, com a borda de cima clara e a de baixo escura, juntas escuras com geada; variação 0 limpa com pintas,
+        // 1 com rachaduras cheias de geada, 2 com quinas lascadas, manchas e grãos de neve
+        static Paint PaintPaving(int seed, int variant)
+        {
+            const int size = 128, cell = 32;
+            Paint p = GridTextureKit.Tile(size, size, seed, k_Paving);
+            var layout = new System.Random(seed + 5);
+            for (int row = 0; row < size / cell; row++)
+            {
+                int offset = row % 2 == 0 ? 0 : cell / 2;
+                int x0 = -offset;
+                // A fiada termina onde começou (size - offset); passar disso deixaria uma laje de largura 0 e o laço não andaria
+                while (x0 < size - offset)
+                {
+                    int width = layout.NextDouble() < 0.25 ? cell * 2 : cell;
+                    // A última laje da fiada termina onde a primeira começa (repete sem costura)
+                    if (x0 + width > size - offset)
+                        width = size - offset - x0;
+                    float tone = 0.84f + (float)layout.NextDouble() * 0.26f;
+                    for (int y = 0; y < cell; y++)
+                    for (int x = 0; x < width; x++)
+                    {
+                        int px = ((x0 + x) % size + size) % size, py = row * cell + y;
+                        bool joint = x == 0 || y == 0;
+                        Color c;
+                        if (joint)
+                            c = p.Next < 0.35f ? k_Frost * 0.92f : k_StoneJoint;
+                        else if (y == 1)
+                            c = k_Paving * tone * 1.12f;
+                        else if (y == cell - 1 || x == width - 1)
+                            c = k_Paving * tone * 0.86f;
+                        else
+                            c = k_Paving * tone;
+                        p.Set(px, py, p.Vary(c, 0.025f));
+                    }
+
+                    // Quinas lascadas (variação 2): um triângulo da junta come a quina
+                    if (variant == 2 && layout.NextDouble() < 0.45)
+                    {
+                        int corner = layout.Next(2, 6);
+                        for (int i = 0; i < corner; i++)
+                        for (int j = 0; j < corner - i; j++)
+                            p.Set(((x0 + 1 + i) % size + size) % size, row * cell + 1 + j, k_StoneJoint);
+                    }
+
+                    x0 += width;
+                }
+            }
+
+            // Rachaduras com geada (variação 1)
+            if (variant == 1)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    int x = p.Range(0, size), y = p.Range(0, size);
+                    for (int i = 0; i < p.Range(8, 20); i++)
+                    {
+                        p.Set(x, y, p.Next < 0.6f ? k_StoneJoint * 0.8f : k_Frost);
+                        x += p.Range(-1, 2);
+                        y += p.Next < 0.6f ? 1 : 0;
+                    }
+                }
+            }
+
+            // Pintas e desgaste em todas; manchas e grãos de neve na variação 2
+            for (int k = 0; k < 120; k++)
+                p.Set(p.Range(0, size), p.Range(0, size), p.Vary(k_Paving * (p.Next < 0.5f ? 0.78f : 1.15f), 0.03f));
+            if (variant == 2)
+            {
+                for (int k = 0; k < 6; k++)
+                    p.Blob(p.Range(0, size), p.Range(0, size), p.Range(3, 7), k_Paving * 0.85f, k_Paving * 0.95f, k_Paving * 0.75f);
+                for (int k = 0; k < 40; k++)
+                    p.Set(p.Range(0, size), p.Range(0, size), k_Snow);
+            }
+
+            return p;
         }
 
         // Material de um shader próprio (as nuvens), criado uma vez; os ajustes feitos no Inspector ficam
@@ -104,6 +228,45 @@ namespace Icaro.EditorTools
                 p.Set(x, y, p.Vary(iron * (y > 12 ? 1.25f : 1f), 0.05f));
             for (int k = 0; k < 8; k++)
                 p.Set(p.Range(0, 16), p.Range(10, 16), Color.Lerp(iron, k_Frost, 0.6f));
+            return p;
+        }
+
+        // Madeira velha e seca do frio (64 px = 4 m): tábuas de 8 px com veios compridos, nós escuros, rachaduras e
+        // geada nas bordas de cima; tom cinza-amarronzado desbotado
+        static Paint PaintWood()
+        {
+            Color wood = new Color(0.33f, 0.27f, 0.23f);
+            Paint p = GridTextureKit.Tile(64, 64, 1241, wood);
+            var layout = new System.Random(1242);
+            for (int board = 0; board < 8; board++)
+            {
+                float tone = 0.82f + (float)layout.NextDouble() * 0.3f;
+                for (int y = board * 8; y < board * 8 + 8; y++)
+                for (int x = 0; x < 64; x++)
+                {
+                    int row = y - board * 8;
+                    // Veio: faixas finas que ondulam devagar ao longo da tábua (repete sem costura em x)
+                    float grain = Mathf.Sin(x / 64f * Mathf.PI * 2f * 2f + board * 1.7f + row * 0.9f);
+                    Color c = wood * tone * (grain > 0.75f ? 0.84f : grain < -0.85f ? 1.1f : 1f);
+                    if (row == 0)
+                        c = wood * 0.45f;                       // fresta entre as tábuas
+                    else if (row == 1)
+                        c = p.Next < 0.4f ? Color.Lerp(wood * tone * 1.2f, k_Frost, 0.5f) : wood * tone * 1.18f;
+                    else if (row == 7)
+                        c = wood * tone * 0.78f;
+                    p.Set(x, y, p.Vary(c, 0.025f));
+                }
+
+                // Nós e rachaduras ao longo do veio
+                int knot = layout.Next(0, 64);
+                p.Set(knot, board * 8 + 4, wood * 0.4f);
+                p.Set((knot + 1) % 64, board * 8 + 4, wood * 0.55f);
+                p.Set(knot, board * 8 + 3, wood * 0.6f);
+                int crack = layout.Next(0, 64), crackLength = layout.Next(6, 18);
+                for (int i = 0; i < crackLength; i++)
+                    p.Set((crack + i) % 64, board * 8 + 2 + (i / 7) % 4, wood * 0.5f);
+            }
+
             return p;
         }
 
@@ -167,23 +330,59 @@ namespace Icaro.EditorTools
             return p;
         }
 
-        // Neve das montanhas (64 px = 4 m): branco-azulada com montes de sombra azul em blocos de pixel, linhas do vento
-        // e brilhos
+        // Neve das montanhas (64 px = 4 m, repete sem costura): base branco-azulada com variação suave, cristas de vento
+        // (sastrugi: linhas onduladas com o lado claro em cima e a sombra azul embaixo), covinhas de sombra em meia-lua,
+        // montinhos com o lado da sombra e cristais brancos
         static Paint PaintMountainSnow()
         {
+            Color shadow = Color.Lerp(k_Snow, k_SnowShade, 0.8f);
             Paint p = GridTextureKit.Tile(64, 64, 1211, k_Snow);
             for (int y = 0; y < 64; y++)
             for (int x = 0; x < 64; x++)
             {
                 float u = x / 64f * Mathf.PI * 2f, v = y / 64f * Mathf.PI * 2f;
-                float drift = Mathf.Sin(u * 2f + Mathf.Sin(v) * 1.5f) * 0.5f + Mathf.Sin(v * 3f + Mathf.Cos(u * 2f)) * 0.5f;
-                Color c = drift > 0.55f ? Color.Lerp(k_Snow, k_SnowShade, 0.55f) : drift < -0.7f ? k_SnowBright : k_Snow;
-                p.Set(x, y, p.Vary(c, 0.02f));
+                float soft = Mathf.Sin(u + Mathf.Sin(v * 2f)) * 0.5f + Mathf.Sin(v * 2f + Mathf.Cos(u * 3f) * 0.7f) * 0.5f;
+                Color c = soft > 0.6f ? Color.Lerp(k_Snow, k_SnowShade, 0.35f) : soft < -0.6f ? k_SnowBright : k_Snow;
+                p.Set(x, y, p.Vary(c, 0.015f));
             }
 
-            for (int k = 0; k < 9; k++)
-                p.Blob(p.Range(0, 64), p.Range(0, 64), p.Range(3, 7), k_Snow, k_SnowBright, Color.Lerp(k_Snow, k_SnowShade, 0.7f));
-            for (int k = 0; k < 14; k++)
+            // Cristas de vento: linhas onduladas na diagonal, claras em cima e com a sombra logo embaixo
+            for (int line = 0; line < 7; line++)
+            {
+                float offset = line * 64f / 7f;
+                for (int x = 0; x < 64; x++)
+                {
+                    float u = x / 64f * Mathf.PI * 2f;
+                    // Inclinação de 2 espaçamentos por largura: a linha sai na borda onde outra entra (repete sem costura)
+                    int y = Mathf.RoundToInt(offset + x * (2f / 7f) + Mathf.Sin(u * 2f + line) * 2.2f);
+                    if (p.Next < 0.12f)
+                        continue;   // a crista se interrompe aqui e ali
+                    p.Set(x, y, k_SnowBright);
+                    p.Set(x, y - 1, p.Vary(shadow, 0.02f));
+                    if (p.Next < 0.5f)
+                        p.Set(x, y - 2, Color.Lerp(k_Snow, shadow, 0.5f));
+                }
+            }
+
+            // Covinhas: meias-luas de sombra com a borda de cima clara
+            for (int k = 0; k < 10; k++)
+            {
+                int cx = p.Range(0, 64), cy = p.Range(0, 64), w = p.Range(2, 5);
+                for (int i = -w; i <= w; i++)
+                {
+                    int depth = Mathf.RoundToInt((1f - Mathf.Abs(i) / (float)(w + 1)) * 2f);
+                    for (int j = 0; j <= depth; j++)
+                        p.Set(cx + i, cy - j, p.Vary(j == 0 ? shadow : Color.Lerp(k_Snow, shadow, 0.6f), 0.02f));
+                    p.Set(cx + i, cy + 1, k_SnowBright);
+                }
+            }
+
+            // Montinhos: o lado de cima claro e o de baixo em sombra
+            for (int k = 0; k < 6; k++)
+                p.Blob(p.Range(0, 64), p.Range(0, 64), p.Range(3, 6), k_Snow, k_SnowBright, Color.Lerp(k_Snow, k_SnowShade, 0.6f));
+
+            // Cristais
+            for (int k = 0; k < 22; k++)
                 p.Set(p.Range(0, 64), p.Range(0, 64), Color.white);
             return p;
         }
@@ -216,23 +415,6 @@ namespace Icaro.EditorTools
             return p;
         }
 
-        // Neve (32 px = 4 m): branco-azulada, ondulações do vento e brilhos
-        static Paint PaintSnow()
-        {
-            Paint p = GridTextureKit.Tile(32, 32, 1011, k_Snow);
-            for (int y = 0; y < 32; y++)
-            for (int x = 0; x < 32; x++)
-            {
-                float ripple = Mathf.Sin((x * 0.35f + y * 0.9f) + Mathf.Sin(x * 0.2f) * 2f);
-                Color c = ripple > 0.85f ? k_SnowShade : ripple < -0.9f ? k_SnowBright : k_Snow;
-                p.Set(x, y, p.Vary(c, 0.025f));
-            }
-
-            for (int k = 0; k < 10; k++)
-                p.Set(p.Range(0, 32), p.Range(0, 32), Color.white);
-            return p;
-        }
-
         // Cantaria dos Aeônidas (64 px = 4 m): blocos claros em fiadas de 1 m desencontradas, juntas escuras com geada
         static Paint PaintStone(int seed, float shade)
         {
@@ -257,29 +439,6 @@ namespace Icaro.EditorTools
             for (int k = 0; k < 6; k++)
                 p.Blob(p.Range(0, 64), p.Range(0, 64), p.Range(1, 3), k_Stone * shade * 0.9f, k_Stone * shade * 1.1f,
                     k_StoneJoint);
-            return p;
-        }
-
-        // Piso de lajes de 2 m com a neve nas juntas e um pouco sobre as pedras (64 px = 4 m)
-        static Paint PaintFloor()
-        {
-            Paint p = GridTextureKit.Tile(64, 64, 1021, k_Stone);
-            var layout = new System.Random(1022);
-            for (int sy = 0; sy < 2; sy++)
-            for (int sx = 0; sx < 2; sx++)
-            {
-                float tone = 0.88f + (float)layout.NextDouble() * 0.16f;
-                for (int y = 0; y < 32; y++)
-                for (int x = 0; x < 32; x++)
-                {
-                    bool joint = x <= 1 || y <= 1;
-                    Color c = joint ? k_Snow : k_Stone * tone;
-                    p.Set(sx * 32 + x, sy * 32 + y, p.Vary(c, 0.03f));
-                }
-            }
-
-            for (int k = 0; k < 7; k++)
-                p.Blob(p.Range(0, 64), p.Range(0, 64), p.Range(3, 7), k_Snow, k_SnowBright, k_SnowShade);
             return p;
         }
 

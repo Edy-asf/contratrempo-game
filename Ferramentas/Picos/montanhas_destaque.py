@@ -6,7 +6,8 @@
 # - blocos: células de Voronoi esticadas na vertical viram colunas abauladas separadas por fendas;
 # - degraus irregulares em parte da volta (onde a neve assenta);
 # - lóbulos grandes e aspereza.
-# Por fim suaviza (sem lascas soltas), reduz os polígonos, suaviza as normais e exporta FBX (forward -Z, up Y) para Assets/Icaro/Models/Picos.
+# Por fim suaviza (sem lascas soltas), reduz os polígonos, facetado nas quebras fortes, cor do relevo no vértice (fendas
+# escuras, quinas claras, para o shader Icaro/SnowRock) e exporta FBX (forward -Z, up Y) para Assets/Icaro/Models/Picos.
 # Em coordenadas do Blender: z para cima, z = 0 é a altura de referência (o PicosBuilder põe o objeto no lugar);
 # tudo desce até z = -250 (dentro da nuvem fechada).
 import math
@@ -162,7 +163,34 @@ def finish(obj, faces):
     dec = obj.modifiers.new('reduzir', 'DECIMATE')
     dec.ratio = min(1.0, faces / max(1, len(obj.data.polygons)))
     bpy.ops.object.modifier_apply(modifier=dec.name)
-    bpy.ops.object.shade_smooth()
+    # Facetado nas quebras fortes e liso nas faces (combina com as montanhas do gerador, que são facetadas)
+    try:
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(35.0))
+    except (AttributeError, RuntimeError, TypeError):
+        bpy.ops.object.shade_flat()
+    relief_colors(obj)
+
+
+def relief_colors(obj, depth=2.6):
+    """Cor do vértice para o shader Icaro/SnowRock (branco = nada): R = 1 - quanto escurece (o que fica para dentro de
+    uma cópia bem suavizada: fendas e juntas), G = 1 - quanto clareia (o que fica para fora: quinas), B = 1."""
+    mesh = obj.data
+    mod = obj.modifiers.new('relevo', 'SMOOTH')
+    mod.factor = 1.0
+    mod.iterations = 12
+    evaluated = obj.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    smooth = [v.co.copy() for v in evaluated.data.vertices]
+    normals = [v.normal.copy() for v in evaluated.data.vertices]
+    obj.modifiers.remove(mod)
+    if 'Relevo' in mesh.color_attributes:
+        mesh.color_attributes.remove(mesh.color_attributes['Relevo'])
+    attribute = mesh.color_attributes.new('Relevo', 'FLOAT_COLOR', 'POINT')
+    for v in mesh.vertices:
+        d = (v.co - smooth[v.index]).dot(normals[v.index]) / depth
+        cavity = min(1.0, max(0.0, -d))
+        edge = min(1.0, max(0.0, d))
+        attribute.data[v.index].color = (1.0 - cavity, 1.0 - edge, 1.0, 1.0)
+    mesh.color_attributes.active_color = attribute
 
 
 def export(obj, name):
@@ -173,7 +201,7 @@ def export(obj, name):
     path = os.path.join(OUT, name + '.fbx')
     bpy.ops.export_scene.fbx(filepath=path, use_selection=True, axis_forward='-Z', axis_up='Y',
                              bake_space_transform=True, apply_scale_options='FBX_SCALE_ALL',
-                             mesh_smooth_type='FACE', add_leaf_bones=False, bake_anim=False)
+                             mesh_smooth_type='FACE', add_leaf_bones=False, bake_anim=False, colors_type='LINEAR')
     print('[Picos] exportado', path, len(obj.data.polygons), 'faces')
 
 
@@ -230,8 +258,9 @@ def mesa():
     return obj
 
 
-for build, faces in [(catedral, 60000), (torres, 40000), (arco, 45000), (mesa, 55000)]:
-    clear()
-    obj = build()
-    finish(obj, faces)
-    export(obj, obj.name)
+if __name__ == '__main__':
+    for build, faces in [(catedral, 60000), (torres, 40000), (arco, 45000), (mesa, 55000)]:
+        clear()
+        obj = build()
+        finish(obj, faces)
+        export(obj, obj.name)

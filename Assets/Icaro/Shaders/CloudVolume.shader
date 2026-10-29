@@ -29,6 +29,7 @@ Shader "Icaro/CloudVolume"
         _StepGrowth("Passo por metro", Float) = 0.02
         _MaxStep("Passo máximo (m)", Float) = 32
         _MaxDistance("Distância máxima (m)", Float) = 3000
+        _Follow("Caixa segue a câmera", Float) = 0
     }
 
     SubShader
@@ -75,6 +76,7 @@ Shader "Icaro/CloudVolume"
                 float _StepGrowth;
                 float _MaxStep;
                 float _MaxDistance;
+                float _Follow;
             CBUFFER_END
 
             TEXTURE3D(_IcaroCloudNoise);
@@ -95,7 +97,11 @@ Shader "Icaro/CloudVolume"
             Varyings Vert(Attributes input)
             {
                 Varyings output;
-                output.positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                // _Follow: a caixa vai junto com a câmera que desenha, no plano (CloudSea.FollowCamera)
+                float3 origin = TransformObjectToWorld(float3(0, 0, 0));
+                float3 camera = GetCameraPositionWS();
+                output.positionWS = TransformObjectToWorld(input.positionOS.xyz) +
+                    _Follow * float3(camera.x - origin.x, 0, camera.z - origin.z);
                 output.positionCS = TransformWorldToHClip(output.positionWS);
                 return output;
             }

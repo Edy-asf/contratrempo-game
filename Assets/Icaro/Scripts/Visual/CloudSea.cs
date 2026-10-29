@@ -24,6 +24,9 @@ namespace Icaro
         [Tooltip("Meia largura da caixa em volta do objeto (m). Fica abaixo do corte da câmera mesmo na diagonal.")]
         public float Extent = 2000f;
 
+        [Tooltip("A caixa acompanha a câmera que desenha (no plano): cobre um mapa de qualquer tamanho, inclusive a Scene")]
+        public bool FollowCamera;
+
         [Tooltip("Segundos do relógio das nuvens por segundo, por 1,0x acima de 1,0x")]
         public float Speed = 1f;
 
@@ -32,6 +35,7 @@ namespace Icaro
         static readonly int s_Time = Shader.PropertyToID("_IcaroCloudTime");
         static readonly int s_BottomId = Shader.PropertyToID("_CloudBottom");
         static readonly int s_TopId = Shader.PropertyToID("_CloudTop");
+        static readonly int s_FollowId = Shader.PropertyToID("_Follow");
 
         float m_Clock;
         Camera m_DepthCamera;
@@ -47,6 +51,7 @@ namespace Icaro
             var block = new MaterialPropertyBlock();
             block.SetFloat(s_BottomId, Bottom);
             block.SetFloat(s_TopId, Top);
+            block.SetFloat(s_FollowId, FollowCamera ? 1f : 0f);
             GetComponent<MeshRenderer>().SetPropertyBlock(block);
         }
 
@@ -100,7 +105,8 @@ namespace Icaro
                 0, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 1, 4, 1, 5, 4, 2, 6, 3, 3, 6, 7, 0, 4, 2, 2, 4, 6, 1, 3, 5, 3, 7, 5,
             };
             var mesh = new Mesh { name = "Nuvens_Caixa", vertices = vertices, triangles = triangles, hideFlags = HideFlags.DontSave };
-            mesh.bounds = new Bounds((min + max) * 0.5f, max - min);
+            // Seguindo a câmera (o shader desloca a caixa), os limites ficam enormes para nunca sair da vista
+            mesh.bounds = FollowCamera ? new Bounds(Vector3.zero, Vector3.one * 100000f) : new Bounds((min + max) * 0.5f, max - min);
             return mesh;
         }
     }

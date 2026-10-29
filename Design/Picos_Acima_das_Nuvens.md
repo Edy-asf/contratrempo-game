@@ -76,18 +76,52 @@ Referência visual: picos de pedra estreitos saindo de um mar de nuvens, com um 
 - **Pegadas:** o jogador deixa rastro na neve funda (ideia para o futuro).
 - **Decidido:** é só visual. Não muda o movimento nem tem mecânica.
 
-## Arenas (Decidido: 8, nesta ordem)
+## Arenas (Decidido em 2026-10-26; o bioma cresce para mais de 8 salas)
 
-São as salas 17 a 24 da Via, logo depois do Arquipélago (9 a 16).
+São as salas da Via logo depois do Arquipélago (9 a 16), a partir da 17.
 
-1. **Chegada pelo portal:** plataforma em ruína no alto de um pico nevado, com o portal-anel ainda girando.
-2. **Trilha da crista:** arena larga numa sela entre dois picos, com a trilha subindo dos dois lados.
-3. **Mosteiro suspenso:** terraços em degraus na parede do pico, como Meteora e o Ninho do Tigre.
-4. **Bairro flutuante:** ilha com ruas e praças sobre um anel parado, ligada por pontes de corrente.
-5. **Caverna-cidade:** casas e templos escavados na parede da montanha, iluminados por cristais de gelo e aberto para o vazio de um lado.
-6. **Observatório:** astrolábio gigante parado no meio de um giro.
-7. **Doca de dirigíveis:** cais de pedra com cascos encalhados e congelados.
-8. **Chefe (Oráculo):** palácio no pico mais alto, sob o eclipse, com a máquina de anéis que congelou o tempo.
+1. **Sala 17, Terraços Partidos (feita):** a chegada pelo portal na praça calma e a primeira arena no topo de uma torre esculpida.
+2. **Sala 18, Sela da Crista (feita):** sela entre duas torres baixas, com a ponte de corrente na saída.
+3. **Salas 19 e 20, ruínas:** dois lugares quase totalmente em ruínas, onde sobrou pouca coisa de pé.
+   - Sala 19, Bastião em Terraços: forte arrasado numa plataforma na encosta, com claustro, forja, andaime, passarela e uma máquina de anéis.
+   - Sala 20, Bairro Voador (2026-10-27; o Anel Caído e o Bairro Arrasado foram recusados): um bairro abandonado numa ilha que flutua solta, à direita (oeste) do bastião. Casas quase inteiras, coladas em quarteirões tortos, com uma pracinha no meio; cerca de um terço destruídas de jeitos diferentes. Muitas texturas de parede e telhados só de telha. Caminho como os de antes (trilhas, pontes de pedra e de corrente, torrezinhas, arco natural), mais longo.
+   - **Arenas maiores daqui em diante:** com bastante espaço para andar, desviar e se proteger. O usuário achou as anteriores pequenas.
+   - **Sala 19, Bastião em Terraços (feita, sem inimigos):** um forte quase todo arrasado numa plataforma plana na encosta de um maciço, não no topo, uns 45° à direita da sala 18.
+     - Chega-se por um caminho longo e irregular que sobe: trilha colada num paredão, zigue-zague, arco natural de rocha e uma fenda.
+     - O forte, de uns 116 × 100 m, tem três terraços com rampas, a muralha destruída, o portão, dois baluartes, alojamentos, a torre de menagem, uma torre caída e um monólito de runas.
+     - O Viaduto Caído foi recusado.
+4. **Sala 21, uma vila:** uma das vilas nas montanhas em volta da cidade, alcançada depois de subir a montanha onde ela fica.
+5. **Sala 22, o portão:** o portão que dá acesso à ponte colossal da cidade.
+6. **Cidade flutuante, a parte final do bioma (3 ou 4 salas dentro dela):** imensa e bem detalhada, com uma catedral no meio. O chefe (Oráculo) fica no fim.
+
+**A cidade e o entorno:**
+- A cidade flutua.
+- Em volta dela há vilas menores em montanhas próximas, ligadas entre si por pontes, mas sem ligação direta com a cidade.
+- A cidade tem uma só entrada e saída: uma ponte colossal com um portão e duas grandes torres de vigia.
+- Não haverá mosteiro: o usuário quer a cidade como o grande destaque. A lista antiga (mosteiro, bairro flutuante, caverna-cidade, observatório, doca de dirigíveis) foi descartada.
+
+**Vilas do Alto (decidido em 2026-10-28, ainda não construído):**
+- O portal quebrado da sala 19 leva para bem longe (uns 5 km), numa região mais alta (~350 m acima). De lá a cidade flutuante aparece embaixo, sobre o mar de nuvens.
+- A região é um arco de picos e ilhas voadoras em volta do vale de nuvens da cidade. A chegada fica na ponta mais alta do arco, e o caminho desce de vila em vila até o portão da cidade.
+- O usuário quis os 13 lugares propostos:
+  - Vilas nos picos: Vila Escalonada (chegada do portal), Vila dos Sinos, Vila das Engrenagens, Vila-Ponte e Vila Pendurada.
+  - Vilas voadoras: Ilha do Anel, Ilha Tombada, Cacho de Ilhotas e Ilha do Aqueduto.
+  - Torres em picos sozinhos: Torre do Relógio, torres de vigia, torre-farol de runas e torre gêmea partida.
+  - Ligações: pontes de pedra e de corrente, aquedutos, escadarias e trilhas; teleférico parado só como cenário.
+- Estilo: misto. As vilas dos picos são mais rústicas, de cantaria; as voadoras são mais elaboradas, puxando para o gótico da cidade.
+- A descida até o portão da cidade (sala 22) é uma escadaria longa na parede de um pico.
+- A cidade ganha agora uma silhueta provisória, vista de cima.
+- Referência da cidade: `ArteFonte/Picos/CidadeFlutuante/ref/concept.png`. É uma cópia do Vaticano flutuando:
+  - a basílica com a cúpula;
+  - a praça com a colunata em semicírculo e o desenho radial no chão;
+  - pináculos góticos, várias ilhas de rocha embaixo;
+  - a ponte de arcos com duas torres;
+  - um ilhote de praça redonda;
+  - neve e vitrais violeta.
+- Montanhas novas para a região, esculpidas no Blender.
+- Revisão de 2026-10-29: o primeiro esqueleto (anel de colunas em volta da cidade, ilhas voadoras no caminho, descida de 300 m em escada) não ficou natural. Decidido: um maciço grande como o do Bastião, com as vilas na encosta (sela, ombro, ponta de contraforte, paredão), caminho escavado e pontes só sobre vãos de verdade; ilhas voadoras só como cenário; chegada uns 150 m acima da cidade, para ter vista dela. Ficam no caminho: Escalonada, Sinos, Engrenagens, Vila-Ponte, Pendurada e o portão.
+- Etapas: 1 esqueleto em blocos (feito em 2026-10-28, `PicosHighlands.cs`), 2 montanhas do Blender, 3 silhueta da cidade, 4 detalhe vila por vila.
+- Arenas (2026-10-29): provavelmente uma por vila; o usuário vai detalhar depois. Por enquanto só o detalhe das vilas.
 
 ## Fauna (a decidir, com entrevista)
 
@@ -125,11 +159,22 @@ Cada bioma tem fauna própria. O Golem pode aparecer, porque combina com autôma
 - **Caminho e distâncias (2026-10-23):** as fases ficam bem mais longe umas das outras.
   - Antes da primeira arena há um caminho longo e orgânico, de uns 420 m, por plataformas menores: ressaltos de rocha e torrezinhas, ligados por pontes de pedra, pontes de corrente e trilhas.
   - Há muito mais montanhas, com um anel de montanhas grandes ao fundo.
-- **Ideia em consideração para o próximo mapa (sala 19 em diante):** uma cidade gigantesca com uma catedral no meio, que teria 3 ou 4 fases só nela.
-  - Ainda falta entrevistar. Isso muda a ordem original das arenas 3 a 8 (mosteiro, bairro flutuante etc.).
+- **Plano das próximas salas (2026-10-26):** ver a seção Arenas.
+  - Duas salas em ruínas, a vila, o portão da ponte e a cidade flutuante com a catedral no final, com 3 ou 4 salas dentro dela.
 - **Montanhas (2026-10-23):** pilares de arenito como os de Zhangjiajie, de vários formatos e tamanhos, sem pontas (os cones foram recusados): colunas de blocos empilhados, torres de topo plano, grupos de colunas, coroas de blocos, paredões e topos partidos.
   - São geradas em código, mais quatro de destaque esculpidas no Blender: Catedral, Torres gêmeas, Arco e Mesa em degraus.
   - A neve é pixel art misturada por pixel com a rocha. Fica nos topos e nas plataformas planas, com pouca neve nas laterais.
+- **Montanhas, segunda versão (2026-10-26):** o usuário achou a rocha lisa e marrom demais, com as montanhas largas parecendo troncos.
+  - Forma: camadas fortes com juntas escuras, montanhas largas viram feixes de colunas e as faces ficam facetadas.
+  - As montanhas gigantes e o fundo usam uma biblioteca de 8 maciços esculpidos no Blender.
+  - Textura: juntas escuras e quinas claras. As faixas de estratos e a paleta clara foram recusadas: a rocha voltou ao tom escuro e as listras saíram.
+  - Neve: capa nos topos com cornija, montes, pingentes e pontas de rocha. Também tem detalhe de montes e cristas de vento, cristais e textura repintada.
+  - A neve não pega nos degraus estreitos.
+- **Ajustes de 2026-10-26:**
+  - A capa de neve dos topos fica toda coberta, sem a faixa escura na cornija e sem pontas de rocha que pareciam furos. A neve também escorre nas paredes logo abaixo do topo.
+  - Os pisos das construções ganharam lajes e neve como o musgo do Arquipélago: três lajes, cinco transições e neve cheia, com mais neve na beira.
+  - As trilhas viraram um espinhaço de rocha natural com uma calçada antiga de pedras, neve nas beiras e marcos de pedras empilhadas.
+  - As torrezinhas de passagem abrem os dois lados quando a passagem chega numa quina, e os blocos das quinas da abertura saíram.
 
 ## A decidir
 

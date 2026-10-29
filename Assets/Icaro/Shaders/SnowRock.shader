@@ -4,7 +4,13 @@
 // malha), mais nas alturas, mais onde o gerador marcou (UV0.x: topos e degraus), em riscos que descem pelas fendas
 // e com a borda recortada por ruído medido no grão dos pixels da textura (bordas em degraus de pixel, sem borrão).
 // Na borda da neve, uma fileira de pixels de neve à sombra e, logo abaixo, a rocha escurecida (contorno de pixel art).
-// Luz do URP (sol com sombras, luzes extras, ambiente) e névoa.
+// A cor do vértice (branco = nada; as malhas sem cor ficam como antes) traz do gerador: R = quanto escurece (juntas
+// entre camadas e fundo das fendas), G = 1 - quanto clareia (beira de cada camada), B = 0 nos degraus estreitos, que
+// não pegam neve, e A = 0 onde a neve é garantida (a capa de neve dos topos, inclusive a frente da cornija). Perto do
+// topo (UV0.x alto) as paredes também pegam neve, escorrendo da beira com a borda de baixo irregular. A neve tem detalhe em escala grande, que aparece de longe: montes e cristas de vento em sombra
+// azulada (ruído no grão dos pixels), um azul mais fundo nas fendas e alguns cristais que brilham (pixels isolados,
+// conforme o ângulo da câmera). O lado oposto à luz ganha um preenchimento azulado fraco. Luz do URP (sol com sombras,
+// luzes extras, ambiente) e névoa.
 Shader "Icaro/SnowRock"
 {
     Properties
@@ -25,6 +31,20 @@ Shader "Icaro/SnowRock"
         _HeightHigh("Altura com bônus cheio (m)", Float) = 80
         _HeightBonus("Bônus da altura", Range(0, 1)) = 0.1
         _EdgeWidth("Largura da borda", Range(0, 0.3)) = 0.06
+
+        [Header(Relevo)]
+        _CavityDark("Escuro das juntas", Range(0, 1)) = 0.35
+        _EdgeLight("Luz das quinas", Range(0, 1)) = 0.35
+        _ShelfSnowCut("Sem neve nos degraus estreitos", Range(0, 2)) = 1.2
+        _SideSnow("Neve nas paredes perto do topo", Range(0, 2)) = 1.1
+        _FillColor("Preenchimento do lado escuro", Color) = (0.04, 0.05, 0.1, 1)
+
+        [Header(Detalhe da neve)]
+        _SnowShade("Sombra dos montes de neve", Color) = (0.62, 0.68, 0.9, 1)
+        _DriftScale("Tamanho dos montes (m)", Float) = 7
+        _DriftAmount("Força dos montes", Range(0, 1)) = 0.55
+        _RippleAmount("Marcas do vento", Range(0, 1)) = 0.35
+        _SparkleAmount("Cristais", Range(0, 3)) = 1.4
 
         // Usados pelas passagens de sombra e profundidade do Lit
         [HideInInspector] _BaseMap("Base", 2D) = "white" {}
@@ -74,6 +94,16 @@ Shader "Icaro/SnowRock"
                 float _HeightHigh;
                 half _HeightBonus;
                 half _EdgeWidth;
+                half _CavityDark;
+                half _EdgeLight;
+                half _ShelfSnowCut;
+                half _SideSnow;
+                half4 _FillColor;
+                half4 _SnowShade;
+                float _DriftScale;
+                half _DriftAmount;
+                half _RippleAmount;
+                half _SparkleAmount;
             CBUFFER_END
 
             TEXTURE2D(_RockMap);
@@ -86,6 +116,7 @@ Shader "Icaro/SnowRock"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
+                half4 color : COLOR;
             };
 
             struct Varyings
@@ -95,6 +126,7 @@ Shader "Icaro/SnowRock"
                 float3 normalWS : TEXCOORD1;
                 float bias : TEXCOORD2;
                 half fogFactor : TEXCOORD3;
+                half4 color : COLOR;
             };
 
             Varyings Vert(Attributes input)
@@ -105,6 +137,7 @@ Shader "Icaro/SnowRock"
                 output.positionWS = positions.positionWS;
                 output.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 output.bias = input.uv.x;
+                output.color = input.color;
                 output.fogFactor = ComputeFogFactor(positions.positionCS.z);
                 return output;
             }
@@ -151,12 +184,37 @@ Shader "Icaro/SnowRock"
 
                 float height = saturate((p.y - _HeightLow) / (_HeightHigh - _HeightLow)) * _HeightBonus;
                 float mask = n.y - (1 - _SnowAmount) + edgeNoise * _SnowNoise + height + input.bias * 0.45 + streak;
+                // Degraus estreitos e o fundo das juntas não pegam neve
+                mask -= (1 - input.color.b) * _ShelfSnowCut + (1 - input.color.r) * 0.4;
+                // Paredes perto do topo: a neve escorre da beira, com a borda de baixo recortada
+                mask += input.bias * _SideSnow * (0.55 + Fbm(grain * 0.9 + 4.1)) * saturate(1 - n.y * 1.5);
+                // Capa de neve: sempre neve
+                mask += (1 - input.color.a) * 3;
 
                 half3 rock = SAMPLE_TEXTURE2D(_RockMap, sampler_RockMap, uv / _Tile).rgb * _RockTint.rgb;
+
+
+                // Relevo do gerador: juntas e fendas mais escuras, beiras das camadas mais claras
+                half cavity = lerp(1 - _CavityDark, 1, input.color.r);
+                half edgeLight = (1 - input.color.g) * _EdgeLight;
+                rock *= cavity * (1 + edgeLight);
                 half3 snow = SAMPLE_TEXTURE2D(_SnowMap, sampler_SnowMap, uv / _Tile).rgb * _SnowTint.rgb;
+
+                // Detalhe da neve em escala grande (no grão dos pixels): montes com o lado de sombra azulado, cristas
+                // de vento em linhas onduladas e um azul mais fundo nas fendas
+                float drift = Fbm(grain / _DriftScale + 13.7);
+                float driftShade = saturate((drift - 0.5) * 3.2) * _DriftAmount;
+                float ripple = sin((grain.x * 0.9 + grain.y * 0.35) * 2.2 + Fbm(grain * 0.18) * 7);
+                float rippleShade = saturate(ripple * 3 - 2.2) * _RippleAmount;
+                half shadeAmount = saturate(driftShade + rippleShade * 0.6 + (1 - input.color.r) * 0.6);
+                snow = lerp(snow, snow * _SnowShade.rgb, shadeAmount);
+
+                // Cristais: pixels isolados que brilham conforme o ângulo da câmera
+                float glint = Hash(grain * 1.37 + floor(dot(GetWorldSpaceNormalizeViewDir(p), float3(3.1, 5.7, 2.3)) * 4));
+                half sparkle = glint > 0.985 ? _SparkleAmount * saturate(n.y) : 0;
                 half3 albedo;
                 if (mask > _EdgeWidth)
-                    albedo = snow;
+                    albedo = snow + sparkle;
                 else if (mask > 0)
                     albedo = snow * _SnowEdge.rgb;
                 else if (mask > -_EdgeWidth)
@@ -183,6 +241,9 @@ Shader "Icaro/SnowRock"
                 surface.smoothness = 0;
 
                 half4 color = UniversalFragmentBlinnPhong(inputData, surface);
+                // Preenchimento azulado no lado oposto à luz principal
+                Light sun = GetMainLight();
+                color.rgb += albedo * _FillColor.rgb * saturate(-dot(n, sun.direction) + 0.3);
                 color.rgb = MixFog(color.rgb, input.fogFactor);
                 return half4(color.rgb, 1);
             }
