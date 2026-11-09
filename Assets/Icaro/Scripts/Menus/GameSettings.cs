@@ -41,6 +41,7 @@ namespace Icaro
         public static int Shadows = 3;          // 0 desligadas, 1 baixa, 2 média, 3 alta
         public static float Brightness;         // exposição, -1 a +1
         public static float FieldOfView = 70f;
+        public const float MinFieldOfView = 60f, MaxFieldOfView = 90f;   // teto pedido pelo usuário (2026-10-31)
         public static float ScreenEffects = 1f; // vinheta e aberração do multiplicador, 0 a 1
 
         public static readonly int[] FpsLimits = { 30, 60, 120, 144, 240, -1 };
@@ -105,7 +106,7 @@ namespace Icaro
             RenderScale = PlayerPrefs.GetFloat(k_Prefix + "EscalaRender", RenderScale);
             Shadows = PlayerPrefs.GetInt(k_Prefix + "Sombras", Shadows);
             Brightness = PlayerPrefs.GetFloat(k_Prefix + "Brilho", Brightness);
-            FieldOfView = PlayerPrefs.GetFloat(k_Prefix + "Fov", FieldOfView);
+            FieldOfView = Mathf.Clamp(PlayerPrefs.GetFloat(k_Prefix + "Fov", FieldOfView), MinFieldOfView, MaxFieldOfView);
             ScreenEffects = PlayerPrefs.GetFloat(k_Prefix + "EfeitosTela", ScreenEffects);
 
             MasterVolume = PlayerPrefs.GetFloat(k_Prefix + "VolumeGeral", MasterVolume);
@@ -190,6 +191,46 @@ namespace Icaro
                 InputSystem.actions.RemoveAllBindingOverrides();
             DashKey = Key.F;
             ShopKey = Key.G;
+            Commit();
+        }
+
+        // Volta uma aba das configurações aos valores de fábrica (0 Jogo, 1 Vídeo, 2 Áudio, 3 Controles) e salva
+        public static void ResetTab(int tab)
+        {
+            switch (tab)
+            {
+                case 0:
+                    AimAssist = true;
+                    AimAssistIntensity = 1f;
+                    DamageNumbers = true;
+                    HitMarker = true;
+                    CameraShakeOn = true;
+                    ThreatIndicators = true;
+                    ShowFps = false;
+                    break;
+                case 1:
+                    ScreenMode = 0;
+                    ResolutionIndex = -1;
+                    Quality = -1;
+                    VSync = true;
+                    FpsLimit = 1;
+                    RenderScale = 1f;
+                    Shadows = 3;
+                    Brightness = 0f;
+                    FieldOfView = 70f;
+                    ScreenEffects = 1f;
+                    break;
+                case 2:
+                    MasterVolume = 0.8f;
+                    MusicVolume = 1f;
+                    break;
+                default:
+                    MouseSensitivity = 1f;
+                    InvertY = false;
+                    ResetBindings();
+                    return;
+            }
+
             Commit();
         }
 

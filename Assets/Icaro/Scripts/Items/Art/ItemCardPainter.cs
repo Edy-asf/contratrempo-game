@@ -134,6 +134,66 @@ namespace Icaro
             EffectBox(c, Px.Hex(0x2c2731, 242), Px.Hex(0xa08a92), 2);
         }
 
+        // Verso das cartas (igual para todas as raridades, para a carta virar como surpresa): moldura escura, fundo
+        // azul-noite com trilhas de circuito ciano apagadas e, no meio, o relógio de Kairós (aros, marcas das horas e
+        // ponteiros), com losangos em cima e embaixo e cantoneiras
+        public static PixelCanvas PaintBack()
+        {
+            var c = new PixelCanvas(Width, Height) { Dither = 0.25f };
+            c.FillFlat(Plate(0, 0, Width, Height, 0, 6), Outline);
+            c.Fill(Plate(1, 1, Width - 2, Height - 2, 4, 5), Dark, 0.1f);
+            Gradient(c, Plate(5, 5, 100, 144, 0, 2), Px.Hex(0x15274a), Px.Hex(0x070c18));
+            Circuit(c, new Random(44), Cyan[1].WithAlpha(80), Px.Hex(0x03060c).WithAlpha(150));
+            Box(c, 5, 5, 100, 144, Cyan[1]);
+            Box(c, 8, 8, 94, 138, Cyan[0].WithAlpha(200));
+
+            // Faixas finas acima e abaixo do relógio, com um vão no meio
+            foreach (int y in new[] { 36, 118 })
+            {
+                c.Rect(18, y, 30, 1, Cyan[1].WithAlpha(160));
+                c.Rect(62, y, 30, 1, Cyan[1].WithAlpha(160));
+            }
+
+            // Relógio
+            const float cx = 55f, cy = 77f;
+            c.Glow(cx, cy, 40f, Cyan[2], 0.22f);
+            c.FillFlat(Circle(cx, cy, 30f), Px.Hex(0x0a1528));
+            c.FillFlat(Ring(cx, cy, 30f, 28f), Cyan[2]);
+            c.FillFlat(Ring(cx, cy, 31f, 30f), Outline);
+            c.FillFlat(Ring(cx, cy, 25.5f, 24.8f), Cyan[1].WithAlpha(170));
+            for (int i = 0; i < 12; i++)
+            {
+                double a = i * Math.PI / 6.0;
+                bool major = i % 3 == 0;
+                int x = (int)Math.Round(cx + Math.Sin(a) * 21.5), y = (int)Math.Round(cy - Math.Cos(a) * 21.5);
+                c.Rect(x - (major ? 1 : 0), y - (major ? 1 : 0), major ? 3 : 2, major ? 3 : 2, major ? Cyan[4] : Cyan[3]);
+            }
+
+            c.Stroke(cx, cy, cx, cy - 16f, 1.8f, Cyan[4]);
+            c.Stroke(cx, cy, cx + 11f, cy + 6f, 1.6f, Cyan[3]);
+            c.FillFlat(Circle(cx, cy, 2.6f), White);
+
+            // Losangos e cantoneiras
+            foreach (float y in new[] { 23f, 131f })
+            {
+                c.FillFlat(Poly(0f, cx, y - 6.5f, cx + 6.5f, y, cx, y + 6.5f, cx - 6.5f, y), Outline);
+                c.Fill(Poly(1f, cx, y - 5f, cx + 5f, y, cx, y + 5f, cx - 5f, y), Cyan);
+                c.Set((int)cx - 1, (int)y - 2, White);
+            }
+
+            foreach (int x in new[] { 11, 92 })
+            {
+                foreach (int y in new[] { 11, 136 })
+                {
+                    bool right = x > 55, bottom = y > 77;
+                    c.Rect(x, bottom ? y + 5 : y, 7, 2, Cyan[3]);
+                    c.Rect(right ? x + 5 : x, y, 2, 7, Cyan[3]);
+                }
+            }
+
+            return c;
+        }
+
         // ---------- peças ----------
 
         // Caixa do efeito: fundo escuro com borda de 1 pixel e cantos chanfrados

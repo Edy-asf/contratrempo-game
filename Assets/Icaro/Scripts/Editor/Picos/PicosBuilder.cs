@@ -68,6 +68,10 @@ namespace Icaro.EditorTools
 
         static PicosTextureKit.Set s_Materials;
         static MeshData s_Snow, s_Ice, s_MountainNear, s_MountainFar, s_Iron, s_Wood;
+        static MeshData s_Alloy;     // cabos de energia e peças de liga feitas aqui (PicosTech)
+
+        // Água congelada com as texturas novas (cascata de pé, rio de cima), UV projetada pelo mundo no fim (WorldIceUvs)
+        static MeshData s_IceFall, s_IceSheet;
         static RuinMesh s_Paving, s_PathStones;     // pisos das construções (lajes e neve) e as pedras das trilhas
         static Transform s_PathColliders;
         // Plataformas (centro e raio) para a neve dos pisos acumular mais perto da beira
@@ -134,6 +138,23 @@ namespace Icaro.EditorTools
             Physics.SyncTransforms();
         }
 
+        [MenuItem("Ícaro/Picos/Ir para Archen Kaedra (teste)", priority = 52)]
+        static void GoToArchenKaedra()
+        {
+            GameObject arrival = GameObject.Find("Chegada_ArchenKaedra");
+            var controller = Object.FindFirstObjectByType<CharacterController>();
+            if (!Application.isPlaying || !arrival || !controller)
+            {
+                Debug.LogWarning("[Ícaro] Ir para Archen Kaedra: entre em Play na cena dos Picos gerada de novo.");
+                return;
+            }
+
+            controller.enabled = false;
+            controller.transform.SetPositionAndRotation(arrival.transform.position, arrival.transform.rotation);
+            controller.enabled = true;
+            Physics.SyncTransforms();
+        }
+
         [MenuItem("Ícaro/Picos/Gerar Chegada (teste)", priority = 49)]
         static void Generate()
         {
@@ -145,6 +166,7 @@ namespace Icaro.EditorTools
             Material vineMaterial = ArquipelagoRuinKit.VineMaterial;
             ArquipelagoRuinKit.Vines = null;
             ArquipelagoRuinKit.VineMaterial = null;
+            ManualAdjustmentsTool.Begin("Picos");
             try
             {
                 EditorUtility.DisplayProgressBar("Picos", "Texturas", 0.1f);
@@ -179,6 +201,7 @@ namespace Icaro.EditorTools
                 ArquipelagoRuinKit.Vines = vines;
                 ArquipelagoRuinKit.VineMaterial = vineMaterial;
                 BlockMesh.Tile = GridSceneKit.Cell;
+                ManualAdjustmentsTool.End();
                 EditorUtility.ClearProgressBar();
             }
         }
@@ -208,6 +231,7 @@ namespace Icaro.EditorTools
         static void BuildContent()
         {
             s_Random = new System.Random(1701);
+            ResetSprites();
             s_MountainNear = new MeshData();
             s_Clearings.Clear();
             Clear(Vector3.zero, 60f);
@@ -221,8 +245,11 @@ namespace Icaro.EditorTools
             s_PathColliders.SetParent(s_World, false);
             s_Ice = new MeshData();
             PicosMountainKit.Ice = s_Ice;     // pingentes sob as cornijas de neve das montanhas
+            s_IceFall = new MeshData();
+            s_IceSheet = new MeshData();
             s_Iron = new MeshData();
             s_Wood = new MeshData();
+            s_Alloy = new MeshData();
             s_Ruins = new RuinMesh(1702);
             InitIsle();
             BlockMesh.Tile = 4f;
@@ -247,21 +274,31 @@ namespace Icaro.EditorTools
             GridSceneKit.CreateObject(k_Prefix + "_Montanhas", "Montanhas", s_MountainFar, s_Materials.Mountain, s_World, false);
             GridSceneKit.CreateObject(k_Prefix + "_Neve", "Neve", s_Snow, s_Materials.Snow, s_World, true);
             CreatePaving();
-            CreateRuin("Calcada", s_PathStones, true, false);
+            CreateRuin("Calcada", s_PathStones, true, false, s_Materials.Stones);   // pedras soltas da trilha: pedra natural
             GridSceneKit.CreateObject(k_Prefix + "_Gelo", "Gelo", s_Ice, s_Materials.Ice, s_World, false);
+            WorldIceUvs(s_IceFall, 8f);
+            WorldIceUvs(s_IceSheet, 4f);
+            GridSceneKit.CreateObject(k_Prefix + "_Gelo_Cascata", "Gelo_Cascata", s_IceFall, s_Materials.IceFall, s_World, false);
+            GridSceneKit.CreateObject(k_Prefix + "_Gelo_Lago", "Gelo_Lago", s_IceSheet, s_Materials.IceSheet, s_World, false);
             GridSceneKit.CreateObject(k_Prefix + "_Ferro", "Ferro", s_Iron, s_Materials.Iron, s_World, false);
             GridSceneKit.CreateObject(k_Prefix + "_Madeira", "Madeira", s_Wood, s_Materials.Wood, s_World, false);
+            GridSceneKit.CreateObject(k_Prefix + "_Liga", "Liga", s_Alloy, s_Materials.Alloy, s_World, false);
             CreateRuin("Ruinas", s_Ruins, true);
+            // Ajustes manuais do usuário nas peças do kit (antes das salas, para o NavMesh já ver as peças no lugar)
+            ManualAdjustmentsTool.Apply(s_World, (model, folder, parent) =>
+                PicosGothicKit.Place(s_Materials, model, Vector3.zero, 0f, parent, true, folder));
             BuildArenaRoom();
             BuildSaddleRoom();
             BuildBastionRoom();
             BuildIsleRoom();
+            BuildGuardVillageRoom();
 
             Snowfall(new Vector3(-6f, 30f, -50f));
             Snowfall(k_NextPeak + Vector3.up * 30f);
             Snowfall(k_Saddle + Vector3.up * 30f);
             Snowfall(k_Bastion + Vector3.up * 30f);
             Snowfall(k_Isle + Vector3.up * 30f);
+            BuildSprites();
             var hazard = s_World.gameObject.AddComponent<SeaHazard>();
             hazard.SeaLevel = k_CloudY - 25f;   // dentro da nuvem, já fora da vista
             s_World.gameObject.AddComponent<CameraFarClip>().Distance = 3800f;   // o mar de nuvens cobre o caminho todo
@@ -280,13 +317,16 @@ namespace Icaro.EditorTools
         // - a rocha do pico abraça a base: o pilar de rocha logo abaixo, mais largo que o fuste, e penhascos menores
         //   subindo em volta (fora dos lados abertos), como os cristais em volta da torre da referência.
         // 'top' é o centro do chão; 'radius' vai até as quinas do topo. Devolve o raio de dentro (meio de cada lado).
-        static float TowerTop(Vector3 top, float radius, int seed, int[] open, int doorSide)
+        // 'ground' (opcional): o fuste de cantaria desce até essa altura e a rocha do pico em volta fica de fora (a torre
+        // em pé sozinha num vão, como o mirante da Vila Pendurada).
+        static float TowerTop(Vector3 top, float radius, int seed, int[] open, int doorSide, float ground = float.NaN)
         {
+            bool standing = !float.IsNaN(ground);
             const int sides = 8;
             float half = 180f / sides, inner = radius * Mathf.Cos(half * Mathf.Deg2Rad);
             float shaft = radius * 0.84f, shaftInner = shaft * Mathf.Cos(half * Mathf.Deg2Rad);
             float slabBottom = top.y - 1.6f, corniceBottom = top.y - 2.4f, skirtBottom = corniceBottom - 4f;
-            float masonryBottom = top.y - 18f;
+            float masonryBottom = standing ? ground - 0.5f : top.y - 18f;
 
             // Laje do topo (vira piso) e cornija
             s_Platforms.Add((top, inner));
@@ -385,7 +425,9 @@ namespace Icaro.EditorTools
             }
 
             // Miolo do fuste (atrás dos blocos) até dentro da rocha
-            Prism(s_Ruins.Pick(), top, shaft - 0.3f, shaft - 0.3f, sides, skirtBottom, top.y - 30f, false);
+            Prism(s_Ruins.Pick(), top, shaft - 0.3f, shaft - 0.3f, sides, skirtBottom, standing ? ground - 1f : top.y - 30f, false);
+            if (standing)
+                return inner;
 
             // A rocha do pico abraça a base: pilar logo abaixo, mais largo que o fuste, e penhascos em volta
             PicosMountainKit.Pillar(s_MountainNear, new PicosMountainKit.PillarSpec
@@ -806,6 +848,7 @@ namespace Icaro.EditorTools
                                 Quaternion.Euler(R(-6f, 6f), R(0f, 90f), R(-6f, 6f)), 0.08f);
                             y += size * 0.6f;
                         }
+                        s_Cairns.Add((at + Vector3.up * y, b - a));
                     }
                 }
 
@@ -849,8 +892,9 @@ namespace Icaro.EditorTools
             Mound(s_Snow, p, Mathf.Min(size, limit), Mathf.Min(sizeZ, limit), height, 10);
         }
 
-        // Ponte de pedra: tabuleiro de blocos, meio-fio partido, dois pilares até as nuvens e pingentes embaixo
-        static void Bridge(Vector3 from, Vector3 to, float width)
+        // Ponte de pedra: tabuleiro de blocos, meio-fio partido, dois pilares até as nuvens (sem eles nos vãos curtos) e
+        // pingentes embaixo
+        static void Bridge(Vector3 from, Vector3 to, float width, bool pillars = true)
         {
             Vector3 flat = to - from;
             flat.y = 0f;
@@ -879,7 +923,7 @@ namespace Icaro.EditorTools
                         R(0.6f, 2.4f), R(0.12f, 0.3f), 5, 0f, 3f);
             }
 
-            foreach (float t in new[] { 0.33f, 0.67f })
+            foreach (float t in pillars ? new[] { 0.33f, 0.67f } : new float[0])
             {
                 Vector3 c = Vector3.Lerp(from, to, t);
                 float height = c.y - k_CloudY + 50f;
@@ -1292,6 +1336,13 @@ namespace Icaro.EditorTools
             Vector3 Deck(float t) => Vector3.Lerp(from, to, t) + Vector3.down * (sag * 4f * t * (1f - t));
             Vector3 Chain(float t, float side) => Vector3.Lerp(from, to, t) + right * side * edge +
                                                   Vector3.up * (postHeight - (sag + postHeight - railMid) * 4f * t * (1f - t));
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var rail = new Vector3[33];
+                for (int i = 0; i < rail.Length; i++)
+                    rail[i] = Chain(i / 32f, side);
+                s_ChainRails.Add(rail);
+            }
 
             // Pilares de ancoragem
             foreach ((Vector3 end, Vector3 back) in new[] { (from, -dir), (to, dir) })
@@ -3518,6 +3569,8 @@ namespace Icaro.EditorTools
             float snowSlope = 0.55f)
         {
             RuinMesh.Layers layers = mesh.Split(-10000f, snow ? snowSlope : 2f);
+            // Construções em código: os três tons da mesma cantaria (sortear texturas diferentes por bloco misturava tudo;
+            // o usuário recusou em 2026-11-08)
             materials ??= s_Materials.Stones;
             var root = new GameObject(name).transform;
             root.SetParent(s_World, false);

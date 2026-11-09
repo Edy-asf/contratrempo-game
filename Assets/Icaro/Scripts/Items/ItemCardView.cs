@@ -10,6 +10,9 @@ namespace Icaro
     // curta e a regra de acúmulo (nas cartas elementais, a frase de efeito no pé no lugar dela). Em volta, um brilho na cor da
     // raridade e, nas Incomuns e Raras, partículas subindo. Anima com o tempo real (a escolha pausa o jogo): o ícone
     // flutua em degraus de pixel e o brilho pulsa. Selected e Hovered vêm de quem usa a carta (ItemDraft).
+    // A carta pode ficar virada para baixo (SetFaceDown: só o verso, ItemArt.CardBack); Charge (0 a 1) acende atrás do
+    // verso um brilho na cor da raridade (o suspense antes de virar uma Incomum ou Rara) e Flash() dá um clarão branco
+    // que se apaga logo depois de virar.
     public class ItemCardView : MonoBehaviour
     {
         public const float Width = ItemCardPainter.Width * ItemArt.CardScale;
@@ -25,6 +28,8 @@ namespace Icaro
         public RectTransform Root => (RectTransform)transform;
         public bool Selected { get; set; }
         public bool Hovered { get; set; }
+        public bool FaceDown { get; private set; }
+        public float Charge { get; set; }
 
         class Particle
         {
@@ -45,6 +50,11 @@ namespace Icaro
         Color m_ParticleColor;
         float m_Phase;
         float m_IconY;
+        readonly List<GameObject> m_Face = new List<GameObject>();
+        Image m_BackGlow;
+        Image m_Back;
+        Image m_Flash;
+        float m_FlashAlpha;
 
         public static ItemCardView Create(Transform parent, ItemDefinition item, ItemCatalog catalog, int index,
             int owned, Vector2 position)
@@ -173,6 +183,43 @@ namespace Icaro
             count.text = owned > 0 ? $"VOCÊ TEM: {owned}" : "NOVO";
 
             BuildSelection();
+            BuildBack();
+        }
+
+        // Verso, o brilho atrás dele e o clarão (criados por último, por cima da frente)
+        void BuildBack()
+        {
+            foreach (Transform child in transform)
+                m_Face.Add(child.gameObject);
+            var center = new Vector2(0.5f, 0.5f);
+            m_BackGlow = ItemUI.Panel("VersoBrilho", transform, center, Vector2.zero,
+                new Vector2(Width + ItemArt.GlowMargin * 2f, Height + ItemArt.GlowMargin * 2f), m_GlowColor);
+            m_BackGlow.sprite = ItemArt.Glow;
+            m_Back = ItemUI.Panel("Verso", transform, center, Vector2.zero, new Vector2(Width, Height), Color.white);
+            m_Back.sprite = ItemArt.CardBack;
+            m_Flash = ItemUI.Panel("Clarao", transform, center, Vector2.zero, new Vector2(Width, Height), Color.white);
+            SetFaceDown(false);
+        }
+
+        // Só o verso (true) ou só a frente (false)
+        public void SetFaceDown(bool down)
+        {
+            FaceDown = down;
+            foreach (GameObject part in m_Face)
+            {
+                if (part)
+                    part.SetActive(!down);
+            }
+            m_Back.gameObject.SetActive(down);
+            m_BackGlow.gameObject.SetActive(down);
+            if (!down)
+                m_Selection.SetActive(Selected);
+        }
+
+        // Clarão branco por cima da carta, que se apaga em ~0,3 s
+        public void Flash()
+        {
+            m_FlashAlpha = 1f;
         }
 
         // Moldura branca e faixa "ESCOLHIDA" (aparecem com Selected)
@@ -205,6 +252,19 @@ namespace Icaro
         {
             float time = Time.unscaledTime;
             float dt = Time.unscaledDeltaTime;
+
+            // Clarão: some em degraus (estilo pixel)
+            m_FlashAlpha = Mathf.MoveTowards(m_FlashAlpha, 0f, dt * 3.5f);
+            m_Flash.gameObject.SetActive(m_FlashAlpha > 0f);
+            m_Flash.color = new Color(1f, 1f, 1f, Mathf.Ceil(m_FlashAlpha * 4f) / 4f * 0.85f);
+
+            if (FaceDown)
+            {
+                Color charge = m_GlowColor;
+                charge.a = Mathf.Clamp01(Charge) * (0.7f + 0.3f * Mathf.Sin(time * 30f));
+                m_BackGlow.color = charge;
+                return;
+            }
 
             // Brilho: pulsa devagar; escolhida, fica branco
             float pulse = 0.85f + 0.15f * Mathf.Sin(time * 2.2f + m_Phase);

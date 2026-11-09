@@ -206,13 +206,44 @@ def carve(obj, cuts):
         mod.solver = solver
         mod.object = cut
         before = len(obj.data.polygons)
+        top = max(v.co.z for v in obj.data.vertices)
+        backup = obj.data.copy()
         bpy.ops.object.modifier_apply(modifier=mod.name)
+        used = solver
         if len(obj.data.polygons) == before and solver == 'MANIFOLD':
-            solver = 'FLOAT'        # a malha ainda não serve para o MANIFOLD: o corte rápido aceita
+            # Nada mudou: ou o sólido não encosta na rocha, ou a malha deixou de servir para o MANIFOLD (algum corte
+            # anterior abriu uma borda). Conserta a malha e tenta de novo; se ainda nada mudar, o corte é pulado (o
+            # corte rápido, FLOAT, deixava a malha rasgada e estragava todos os cortes seguintes)
+            make_manifold(obj)
+            before = len(obj.data.polygons)
+            bpy.data.meshes.remove(backup)
+            backup = obj.data.copy()
             mod = obj.modifiers.new(cut.name, 'BOOLEAN')
-            mod.operation, mod.solver, mod.object = 'DIFFERENCE', solver, cut
+            mod.operation, mod.solver, mod.object = 'DIFFERENCE', 'MANIFOLD', cut
             bpy.ops.object.modifier_apply(modifier=mod.name)
-        print('[Bastiao] corte', cut.name, before, '->', len(obj.data.polygons), solver)
+            used = 'MANIFOLD 2a' if len(obj.data.polygons) != before else 'SEM EFEITO'
+            if max(v.co.z for v in obj.data.vertices) > top + 0.5:
+                broken = obj.data
+                obj.data = backup.copy()
+                bpy.data.meshes.remove(broken)
+                used = 'SEM EFEITO'
+        if len(obj.data.polygons) < before * 0.5:
+            # O corte rápido às vezes desmancha a malha inteira: volta atrás e tenta o exato; se ainda falhar, pula
+            for retry in ('EXACT', None):
+                broken = obj.data
+                obj.data = backup.copy()
+                bpy.data.meshes.remove(broken)
+                if retry is None:
+                    used = 'PULADO'
+                    break
+                mod = obj.modifiers.new(cut.name, 'BOOLEAN')
+                mod.operation, mod.solver, mod.object = 'DIFFERENCE', retry, cut
+                bpy.ops.object.modifier_apply(modifier=mod.name)
+                used = retry
+                if len(obj.data.polygons) >= before * 0.5:
+                    break
+        bpy.data.meshes.remove(backup)
+        print('[Bastiao] corte', cut.name, before, '->', len(obj.data.polygons), used)
         bpy.data.objects.remove(cut, do_unlink=True)
 
 

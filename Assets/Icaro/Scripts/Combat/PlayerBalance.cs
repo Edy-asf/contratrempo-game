@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Icaro
 {
-    // Aplica ao jogador os valores do CombatBalance: vida máxima e os valores iniciais do PlayerStats (crítico,
+    // Aplica ao jogador os valores do CombatBalance: altura e altura dos olhos, vida máxima e os valores iniciais do PlayerStats (crítico,
     // multiplicador de dano, regeneração base, catálogo de itens). Roda no Awake, antes do Health.Start copiar a vida máxima para a
     // vida atual. Também liga a vida do jogador ao evento central de dano, depois do PlayerStats (as defesas dos
     // itens precisam ver o dano antes do evento).
@@ -17,6 +17,14 @@ namespace Icaro
             var health = GetComponent<Health>();
             if (Balance && health)
                 health.MaxHealth = Balance.PlayerMaxHealth;
+
+            // Altura (antes do Start do controlador, que acerta a cápsula e a câmera)
+            var controller = GetComponent<Unity.FPS.Gameplay.PlayerCharacterController>();
+            if (Balance && controller)
+            {
+                controller.CapsuleHeightStanding = Balance.PlayerHeight;
+                controller.CameraHeightRatio = Mathf.Clamp01(Balance.PlayerEyeHeight / Balance.PlayerHeight);
+            }
 
             var stats = GetComponent<PlayerStats>();
             if (!stats)

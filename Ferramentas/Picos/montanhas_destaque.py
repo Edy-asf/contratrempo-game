@@ -64,7 +64,7 @@ def column(x, y, top, r_top, r_base, rnd, lean=(0.0, 0.0), bed=(10.0, 22.0), cor
         h = min(rnd.uniform(*bed), top - z)
         if top - (z + h) < bed[0] * 0.4:
             h = top - z
-        t = 1.0 - (z + h - BOTTOM) / height           # 0 no topo, 1 embaixo
+        t = max(0.0, 1.0 - (z + h - BOTTOM) / height)  # 0 no topo, 1 embaixo (o max evita -1e-16 ** 3.5)
         r = r_top + (r_base - r_top) * t ** 3.5
         spin = rnd.uniform(-shift, shift)
         angles = [a + spin for a in base_angles]

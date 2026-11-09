@@ -13,7 +13,8 @@ namespace Icaro
     // F11 liga e desliga: o jogador fica imortal e voa atravessando tudo (sem gravidade nem colisão), olhando com o
     // mouse como sempre. WASD (ou as teclas de movimento configuradas) anda para onde a câmera olha, Espaço sobe,
     // Ctrl ou C desce, Shift acelera e a rodinha muda a velocidade. H esconde o HUD (1x: tudo menos a arma; 2x: a
-    // arma também; 3x: volta). P salva um print sem o HUD do modo livre na pasta Prints/ da raiz do projeto.
+    // arma também; 3x: volta). P salva um print sem o HUD do modo livre na pasta Prints/ da raiz do projeto. M marca um
+    // ponto (posição, direção do olhar e o chão logo abaixo) no fim de Prints/pontos.txt, para combinar lugares do mapa.
     // Telas que pausam o jogo (pausa, cartas, loja) aparecem mesmo com o HUD escondido. Desligar o modo devolve o
     // controle normal (o jogador cai de onde estiver, ainda sem dano no frame da volta).
     [DefaultExecutionOrder(-200)]
@@ -135,6 +136,8 @@ namespace Icaro
                     SetHudMode((m_HudMode + 1) % 3);
                 if (keyboard.pKey.wasPressedThisFrame)
                     StartCoroutine(Capture());
+                if (keyboard.mKey.wasPressedThisFrame)
+                    MarkPoint();
             }
 
             if (Time.timeScale > 0f)
@@ -271,6 +274,26 @@ namespace Icaro
             Debug.Log($"[Ícaro] Print salvo em {path}");
         }
 
+        // Ponto marcado: uma linha por ponto em Prints/pontos.txt (posição do jogador, giro Y da câmera e a altura do chão
+        // logo abaixo, ou "-" se não houver chão em 500 m)
+        void MarkPoint()
+        {
+            string folder = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "Prints");
+            Directory.CreateDirectory(folder);
+            string path = Path.Combine(folder, "pontos.txt");
+            int number = File.Exists(path) ? File.ReadAllLines(path).Length + 1 : 1;
+            Vector3 p = transform.position;
+            float yaw = Camera.main ? Camera.main.transform.eulerAngles.y : transform.eulerAngles.y;
+            var culture = System.Globalization.CultureInfo.InvariantCulture;
+            string ground = Physics.Raycast(p + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 500f, ~0,
+                QueryTriggerInteraction.Ignore) ? hit.point.y.ToString("0.0", culture) : "-";
+            string line = string.Format(culture, "{0}  {1:yyyy-MM-dd HH:mm:ss}  pos {2:0.0} {3:0.0} {4:0.0}  olhar {5:0}  chao {6}",
+                number, System.DateTime.Now, p.x, p.y, p.z, yaw, ground);
+            File.AppendAllText(path, line + System.Environment.NewLine);
+            Show($"Ponto {number} marcado (Prints/pontos.txt)");
+            Debug.Log($"[Ícaro] Ponto {number}: {line}");
+        }
+
         void Show(string message)
         {
             m_Message = message;
@@ -294,7 +317,7 @@ namespace Icaro
             var text = new System.Text.StringBuilder();
             if (Active && m_HudMode == 0)
                 text.Append("<b>MODO LIVRE</b> (F11 sai) · imortal · WASD anda · Espaço sobe · Ctrl/C desce · " +
-                            $"Shift rápido · rodinha velocidade ({Speed:0.#} m/s) · H esconde o HUD · P salva print\n");
+                            $"Shift rápido · rodinha velocidade ({Speed:0.#} m/s) · H esconde o HUD · P salva print · M marca ponto\n");
             if (message)
                 text.Append(m_Message);
             if (text.Length == 0)

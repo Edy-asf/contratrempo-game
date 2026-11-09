@@ -45,6 +45,7 @@ namespace Icaro
             m_FirstMuzzle = Weapon.WeaponMuzzle;
             if (Definition && Definition.Akimbo && SecondMuzzle)
                 Weapon.OnShootProcessed += AlternateMuzzle;
+            Weapon.OnShootProcessed += KickAim;
             if (Definition && Definition.Suppressed)
                 Weapon.ShootSfx = WeaponSounds.Suppressed;
         }
@@ -52,7 +53,17 @@ namespace Icaro
         void OnDestroy()
         {
             if (Weapon)
+            {
                 Weapon.OnShootProcessed -= AlternateMuzzle;
+                Weapon.OnShootProcessed -= KickAim;
+            }
+        }
+
+        // Recuo da mira: só a arma na mão do jogador
+        void KickAim()
+        {
+            if (Weapon.Owner && AimRecoil.Instance && Weapon.Owner == AimRecoil.Instance.gameObject)
+                AimRecoil.Instance.Kick(Definition);
         }
 
         // Akimbo: o último disparo saiu da segunda arma (a da mão esquerda)?

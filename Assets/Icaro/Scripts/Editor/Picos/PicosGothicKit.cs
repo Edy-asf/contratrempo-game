@@ -18,14 +18,42 @@ namespace Icaro.EditorTools
         // Kit das Vilas do Alto (ArteFonte/Picos/VilasDoAlto_Kit): casas góticas inteiras e as peças das praças
         public static string VillagesFolder => IcaroAssetUtility.Root + "/Models/Picos/VilasDoAlto";
 
-        public static Material MaterialFor(string name, PicosTextureKit.Set set)
+        // 'model': a parede de tijolo e as escamas saem do tipo de construção (WallKind) e a moldura usa a pedra própria
+        // (Vilas do Alto e Bairro Voador); sem ele, as texturas antigas. 'worn': peça do Bairro Voador (abandonado)
+        public static Material MaterialFor(string name, PicosTextureKit.Set set, string model = null, bool worn = false)
         {
+            bool kit = model != null && set.GothWalls != null;
+            // Estragos do ataque, antes de MAT_Madeira, MAT_Pedra e MAT_Vidro (os prefixos pegariam esses nomes)
+            if (name.StartsWith("MAT_Madeira_Queimada"))
+                return set.CharWood ?? set.Wood;
+            if (name.StartsWith("MAT_Pedra_Queimada"))
+                return set.BurntStone ?? set.Dark;
+            if (name.StartsWith("MAT_Chao_Queimado"))
+                return set.Scorch ?? set.Dark;
+            if (name.StartsWith("MAT_Vidro_Fundido"))
+                return set.FusedGlass ?? set.Glass;
+            if (name.StartsWith("MAT_Cristal_Apagado"))
+                return set.DeadCrystal ?? set.Dark;
+            if (name.StartsWith("MAT_Carbonizado"))
+                return set.Carbon ?? set.Dark;
+            if (name.StartsWith("MAT_Liga_Clara"))
+                return set.Steel;
+            if (name.StartsWith("MAT_Liga_Lavrada"))
+                return set.Engraved;
+            if (name.StartsWith("MAT_Pedra_Soco"))
+                return set.StoneSocle;
+            if (name.StartsWith("MAT_Pedra_Coluna"))
+                return set.StoneColumn;
+            if (name.StartsWith("MAT_Pedra_Escultura"))
+                return set.StoneCarving;
+            if (name.StartsWith("MAT_Pedra_Movel"))
+                return set.StoneFurniture;
             if (name.StartsWith("MAT_Pedra_Gotica"))
-                return set.HouseWalls[6];
+                return kit ? set.GothWalls[WallKind(model, worn)] : set.HouseWalls[6];
             if (name.StartsWith("MAT_Pedra_Moldura"))
-                return set.Stones[1];
+                return kit ? set.StoneMolding : set.Stones[1];
             if (name.StartsWith("MAT_Escamas"))
-                return set.Scales;
+                return kit ? set.GothScales[ScaleKind(model, worn)] : set.Scales;
             if (name.StartsWith("MAT_Vitral"))
                 return set.Glass;
             if (name.StartsWith("MAT_Neve"))
@@ -48,7 +76,69 @@ namespace Icaro.EditorTools
                 return set.Cobble[0];
             if (name.StartsWith("MAT_Laje"))
                 return set.Pavings[0];
+            if (name.StartsWith("MAT_Casco"))
+                return set.Hull;
+            if (name.StartsWith("MAT_Vidro_Nave"))
+                return set.ShipGlass;
+            if (name.StartsWith("MAT_Liga"))
+                return set.Alloy;
+            if (name.StartsWith("MAT_Luz"))
+                return set.Glow;
             return null;
+        }
+
+        // Parede pelo tipo de construção (pedido do usuário em 2026-11-08: nada de sorteio; tijolos de pedra da mesma
+        // família): 0 comum, 1 alternado, 2 monumental, 3 gasto. O Bairro Voador abandonado é todo gasto; igrejas,
+        // catedral, campanários, torres, salões, estações, o portal e o monumento são monumentais; tudo que fica em cima
+        // da Vila-Ponte (moinho, torres do portão, casas debruçadas, arcos) usa o comum; as outras casas alternam entre o
+        // comum e o alternado pelo nome do modelo (cada modelo sai sempre igual)
+        static readonly string[] k_Monumental =
+            { "Catedral", "Capela", "Campanario", "Torre", "Salao", "Sineira", "Espiral", "Estacao", "Portal", "Monumento" };
+        static readonly string[] k_BridgeVillage = { "Moinho", "Torre_Portao", "Debrucada", "Arco_Rua", "Grua" };
+
+        static bool HasAny(string model, string[] keys)
+        {
+            foreach (string k in keys)
+                if (model.Contains(k))
+                    return true;
+            return false;
+        }
+
+        static int WallKind(string model, bool worn)
+        {
+            model = model.Replace("_Quebrada", "");     // a casa quebrada pelo ataque fica com a parede da inteira
+            if (worn)
+                return 3;
+            if (HasAny(model, k_BridgeVillage))
+                return 0;
+            if (model.StartsWith("AR_Casa_"))
+                return PieceHash(model) % 2;
+            if (HasAny(model, k_Monumental))
+                return 2;
+            return model.StartsWith("AR_") ? PieceHash(model) % 2 : 0;
+        }
+
+        // Escamas pelo mesmo tipo: monumentais em ardósia, Vila-Ponte e Bairro Voador no cinza, casas entre os três
+        static int ScaleKind(string model, bool worn)
+        {
+            model = model.Replace("_Quebrada", "");
+            if (worn || HasAny(model, k_BridgeVillage))
+                return 0;
+            if (model.StartsWith("AR_Casa_"))
+                return PieceHash(model) / 7 % 3;
+            return HasAny(model, k_Monumental) ? 1 : 0;
+        }
+
+        // Sorteio estável pelo nome da peça (o string.GetHashCode pode mudar entre versões do runtime)
+        static int PieceHash(string model)
+        {
+            unchecked
+            {
+                int h = 17;
+                foreach (char c in model)
+                    h = h * 31 + c;
+                return h & 0x7fffffff;
+            }
         }
 
         // Coloca uma peça do kit ('model' sem extensão) com a frente virada para 'yaw' graus (0 = +Z), os materiais
@@ -70,12 +160,13 @@ namespace Icaro.EditorTools
             {
                 var materials = renderer.sharedMaterials;
                 for (int i = 0; i < materials.Length; i++)
-                    if (materials[i] && MaterialFor(materials[i].name, set) is Material replacement)
+                    if (materials[i] && MaterialFor(materials[i].name, set, model, folder == Folder) is Material replacement)
                         materials[i] = replacement;
                 renderer.sharedMaterials = materials;
                 if (collider && renderer.TryGetComponent(out MeshFilter filter))
                     renderer.gameObject.AddComponent<MeshCollider>().sharedMesh = filter.sharedMesh;
             }
+            ManualAdjustmentsTool.Register(go, model);   // ajuste fino à mão (menu "Ícaro > Ajustes manuais")
             return go;
         }
 

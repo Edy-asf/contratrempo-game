@@ -28,11 +28,21 @@ MonoBehaviour:
   RecoilForce: 0.25
   Akimbo: 0
   Suppressed: 1
-  SpriteMuzzle: {x: 0.52, y: 0.39}
-  SpriteHeight: 0.6
-  SpriteOffset: {x: 0.04, y: -0.04}
-  SpriteTilt: 0
+  SpriteMuzzle: {x: 0.523, y: 0.4029}
+  SpriteHeight: 0.78999984
+  SpriteOffset: {x: -0.09950886, y: -0.13263398}
+  SpriteTilt: 3
   OverrideSpriteMuzzle: 0
+  AimKickUp: 0.18
+  AimKickSide: 0.15
+  AimRecovery: 0.8
+  FireHoldTime: 0
+  RecoilAngle: 0
+  RecoilAngleRandom: 0
+  RecoilKick: 0.02
+  RecoilTime: 0.09
+  RecoilAttack: 0.15
+  RecoilPivot: {x: 0.85, y: 0.9}
   Damage: 22
   ProjectileSpeed: 320
   ProjectileRadius: 0.04

@@ -80,6 +80,41 @@ namespace Icaro
         [Tooltip("Desenho em código: o tiro sai de SpriteMuzzle em vez da ponta do cano calculada pelo desenho")]
         public bool OverrideSpriteMuzzle;
 
+        [Header("Recuo da mira (a câmera sobe a cada tiro; AimRecoil)")]
+        [Tooltip("Graus que a mira sobe a cada tiro")]
+        [Range(0f, 6f)] public float AimKickUp = 0.3f;
+
+        [Tooltip("Graus sorteados para um lado ou o outro a cada tiro (±)")]
+        [Range(0f, 3f)] public float AimKickSide = 0.15f;
+
+        [Tooltip("Fração da subida que volta sozinha quando o jogador para de atirar (0 = fica onde subiu, 1 = volta tudo)")]
+        [Range(0f, 1f)] public float AimRecovery = 0.7f;
+
+        [Header("Coice do sprite (sensação do tiro; ajuste em jogo pelo Inspector)")]
+        [Tooltip("Segundos que o quadro de tiro fica na tela (todos os quadros de tiro juntos); 0 = o padrão do HUD " +
+                 "(WeaponSpriteHUD.FireFrameTime por quadro)")]
+        [Min(0f)] public float FireHoldTime;
+
+        [Tooltip("Giro do sprite a cada tiro, em graus, em volta de RecoilPivot: positivo = o cano sobe e abre para fora; " +
+                 "volta ao lugar em RecoilTime. No akimbo o da esquerda gira espelhado")]
+        [Range(-30f, 30f)] public float RecoilAngle;
+
+        [Tooltip("Variação sorteada do giro a cada tiro (± graus): a arma balança um pouco para os lados")]
+        [Range(0f, 20f)] public float RecoilAngleRandom;
+
+        [Tooltip("Recuo do sprite para o canto da tela, em fração da altura do sprite (só na arte importada com um " +
+                 "quadro de tiro; o desenho em código e as animações de tiro com vários quadros trazem o próprio recuo)")]
+        [Range(0f, 0.3f)] public float RecoilKick = 0.02f;
+
+        [Tooltip("Segundos do coice inteiro: chegar ao máximo e voltar ao lugar")]
+        [Range(0.03f, 1f)] public float RecoilTime = 0.09f;
+
+        [Tooltip("Fração do RecoilTime gasta para chegar ao máximo (o resto é a volta, que desacelera no fim)")]
+        [Range(0.02f, 0.6f)] public float RecoilAttack = 0.15f;
+
+        [Tooltip("Ponto da imagem em volta do qual o sprite gira (fração a partir do canto superior esquerdo): a mão")]
+        public Vector2 RecoilPivot = new Vector2(0.85f, 0.9f);
+
         [Header("Projétil")]
         [Tooltip("Dano final de cada bala ou bago (antes de itens, crítico e melhorias)")]
         [Min(0f)] public float Damage = 30f;

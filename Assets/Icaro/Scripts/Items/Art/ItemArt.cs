@@ -43,6 +43,11 @@ namespace Icaro
             return sprite;
         }
 
+        static Sprite s_CardBack;
+
+        // Verso das cartas (ItemCardPainter.PaintBack)
+        public static Sprite CardBack => s_CardBack ? s_CardBack : s_CardBack = ToSprite(ItemCardPainter.PaintBack(), "Carta_Verso");
+
         public static Sprite BadgeFor(ItemTag tag)
         {
             if (!s_Badges.TryGetValue(tag, out Sprite sprite))

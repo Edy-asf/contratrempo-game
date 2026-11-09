@@ -9,8 +9,15 @@ namespace Icaro
     // cada célula é um vidro escuro com o ícone em pixel art, uma linha fina na cor da raridade e a quantidade quando
     // passa de 1; a grade quebra a cada PerRow ícones. Um item novo (ou mais uma pilha) dá um pulo na célula. Com o
     // cursor livre (na escolha de itens ou no menu de pausa), passar o mouse num ícone mostra o nome e a descrição.
+    // Enquanto HoldPops está ligado (as cartas escolhidas voando até a grade, ItemDraft), o pulo das células novas
+    // espera o PopItem da carta que chegou.
     public class ItemHUD : MonoBehaviour
     {
+        public static ItemHUD Instance { get; private set; }
+
+        // Segura o pulo das células novas até o PopItem
+        public bool HoldPops { get; set; }
+
         public ItemCatalog Catalog;
 
         public float IconSize = 40f;
@@ -37,6 +44,8 @@ namespace Icaro
         PlayerStats m_Stats;
         bool m_Initialized;
 
+        void Awake() => Instance = this;
+
         bool Build()
         {
             if (!HelmetVisor.TryGroup(VisorAnchor.TopLeft, out m_Group))
@@ -48,6 +57,8 @@ namespace Icaro
 
         void OnDestroy()
         {
+            if (Instance == this)
+                Instance = null;
             if (m_Stats)
                 m_Stats.OnItemsChanged -= Rebuild;
         }
@@ -99,7 +110,7 @@ namespace Icaro
                 // Item novo ou pilha a mais: a célula pula
                 m_KnownCounts.TryGetValue(stack.Item, out int known);
                 var slot = new Slot { Item = stack.Item, Count = stack.Count, Rect = cell };
-                if (stack.Count > known && m_Initialized)
+                if (stack.Count > known && m_Initialized && !HoldPops)
                     slot.Pop = 1f;
                 m_KnownCounts[stack.Item] = stack.Count;
                 m_Slots.Add(slot);
@@ -110,6 +121,34 @@ namespace Icaro
             m_Initialized = true;
             if (index == 0)
                 m_KnownCounts.Clear();
+        }
+
+        // A célula do item dá o pulo (a carta dele acabou de chegar)
+        public void PopItem(ItemDefinition item)
+        {
+            foreach (Slot slot in m_Slots)
+            {
+                if (slot.Item == item)
+                    slot.Pop = 1f;
+            }
+        }
+
+        // Centro da célula do item na tela (pixels), se ela existir e o visor estiver montado
+        public bool TryGetScreenPoint(ItemDefinition item, out Vector2 screen)
+        {
+            screen = default;
+            Camera camera = HelmetVisor.Instance ? HelmetVisor.Instance.Camera : null;
+            if (!camera)
+                return false;
+            foreach (Slot slot in m_Slots)
+            {
+                if (slot.Item != item || !slot.Rect)
+                    continue;
+                screen = RectTransformUtility.WorldToScreenPoint(camera, slot.Rect.position);
+                return true;
+            }
+
+            return false;
         }
 
         RectTransform Cell(ItemDefinition item, int count, Vector2 position)

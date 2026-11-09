@@ -152,6 +152,8 @@ namespace Icaro
                 gameObject.AddComponent<AimAssist>();
             if (m_Weapons && !GetComponent<PlayerArsenal>())
                 gameObject.AddComponent<PlayerArsenal>();
+            if (m_Controller && !GetComponent<AimRecoil>())
+                gameObject.AddComponent<AimRecoil>();
             // Modo livre para prints (imortal e voo, F11): só no Editor e em builds de desenvolvimento
             if (m_Controller && (Application.isEditor || Debug.isDebugBuild) && !GetComponent<PlayerFreeMode>())
                 gameObject.AddComponent<PlayerFreeMode>();

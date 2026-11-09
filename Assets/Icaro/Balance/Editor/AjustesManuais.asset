@@ -1,0 +1,1929 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11640dfecfee9bb438109c797f412898, type: 3}
+  m_Name: AjustesManuais
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::Icaro.EditorTools.ManualAdjustments
+  Entries:
+  - Scope: Picos
+    Key: AR_Casa_Larga@-10158,3600,-104445
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -508.37, y: 180, z: -5222.4}
+    Rotation: {x: -0.03850524, y: 0.70605755, z: 0.70605767, w: 0.038505238}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Gerador@-10668,3600,-104933
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -533.73, y: 180, z: -5247.11}
+    Rotation: {x: -0.11568746, y: -0.6975789, z: -0.697579, w: 0.11568744}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Arco_Sino_Ressonancia@-7086,3200,-102901
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -355.66, y: 159.87, z: -5144.63}
+    Rotation: {x: -0.60645986, y: 0.3634792, z: 0.36739582, w: 0.6042431}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Arco_Sino_Ressonancia@-5895,3200,-102867
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -293.18, y: 159.94, z: -5142.96}
+    Rotation: {x: -0.60267377, y: -0.3698437, z: -0.36984375, w: 0.60267365}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: AR_Casa_Empena@-6263,3200,-102042
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -311.53, y: 160, z: -5103.08}
+    Rotation: {x: -0.16349089, y: -0.68794674, z: -0.68794686, w: 0.16349086}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Orgao_Cristal@-6691,3200,-102817
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -299.87, y: 160, z: -5181.84}
+    Rotation: {x: -0.15153329, y: 0.6906792, z: 0.6906791, w: 0.15153323}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Carrilhao_Cristal@-6367,3200,-102829
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -326.89, y: 160, z: -5162.13}
+    Rotation: {x: -0.70655733, y: 0.027871476, z: 0.027871393, w: 0.7065572}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barraca@-6624,3200,-102331
+    Deleted: 1
+    Hidden: 0
+    Position: {x: -301.15506, y: 160, z: -5150.875}
+    Rotation: {x: 0.6469065, y: 0.285503, z: 0.285503, w: -0.64690655}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-6661,3200,-103012
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -339.13, y: 160, z: -5153.77}
+    Rotation: {x: -0.6920995, y: 0.14490798, z: 0.14490798, w: 0.69209945}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-6365,3200,-103021
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -313.3, y: 160, z: -5182.04}
+    Rotation: {x: -0.7045839, y: -0.0596793, z: -0.05967931, w: 0.70458376}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-6203,3200,-102516
+    Deleted: 1
+    Hidden: 0
+    Position: {x: -313.29, y: 160, z: -5148.2}
+    Rotation: {x: -0.48349613, y: -0.51597625, z: -0.5159763, w: 0.48349604}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-6626,3200,-102180
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -290.2, y: 160, z: -5172.67}
+    Rotation: {x: -0.1575957, y: 0.6893211, z: 0.6893212, w: 0.15759566}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-6380,3200,-102158
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -309, y: 160, z: -5126.36}
+    Rotation: {x: -0.116458185, y: -0.6974507, z: -0.6974508, w: 0.11645816}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Gerador@-5912,3200,-102547
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -295.59, y: 160, z: -5127.59}
+    Rotation: {x: -0.10020226, y: 0.699971, z: 0.69997114, w: 0.10020225}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Painel_Controle@-5895,3200,-102605
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -296.96, y: 160, z: -5133.41}
+    Rotation: {x: 0.5441903, y: 0.4515051, z: 0.45150515, w: -0.5441904}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Celulas@-7087,3200,-102465
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -351.04, y: 160, z: -5135.7}
+    Rotation: {x: 0.0860233, y: -0.70185465, z: -0.70185477, w: -0.08602334}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@-2340,2560,-104996
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -116.9673, y: 128, z: -5249.7793}
+    Rotation: {x: -0.41054827, y: 0.57571703, z: 0.57571715, w: 0.41054818}
+    Scale: {x: 0.9767, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@-3822,2560,-104036
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -199.14, y: 128, z: -5211.29}
+    Rotation: {x: -0.60077876, y: -0.37291422, z: -0.37291428, w: 0.60077864}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@-3761,2560,-103983
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -123.01, y: 128, z: -5261.71}
+    Rotation: {x: -0.6394345, y: -0.3018667, z: -0.30186677, w: 0.63943446}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Bancada_Cristal@-3824,2560,-104680
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -190.9, y: 127.95, z: -5235}
+    Rotation: {x: -0.41585404, y: -0.5718963, z: -0.5718964, w: 0.41585398}
+    Scale: {x: 1.1503, y: 1.1503, z: 1.1503}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Bancada_Cristal@-3780,2560,-104849
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -188.71, y: 127.89, z: -5242.97}
+    Rotation: {x: -0.42588556, y: -0.56446564, z: -0.56446576, w: 0.42588547}
+    Scale: {x: 1.1237, y: 1.1237, z: 1.1237}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Base_Recarga@-3437,2560,-104158
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -160.88, y: 128, z: -5241.44}
+    Rotation: {x: -0.6873122, y: -0.14470832, z: -0.15448086, w: 0.6948361}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Conteiner_Celulas@-3279,2560,-104102
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -162.82, y: 128, z: -5237.72}
+    Rotation: {x: -0.08580783, y: 0.701881, z: 0.7018811, w: 0.085807815}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Conteiner_Celulas@-3279,2580,-104102
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -162.65, y: 129, z: -5237.68}
+    Rotation: {x: -0.05384864, y: 0.7050534, z: 0.7050535, w: 0.053848628}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-3497,2560,-105139
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -182.95, y: 128, z: -5254.57}
+    Rotation: {x: -0.6433681, y: 0.29338974, z: 0.29338977, w: 0.643368}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-3055,2560,-105210
+    Deleted: 1
+    Hidden: 0
+    Position: {x: -137.41, y: 128, z: -5262.98}
+    Rotation: {x: -0.705007, y: -0.054453906, z: -0.054453917, w: 0.7050069}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-3717,2560,-104754
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -183.19, y: 128, z: -5226.37}
+    Rotation: {x: -0.5607653, y: 0.43074626, z: 0.43074635, w: 0.5607652}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-2732,2560,-104473
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -164.01, y: 128, z: -5268.42}
+    Rotation: {x: -0.4452524, y: -0.5493181, z: -0.54931813, w: 0.44525233}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-3163,2560,-104181
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -149.6, y: 128, z: -5214.48}
+    Rotation: {x: -0.0062563354, y: -0.70707905, z: -0.7070792, w: 0.0062563345}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Marco_Entrada@-3927,2560,-104265
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -193.01, y: 127.97, z: -5214.98}
+    Rotation: {x: -0.64576685, y: -0.2880715, z: -0.28807157, w: 0.64576674}
+    Scale: {x: 1.4418, y: 1.4418, z: 1.4418}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@-3750,2560,-104163
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -187.35085, y: 128, z: -5207.48}
+    Rotation: {x: -0.3227338, y: -0.6291604, z: -0.6291605, w: 0.32273376}
+    Scale: {x: 1.3085, y: 1.5329088, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@-3724,2560,-104182
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -186.22, y: 127.92, z: -5209.088}
+    Rotation: {x: 0.61136514, y: 0.35529244, z: 0.35529247, w: -0.6113651}
+    Scale: {x: 1.1503, y: 1.1503, z: 1.1503}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Marco_Entrada@-2424,2560,-105040
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -121.21498, y: 128, z: -5252.0054}
+    Rotation: {x: 0.1293025, y: 0.6951841, z: 0.695184, w: -0.12930267}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Luneta@-3340,2560,-105577
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -167.05, y: 127.87, z: -5278.8}
+    Rotation: {x: -0.056032646, y: -0.70488316, z: -0.7048833, w: 0.056032635}
+    Scale: {x: 1.7805816, y: 1.7805816, z: 1.7805816}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Placa_Mapa@-3284,2560,-105582
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -164.299, y: 127.945, z: -5279.064}
+    Rotation: {x: -0.7063018, y: 0.033732202, z: 0.03373221, w: 0.7063017}
+    Scale: {x: 1.4654444, y: 1.4654444, z: 1.4654444}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@-3406,2560,-105556
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -171.44, y: 128, z: -5274.91}
+    Rotation: {x: -0.083218224, y: -0.7021927, z: -0.70219284, w: 0.08321821}
+    Scale: {x: 1.3978, y: 1.5326, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@-3455,2560,-105551
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -173.28, y: 128, z: -5274.1}
+    Rotation: {x: 0.5193744, y: 0.479844, z: 0.4798441, w: -0.51937425}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@-3501,2560,-105527
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -178.81, y: 128, z: -5272.21}
+    Rotation: {x: -0.12295984, y: -0.6963339, z: -0.69633394, w: 0.12295982}
+    Scale: {x: 1.5649, y: 1.59, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@-3216,2560,-105580
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -157.93, y: 128, z: -5277.6}
+    Rotation: {x: -0.0062724347, y: -0.70707893, z: -0.70707905, w: 0.0062724333}
+    Scale: {x: 1.3788387, y: 1.6399492, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@-3167,2560,-105587
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -155.93, y: 128, z: -5277.29}
+    Rotation: {x: 0.2649062, y: 0.65561014, z: 0.65561026, w: -0.26490614}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@-3116,2560,-105576
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -150.85, y: 128, z: -5277.29}
+    Rotation: {x: -0.033890836, y: 0.7062941, z: 0.70629424, w: 0.033890832}
+    Scale: {x: 1.3756, y: 1.6092, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Abrigo_Espera@-3600,2560,-104706
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -169.65, y: 127.67, z: -5235.28}
+    Rotation: {x: 0.39488208, y: 0.5865733, z: 0.5865732, w: -0.39488208}
+    Scale: {x: 1.2652, y: 1.2652, z: 1.2652}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Painel_Partidas@-3601,2560,-104632
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -170.93, y: 128, z: -5231.65}
+    Rotation: {x: 0.39057797, y: 0.589448, z: 0.5894479, w: -0.39057803}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Relogio_Rua@-2810,2560,-104694
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -158.28, y: 127.93, z: -5247.94}
+    Rotation: {x: -0.6973017, y: -0.11734757, z: -0.11734752, w: 0.69730157}
+    Scale: {x: 1.053, y: 1.053, z: 1.0255061}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Pergola@-2796,2560,-104104
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -141.16, y: 127.82, z: -5204.28}
+    Rotation: {x: -0.20726915, y: -0.6760469, z: -0.676047, w: 0.20726912}
+    Scale: {x: 1.6062299, y: 1.6062299, z: 1.6062299}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Mesa_Bancos@-2828,2560,-104082
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -143.92, y: 127.9, z: -5202.88}
+    Rotation: {x: -0.62099755, y: -0.3381746, z: -0.33817467, w: 0.6209975}
+    Scale: {x: 1.7867, y: 1.7867, z: 1.7867}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Aquecedor_Cristal@-2864,2560,-104203
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -143.82, y: 128, z: -5210.8}
+    Rotation: {x: -0.6899662, y: 0.15474723, z: 0.15474725, w: 0.6899661}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Quadro_Avisos@-2895,2560,-104056
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -149.69, y: 127.899, z: -5205.838}
+    Rotation: {x: -0.20726915, y: -0.6760469, z: -0.676047, w: 0.20726912}
+    Scale: {x: 1.1591, y: 1.1591, z: 1.1591}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: AR_Casa_Larga@-1152,2160,-106128
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -55.4, y: 108, z: -5305.72}
+    Rotation: {x: -0.7000973, y: -0.0993169, z: -0.09931692, w: 0.7000972}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: AR_Casa_Empena@-1370,2160,-106019
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -70.21, y: 108, z: -5301.37}
+    Rotation: {x: -0.62084645, y: 0.33845192, z: 0.33845195, w: 0.62084645}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@-981,2160,-105759
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -68.45, y: 108, z: -5282.2}
+    Rotation: {x: -0.46433485, y: -0.5332853, z: -0.5332854, w: 0.46433476}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Vagoneta_Capsula@-3437,2562,-104158
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -160.84, y: 128.1, z: -5241.54}
+    Rotation: {x: -0.6909936, y: -0.15009296, z: -0.15009314, w: 0.6909935}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Base_Recarga@-2603,2560,-104721
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -122.939, y: 127.988, z: -5245.186}
+    Rotation: {x: -0.52072036, y: -0.47747543, z: -0.46718654, w: 0.5316054}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Vagoneta_Capsula@-2603,2562,-104721
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -122.82, y: 128.1, z: -5245.209}
+    Rotation: {x: -0.5182457, y: -0.48106292, z: -0.48106283, w: 0.51824564}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Conteiner_Celulas@-2602,2560,-104889
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -126.97, y: 127.99, z: -5244.53}
+    Rotation: {x: -0.10579664, y: -0.6964833, z: -0.7019245, w: 0.10497645}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Conteiner_Celulas@-2602,2580,-104889
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -126.98, y: 129, z: -5244.49}
+    Rotation: {x: -0.37720343, y: -0.59809506, z: -0.59809506, w: 0.37720326}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@-2587,2560,-105164
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -124.004, y: 128, z: -5260.267}
+    Rotation: {x: -0.6338984, y: -0.31332567, z: -0.31332558, w: 0.6338983}
+    Scale: {x: 1.2118, y: 1.4727, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@-2615,2560,-105148
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -125.49, y: 128, z: -5262.24}
+    Rotation: {x: -0.7070533, y: 0.008699637, z: 0.008699638, w: 0.7070532}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@-3599,2560,-104776
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -168.08, y: 128, z: -5236.81}
+    Rotation: {x: -0.019987896, y: 0.7068242, z: 0.7068243, w: 0.019987892}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: AR_Casa_Esquina@912,2160,-105391
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 41.181973, y: 108.05, z: -5270.4473}
+    Rotation: {x: -0.17970216, y: 0.6838911, z: 0.68389124, w: 0.17970215}
+    Scale: {x: 1.1061, y: 1.1061, z: 1.1061}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: AR_Casa_Terraco@1153,2160,-105456
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 57.95, y: 108.01, z: -5273.26}
+    Rotation: {x: -0.3552168, y: -0.611409, z: -0.6114092, w: 0.3552167}
+    Scale: {x: 1.1856, y: 1.1856, z: 1.1856}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@1309,2160,-105580
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 65.56, y: 108, z: -5279.25}
+    Rotation: {x: -0.51433086, y: 0.4852461, z: 0.48524618, w: 0.51433074}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@735,2160,-105868
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 33.51, y: 108, z: -5293.78}
+    Rotation: {x: -0.7039974, y: -0.05038631, z: -0.050184578, w: 0.70663327}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Torre_Antena@818,2160,-105827
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 41.47, y: 108, z: -5292.31}
+    Rotation: {x: -0.67955774, y: 0.19545162, z: 0.19545163, w: 0.6795577}
+    Scale: {x: 1.2, y: 1.2, z: 1.2}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Gerador@1199,2160,-105569
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 61, y: 108, z: -5280.04}
+    Rotation: {x: -0.18115541, y: 0.6835076, z: 0.68350774, w: 0.18115538}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Painel_Controle@1229,2160,-105621
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 62.67, y: 108, z: -5281.5}
+    Rotation: {x: -0.18115541, y: 0.6835076, z: 0.68350774, w: 0.18115538}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: +e7d745fc4bbd4e36ab4c2683d836be90
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -38.094, y: 108, z: -5280.145}
+    Rotation: {x: -0.70541877, y: -0.048831012, z: -0.048830926, w: 0.7054187}
+    Scale: {x: 1.4479, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +5198f72c5f604d1b8bc859087198bae7
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -27.29, y: 108, z: -5278.66}
+    Rotation: {x: -0.70541877, y: -0.048831012, z: -0.048830926, w: 0.7054187}
+    Scale: {x: 1.4479, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +b450ceaa4c9b49a6bc2db39ff59ca40a
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -34.862, y: 108, z: -5303.253}
+    Rotation: {x: -0.70541877, y: -0.048831012, z: -0.048830926, w: 0.7054187}
+    Scale: {x: 1.4479, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +081ece4ac9fb4132ac825f4d63209747
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -18.328, y: 108, z: -5277.449}
+    Rotation: {x: -0.70541877, y: -0.048831012, z: -0.048830926, w: 0.7054187}
+    Scale: {x: 1.4479, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +e9fab7eea3114ff381ada79ae869c038
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 26.3, y: 108, z: -5294.88}
+    Rotation: {x: -0.70541877, y: -0.048831012, z: -0.048830926, w: 0.7054187}
+    Scale: {x: 1.4479, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +a1889e3491f443abab88010ea75d67ae
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -76.85, y: 108, z: -5289.83}
+    Rotation: {x: -0.5598696, y: -0.43190983, z: -0.4319099, w: 0.5598695}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +55e1803698f9417aafcb5c9d52c1d39f
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -71.86, y: 108, z: -5281.917}
+    Rotation: {x: 0.2242773, y: -0.6705966, z: -0.6705965, w: -0.22427735}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +2eeb37e1d2f240dcb9f2da6728161769
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -118.141, y: 128, z: -5253.486}
+    Rotation: {x: -0.42367312, y: 0.56612813, z: 0.5661283, w: 0.42367306}
+    Scale: {x: 0.9767, y: 1, z: 1}
+    Added: 1
+    Model: PR_Parapeito
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_dos_Artifices
+  - Scope: Picos
+    Key: +793ba8229c9c472c82268cb2699d6523
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -305.33838, y: 159.92, z: -5155.397}
+    Rotation: {x: -0.66770345, y: -0.23274885, z: -0.23274893, w: 0.66770357}
+    Scale: {x: 1.3978, y: 1.5326, z: 1}
+    Added: 1
+    Model: PR_Banco
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_dos_Artifices/Mobiliario
+  - Scope: Picos
+    Key: +bcd7e7f7ee9d4e94a980846604757670
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -335.36, y: 159.92, z: -5160.44}
+    Rotation: {x: -0.6988732, y: 0.10759231, z: 0.107592255, w: 0.6988734}
+    Scale: {x: 1.3978, y: 1.5326, z: 1}
+    Added: 1
+    Model: PR_Banco
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_dos_Artifices/Mobiliario
+  - Scope: Picos
+    Key: +225fb4a329fc4ff182180f0382b21bc7
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -348.23, y: 159.92, z: -5152.83}
+    Rotation: {x: -0.6560764, y: 0.26374927, z: 0.26374927, w: 0.65607655}
+    Scale: {x: 1.3978, y: 1.5326, z: 1}
+    Added: 1
+    Model: PR_Banco
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_dos_Artifices/Mobiliario
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@1744,680,-112387
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 89.88, y: 34, z: -5623.29}
+    Rotation: {x: -0.46968764, y: 0.5285769, z: 0.52857697, w: 0.46968755}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Luneta@1399,1960,-106836
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 74.58, y: 97.9, z: -5342.59}
+    Rotation: {x: -0.12490335, y: -0.6959879, z: -0.69598794, w: 0.124903336}
+    Scale: {x: 1.2917, y: 1.2917, z: 1.2917}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Placa_Mapa@1454,1960,-106850
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 72.678, y: 97.845, z: -5342.5}
+    Rotation: {x: -0.7038065, y: 0.06823817, z: 0.068238184, w: 0.7038064}
+    Scale: {x: 1.2121, y: 1.2121, z: 1.2121}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@1221,1960,-106634
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 84.58, y: 98, z: -5336.2}
+    Rotation: {x: -0.5879379, y: 0.39284742, z: 0.39284748, w: 0.5879378}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@1221,1960,-106386
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@1396,1960,-106211
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 70.71, y: 98, z: -5338.44}
+    Rotation: {x: -0.13794973, y: 0.6935199, z: 0.69352, w: 0.13794972}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas@2641,1960,-106178
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 118.82, y: 98, z: -5311.39}
+    Rotation: {x: -0.28029037, y: -0.649182, z: -0.64918214, w: 0.2802903}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Marco_Entrada@2669,1960,-106712
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 132.96, y: 98, z: -5335.98}
+    Rotation: {x: 0.33776146, y: 0.6212223, z: 0.6212224, w: -0.3377615}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco@2465,1960,-106712
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 122.51, y: 98, z: -5339.26}
+    Rotation: {x: -0.5903174, y: 0.3892626, z: 0.38926262, w: 0.5903174}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@2452,1960,-106683
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Pergola@2598,1960,-106277
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 132.92, y: 97.86, z: -5311.04}
+    Rotation: {x: -0.3109791, y: -0.63505274, z: -0.6350528, w: 0.31097904}
+    Scale: {x: 1.442, y: 1.442, z: 1.442}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Mesa_Bancos@2621,1960,-106307
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Mesa_Bancos@2575,1960,-106247
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 130.96, y: 97.98, z: -5309.06}
+    Rotation: {x: -0.6624371, y: -0.24734035, z: -0.24734037, w: 0.66243696}
+    Scale: {x: 1.3661788, y: 1.3661788, z: 1.3661788}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Feira@2446,1960,-106240
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 79.3, y: 98, z: -5314.3}
+    Rotation: {x: -0.0031328187, y: -0.7070998, z: -0.7070999, w: 0.0031328185}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Lixeira@2494,1960,-106254
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 124.58, y: 98, z: -5340.23}
+    Rotation: {x: -0.5984505, y: 0.37663925, z: 0.3766393, w: 0.59845036}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@2864,680,-113002
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 143.31, y: 34, z: -5649.92}
+    Rotation: {x: -0.26664633, y: 0.65490437, z: 0.6549044, w: 0.26664633}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Parapeito@1934,680,-111656
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 96.56, y: 34, z: -5583.05}
+    Rotation: {x: -0.69044816, y: -0.15258245, z: -0.15258248, w: 0.69044805}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Arco_Sino@1832,680,-111798
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 90.02, y: 33.95, z: -5587.34}
+    Rotation: {x: -0.221588, y: 0.6714899, z: 0.67149, w: 0.22158796}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Arco_Sino@2906,680,-112844
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 148.41, y: 33.85, z: -5644.05}
+    Rotation: {x: -0.627212, y: -0.32650456, z: -0.32650465, w: 0.6272118}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Fonte_Congelada@2284,680,-112409
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 114.11, y: 33.99, z: -5620.51}
+    Rotation: {x: -0.047536258, y: 0.7055071, z: 0.7055072, w: 0.04753625}
+    Scale: {x: 1.2177148, y: 1.2177148, z: 1.2177148}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: +3e592b9b8214458cbe4068261ed17c32
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 62.3, y: 98.23, z: -5324.1}
+    Rotation: {x: 0.48621154, y: -0.51341826, z: -0.51341814, w: -0.48621163}
+    Scale: {x: 1.1856, y: 1.1856, z: 1.1856}
+    Added: 1
+    Model: AR_Casa_Terraco
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Ponte
+  - Scope: Picos
+    Key: +5c959da68cc7462da2f5659914117970
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 71.13, y: 98, z: -5313.51}
+    Rotation: {x: 0.11456934, y: -0.6977635, z: -0.69776344, w: -0.11456944}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: AR_Casa_Torre
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Pendurada
+  - Scope: Picos
+    Key: +7524777181604c5094239ab037c7ff65
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 134.6, y: 97.98, z: -5313.32}
+    Rotation: {x: -0.67037123, y: -0.22495002, z: -0.22495003, w: 0.6703711}
+    Scale: {x: 1.3661788, y: 1.3661788, z: 1.3661788}
+    Added: 1
+    Model: PR_Mesa_Bancos
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Vila_Pendurada/Mobiliario
+  - Scope: Picos
+    Key: PR_Barraca@-9733,3600,-105186
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Celulas@-9798,3600,-104445
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -513.9672, y: 180, z: -5223.754}
+    Rotation: {x: -0.4676078, y: -0.53041774, z: -0.53041774, w: 0.46760768}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@-9446,3600,-105461
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -497.47, y: 180, z: -5279.83}
+    Rotation: {x: -0.4725128, y: 0.5260528, z: 0.52605295, w: 0.47251284}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_B@-9825,3600,-105613
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -493.85, y: 180, z: -5280.81}
+    Rotation: {x: -0.6929292, y: 0.14088717, z: 0.14088719, w: 0.6929291}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas_Tombada@-9640,3600,-105129
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -484.95, y: 180, z: -5271.92}
+    Rotation: {x: 0.3695646, y: 0.6028449, z: 0.602845, w: -0.36956453}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-9519,3600,-105330
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -485.9, y: 180, z: -5256.64}
+    Rotation: {x: -0.4599457, y: 0.53707534, z: 0.53707546, w: 0.45994568}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_B@-10376,3600,-104827
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -514.2337, y: 180, z: -5257.886}
+    Rotation: {x: 0.350947, y: 0.61386985, z: 0.61386997, w: -0.35094702}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-9697,3600,-104979
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -489.04602, y: 180, z: -5244.5596}
+    Rotation: {x: 0.23552647, y: 0.66672873, z: 0.66672885, w: -0.23552653}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-9964,3600,-105335
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -491.01, y: 180, z: -5264.19}
+    Rotation: {x: 0.63161117, y: 0.31791103, z: 0.3179111, w: -0.63161105}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@-9246,3496,-106186
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -452.5, y: 174.8, z: -5295.75}
+    Rotation: {x: 0.4563285, y: 0.5401521, z: 0.5401522, w: -0.45632842}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-8995,3496,-106392
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -443.98, y: 174.8, z: -5320.84}
+    Rotation: {x: -0.3502182, y: 0.61428595, z: 0.614286, w: 0.35021815}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-9100,3496,-105968
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -453.63, y: 174.8, z: -5300.17}
+    Rotation: {x: 0.61987823, y: 0.34022215, z: 0.34022218, w: -0.6198781}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@-9995,3320,-106794
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -507.82, y: 166, z: -5357.66}
+    Rotation: {x: -0.48722094, y: 0.5124605, z: 0.5124606, w: 0.48722085}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-9874,3320,-107130
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -490.22, y: 166, z: -5355.03}
+    Rotation: {x: -0.29192722, y: 0.64403296, z: 0.6440331, w: 0.29192722}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-9926,3320,-107071
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -502.19067, y: 166, z: -5361.349}
+    Rotation: {x: 0.051322702, y: 0.7052418, z: 0.70524186, w: -0.05132265}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Gerador@-6991,3200,-102435
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -294.5011, y: 160, z: -5127.9517}
+    Rotation: {x: -0.08191419, y: 0.7023461, z: 0.7023462, w: 0.08191406}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Painel_Controle@-6936,3200,-102460
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -297.07, y: 160, z: -5133.31}
+    Rotation: {x: 0.5457294, y: 0.44964367, z: 0.44964352, w: -0.5457296}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@-6084,3200,-102973
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -306.78, y: 160, z: -5146.26}
+    Rotation: {x: -0.4229909, y: 0.56663805, z: 0.56663823, w: 0.4229908}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_B@-6454,3200,-102902
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -304.31, y: 160, z: -5148.13}
+    Rotation: {x: 0.66673595, y: 0.23550646, z: 0.2355065, w: -0.6667358}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@-6245,3200,-102982
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -310.23, y: 160, z: -5147.78}
+    Rotation: {x: -0.603845, y: 0.3679284, z: 0.36792845, w: 0.6038449}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_B@-6449,3200,-103133
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -331.98, y: 160, z: -5150.01}
+    Rotation: {x: -0.48237956, y: 0.51702034, z: 0.5170204, w: 0.48237947}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas_Tombada@-6605,3200,-102801
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -313.43, y: 160, z: -5148.3}
+    Rotation: {x: 0.5140258, y: -0.48556924, z: -0.4855692, w: -0.5140258}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@-6673,3200,-102464
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-6765,3200,-102543
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -337.05, y: 160, z: -5141.14}
+    Rotation: {x: -0.32515156, y: 0.6279145, z: 0.62791437, w: 0.3251514}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_B@-6093,3200,-102604
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -334.35, y: 160, z: -5145.27}
+    Rotation: {x: 0.6094642, y: 0.3585434, z: 0.35854343, w: -0.6094642}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-6845,3200,-102547
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-6930,3200,-102608
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-6818,3200,-102441
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-6740,3200,-102396
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@-2948,2560,-105144
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -167.81, y: 128, z: -5265.89}
+    Rotation: {x: 0.669262, y: 0.22822902, z: 0.22822905, w: -0.6692619}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@-3092,2560,-105343
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -134.72, y: 128, z: -5260.67}
+    Rotation: {x: 0.65550935, y: 0.26515576, z: 0.26515582, w: -0.65550923}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas_Tombada@-3884,2560,-105024
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -137.08, y: 128, z: -5263.22}
+    Rotation: {x: 0.6403966, y: -0.2998204, z: -0.2998202, w: -0.64039665}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-3839,2560,-104347
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -191.91, y: 128.05, z: -5260.78}
+    Rotation: {x: 0.4362438, y: 0.5432323, z: 0.56819654, w: -0.43788436}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_B@-3247,2560,-104250
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -188.03836, y: 128, z: -5265.237}
+    Rotation: {x: 0.6737581, y: -0.21459328, z: -0.21459307, w: -0.6737579}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-3111,2560,-105242
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -145.77, y: 128, z: -5275.55}
+    Rotation: {x: -0.25073636, y: 0.6611592, z: 0.661159, w: 0.25073633}
+    Scale: {x: 1.2553, y: 1.2591, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@1008,2160,-105820
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 56.52, y: 108, z: -5291.71}
+    Rotation: {x: -0.16800669, y: 0.6868578, z: 0.68685794, w: 0.16800667}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@2331,1960,-106704
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 114.08, y: 98, z: -5337.56}
+    Rotation: {x: -0.6897841, y: 0.1555568, z: 0.15555689, w: 0.6897841}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@2279,1960,-106599
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 120.4, y: 98, z: -5338.35}
+    Rotation: {x: -0.13317414, y: 0.6944527, z: 0.6944528, w: 0.1331741}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@2110,1960,-106289
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 84.56, y: 98, z: -5313.73}
+    Rotation: {x: -0.31767482, y: 0.6317299, z: 0.63173, w: 0.31767476}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@2365,1960,-106591
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 103.84, y: 98, z: -5327.83}
+    Rotation: {x: -0.53951037, y: 0.45708707, z: 0.45708713, w: 0.5395103}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@2406,1960,-106586
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 123.55, y: 98, z: -5339.31}
+    Rotation: {x: -0.4745623, y: 0.52420473, z: 0.5242048, w: 0.47456223}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@-2726,600,-123980
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -121.74, y: 30, z: -6177.22}
+    Rotation: {x: -0.010057815, y: -0.70703524, z: -0.7070353, w: 0.010057815}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_B@-1959,600,-122911
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -112.86, y: 30, z: -6140.2}
+    Rotation: {x: -0.665248, y: 0.23967725, z: 0.23967728, w: 0.6652479}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Sentinela_Destruida@-2460,600,-123607
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -125.28, y: 30, z: -6180.44}
+    Rotation: {x: -0.5575932, y: -0.43484467, z: -0.43484476, w: 0.55759305}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@-1949,600,-122394
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@-1845,600,-122349
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas_Tombada@-1308,600,-121925
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@1929,600,-116917
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 104.8, y: 30, z: -5857.79}
+    Rotation: {x: -0.6879637, y: -0.16341968, z: -0.16341971, w: 0.6879636}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas_Tombada@285,600,-119691
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@2477,600,-116563
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 41.11, y: 30, z: -5922.79}
+    Rotation: {x: 0.68918145, y: -0.15820551, z: -0.15820543, w: -0.68918145}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@2245,600,-116399
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 115.34, y: 30, z: -5823.27}
+    Rotation: {x: -0.62461495, y: -0.33144552, z: -0.33144566, w: 0.624615}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@2670,600,-116670
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 98.97, y: 30, z: -5859.39}
+    Rotation: {x: 0.34393296, y: 0.61782694, z: 0.61782706, w: -0.3439329}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@-2315,600,-123382
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -117.76, y: 30, z: -6169.14}
+    Rotation: {x: 0.52891034, y: 0.46931225, z: 0.46931207, w: -0.52891034}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Sentinela_Destruida@-2540,600,-123714
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -120.49, y: 30, z: -6180.71}
+    Rotation: {x: -0.045629635, y: 0.70563304, z: 0.70563304, w: 0.04562973}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@872,600,-118364
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 44.11, y: 29.99, z: -5918.17}
+    Rotation: {x: -0.69598323, y: 0.12492987, z: 0.12492989, w: 0.6959831}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Sentinela_Destruida@885,600,-118467
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 46.26, y: 30, z: -5922.45}
+    Rotation: {x: 0.14717032, y: 0.6916219, z: 0.691622, w: -0.1471703}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barraca@2031,680,-112604
+    Deleted: 1
+    Hidden: 0
+    Position: {x: 0, y: 0, z: 0}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Barricada_A@2705,680,-112923
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 130.04, y: 34, z: -5648.32}
+    Rotation: {x: -0.38633266, y: 0.592239, z: 0.59223914, w: 0.3863326}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@2176,680,-112634
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 114.12, y: 34, z: -5637.96}
+    Rotation: {x: -0.6987149, y: 0.10861646, z: 0.10861647, w: 0.6987148}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_B@2550,680,-112989
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 126.15, y: 34, z: -5650.24}
+    Rotation: {x: -0.47386155, y: 0.5248383, z: 0.52483845, w: 0.47386146}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_A@2171,680,-113041
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 128.46603, y: 34, z: -5645.204}
+    Rotation: {x: 0.097112164, y: 0.70040643, z: 0.70040655, w: -0.097112134}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Escombros_Queimados_B@2063,680,-112474
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 100.69, y: 34.04, z: -5628.54}
+    Rotation: {x: -0.25454628, y: 0.6597016, z: 0.6597017, w: 0.25454623}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Coluna_Bobinas_Tombada@1820,680,-112343
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 90.27, y: 34, z: -5622.92}
+    Rotation: {x: 0.19800131, y: 0.6788192, z: 0.67881924, w: -0.1980013}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_B@2599,680,-112227
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 101.43, y: 34, z: -5631.48}
+    Rotation: {x: -0.70312166, y: 0.07496706, z: 0.07496707, w: 0.70312154}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: +450aebbbd7a24ff9986e2e47ab907efb
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 173.42, y: 30, z: -5808.55}
+    Rotation: {x: 0.34393296, y: 0.61782694, z: 0.61782706, w: -0.3439329}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Escombros_Queimados_A
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Ponte_do_Reino/Cerco_do_Reino
+  - Scope: Picos
+    Key: +3cf052cdcf63438da8211c427bc72886
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 43.59758, y: 29.99, z: -5928.1304}
+    Rotation: {x: 0.4537614, y: -0.54231066, z: -0.5423105, w: -0.4537611}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Escombros_Queimados_A
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Ponte_do_Reino/Cerco_do_Reino
+  - Scope: Picos
+    Key: +5971197d65be4a709ccc1b8f5bf62afe
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -124.65, y: 30, z: -6174.06}
+    Rotation: {x: -0.6407933, y: 0.2989716, z: 0.29897165, w: 0.6407932}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Escombros_Queimados_A
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Ponte_do_Reino/Cerco_do_Reino
+  - Scope: Picos
+    Key: +8b4d47dd6cfb437098e408650ff9c115
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -109.5, y: 30, z: -6146.68}
+    Rotation: {x: -0.6407933, y: 0.2989716, z: 0.29897165, w: 0.6407932}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Escombros_Queimados_A
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Ponte_do_Reino/Cerco_do_Reino
+  - Scope: Picos
+    Key: +41c5a17e7c2a40eab7e41377fe84a006
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 225.47, y: 30, z: -5677.09}
+    Rotation: {x: -0.6980172, y: 0.113013655, z: 0.11301367, w: 0.69801706}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 1
+    Model: PR_Escombros_Queimados_A
+    Folder: Assets/Icaro/Models/Picos/VilasDoAlto
+    ParentPath: Ponte_do_Reino/Cerco_do_Reino
+  - Scope: Picos
+    Key: PR_Cristais_Estilhacados@-1280,2160,-105648
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -56.78, y: 108, z: -5280.52}
+    Rotation: {x: -0.57319695, y: 0.4140596, z: 0.41405967, w: 0.5731968}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@-1166,2160,-105655
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -74.24, y: 108, z: -5294.15}
+    Rotation: {x: 0.19732416, y: 0.6790163, z: 0.6790164, w: -0.19732413}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@-1486,2160,-105906
+    Deleted: 0
+    Hidden: 0
+    Position: {x: -70.76, y: 108, z: -5296.14}
+    Rotation: {x: 0.70060414, y: 0.095676295, z: 0.09567631, w: -0.700604}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Tenda_Destruida_A@1113,2160,-105847
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 49.01, y: 108, z: -5293.73}
+    Rotation: {x: 0.13702424, y: 0.6937035, z: 0.6937034, w: -0.13702416}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 
+  - Scope: Picos
+    Key: PR_Banco_Quebrado@1052,2160,-105882
+    Deleted: 0
+    Hidden: 0
+    Position: {x: 53.36, y: 108, z: -5294.51}
+    Rotation: {x: -0.23376778, y: 0.66734743, z: 0.6673475, w: 0.23376776}
+    Scale: {x: 1, y: 1, z: 1}
+    Added: 0
+    Model: 
+    Folder: 
+    ParentPath: 

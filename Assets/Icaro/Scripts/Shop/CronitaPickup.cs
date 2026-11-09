@@ -4,7 +4,8 @@ namespace Icaro
 {
     // Cristal de Cronita: sai do inimigo morto com um pulo, cai no chão e gira; quando o jogador chega a MagnetRadius,
     // voa até ele e entra na carteira. Some depois de CrystalLifetime (piscando no fim). Reaproveitado pelo
-    // PrefabPool. O jogador nunca é afetado pelo multiplicador: o voo usa o tempo normal.
+    // PrefabPool. O jogador nunca é afetado pelo multiplicador: o voo usa o tempo normal. AttractAll (fim da sala)
+    // puxa todos os cristais soltos até o jogador, de qualquer distância.
     public class CronitaPickup : MonoBehaviour
     {
         [Tooltip("Parte que gira (o cristal)")]
@@ -16,6 +17,21 @@ namespace Icaro
         const float k_GroundHeight = 0.5f;
 
         static readonly RaycastHit[] s_Hits = new RaycastHit[6];
+        static readonly System.Collections.Generic.List<CronitaPickup> s_Active =
+            new System.Collections.Generic.List<CronitaPickup>();
+
+        // Cristais soltos no mundo agora
+        public static int ActiveCount => s_Active.Count;
+
+        // Todos os cristais soltos voam até o jogador (sem esperar ele chegar perto)
+        public static void AttractAll()
+        {
+            foreach (CronitaPickup crystal in s_Active)
+            {
+                if (crystal)
+                    crystal.m_Magnet = true;
+            }
+        }
 
         int m_Value;
         float m_Age;
@@ -44,6 +60,10 @@ namespace Icaro
         {
             m_Renderers = GetComponentsInChildren<Renderer>();
         }
+
+        void OnEnable() => s_Active.Add(this);
+
+        void OnDisable() => s_Active.Remove(this);
 
         void Begin(int value, ShopSettings settings)
         {

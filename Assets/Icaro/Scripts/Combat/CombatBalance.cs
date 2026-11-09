@@ -150,6 +150,13 @@ namespace Icaro
         [Tooltip("Vida máxima do Ícaro (o Player do Microgame tem 100)")]
         public float PlayerMaxHealth = 125f;
 
+        [Tooltip("Altura do Ícaro em pé, em metros (a cápsula do PlayerCharacterController; o Player do Microgame tem 1,8)")]
+        [Min(1f)] public float PlayerHeight = 2f;
+
+        [Tooltip("Altura dos olhos (câmera) em pé, em metros (o Player do Microgame tinha 1,44: 80% de 1,8); agachado, a " +
+                 "mesma proporção")]
+        [Min(0.5f)] public float PlayerEyeHeight = 1.8f;
+
         [Tooltip("Vida que o Ícaro regenera por segundo, sempre (os inimigos não deixam cura); o Soro de Biomassa soma")]
         [Min(0f)] public float PlayerBaseRegen = 1f;
 

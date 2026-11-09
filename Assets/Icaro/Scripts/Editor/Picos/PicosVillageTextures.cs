@@ -6,7 +6,7 @@ namespace Icaro.EditorTools
     // Texturas do bairro voador (sala 20), em pixel art de 16 px/m como as outras: reboco em quatro cores desbotadas
     // (manchas de chuva, rachaduras e pedaços onde o reboco caiu e a pedra aparece), tijolo, enxaimel, pedra escura
     // lavrada, telha em três tons, calçamento de pedra miúda das ruas (três variações e cinco passos de transição até a
-    // neve) e vitral de chumbo com um brilho fraco
+    // neve) e o vidro espelhado roxo das janelas (sem luz)
     public static partial class PicosTextureKit
     {
         static readonly Color[] k_PlasterColors =
@@ -43,7 +43,10 @@ namespace Icaro.EditorTools
             set.CobbleSnow = new Material[5];
             for (int k = 0; k < 5; k++)
                 set.CobbleSnow[k] = GridTextureKit.Blend($"Picos_Rua_Neve_{k + 1}", set.Cobble[0], set.FloorSnow, (k + 1) / 6f, 1440);
-            set.Glass = GridTextureKit.Surface("Picos_Vitral", PaintGlass(1450), new Color(0.42f, 0.36f, 0.95f) * 0.9f);
+            // Janelas: vidro espelhado roxo, sem luz própria (pedido do usuário em 2026-11-08: nada de brilho fraco nas
+            // casas; parece vidro, mas reflete e não deixa ver dentro)
+            set.Glass = GridTextureKit.Surface("Picos_Vitral", PaintMirror(1450), Color.black);
+            Shine(set.Glass, 0.85f, 0.9f);
             set.Scales = GridTextureKit.Surface("Picos_Escamas", PaintScales(1460), Color.black);
             set.Cloth = GridTextureKit.Surface("Picos_Tecido", PaintCloth(1470, new Color(0.3f, 0.12f, 0.26f)), Color.black);
             set.ClothLight = GridTextureKit.Surface("Picos_Tecido_Claro", PaintCloth(1471, new Color(0.62f, 0.58f, 0.5f)), Color.black);
@@ -338,7 +341,31 @@ namespace Icaro.EditorTools
             return p;
         }
 
-        // Vitral (32 px = 2 m): losangos de vidro violeta-azulado entre fios de chumbo; o vidro brilha fraco
+        static readonly Color k_Mirror = new Color(0.2f, 0.1f, 0.3f);
+
+        // Vidro espelhado (32 px = 2 m): roxo escuro quase liso, um pouco mais claro em cima, com duas faixas de reflexo
+        // em diagonal (o resto do reflexo vem do céu, pelo material metálico e liso)
+        static Paint PaintMirror(int seed)
+        {
+            const int size = 32;
+            Paint p = GridTextureKit.Tile(size, size, seed, k_Mirror);
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                Color c = k_Mirror * (0.85f + 0.3f * y / size);
+                int d = (x + y) % size;
+                if (d >= 6 && d <= 8)
+                    c = Color.Lerp(c, new Color(0.62f, 0.5f, 0.78f), 0.35f);
+                else if (d == 12)
+                    c = Color.Lerp(c, new Color(0.62f, 0.5f, 0.78f), 0.18f);
+                p.Set(x, y, p.Vary(c, 0.015f));
+            }
+
+            return p;
+        }
+
+        // Vitral (32 px = 2 m): losangos de vidro violeta-azulado entre fios de chumbo; o vidro brilha fraco (sem uso
+        // desde 2026-11-08, ficou o espelho)
         static Paint PaintGlass(int seed)
         {
             const int size = 32;

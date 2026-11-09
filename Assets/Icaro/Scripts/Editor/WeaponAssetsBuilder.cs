@@ -59,6 +59,7 @@ namespace Icaro.EditorTools
                     Shop(d, "Agulha", "Fuzil de assalto inicial. Versátil, serve para tudo.", "A",
                         new Color(0.55f, 0.95f, 1f), 60);
                     Gun(d, 700f, 50, 1.8f, 0f, 0.4f);
+                    Aim(d, 0.3f, 0.15f, 0.7f);
                     Shot(d, 30f, 300f, 0.05f, 120f);
                 }), IcaroPrefabBuilder.BlasterVariantPath, k_BlasterShot, 1f, tint: false),
 
@@ -66,6 +67,7 @@ namespace Icaro.EditorTools
                 {
                     Shop(d, "Titan", "Metralhadora pesada. Alto dano e impacto.", "T", new Color(1f, 0.55f, 0.2f), 110);
                     Gun(d, 400f, 25, 2.5f, 1.5f, 0.9f);
+                    Aim(d, 0.7f, 0.25f, 0.6f);
                     Shot(d, 65f, 220f, 0.09f, 120f);
                 }), k_Launcher, k_BlasterShot, 1.6f),
 
@@ -74,8 +76,10 @@ namespace Icaro.EditorTools
                     Shop(d, "Ion akimbos", "Revólveres de tambor duplos. Tiros cadenciados, pesados e precisos.", "I",
                         new Color(0.55f, 0.6f, 1f), 110);
                     Gun(d, 240f, 16, 1.6f, 0f, 1.2f);
+                    Aim(d, 1.4f, 0.4f, 0.75f);
                     d.Akimbo = true;
                     Shot(d, 120f, 350f, 0.07f, 140f);
+                    Kick(d, 0.12f, 9f, 3f, 0.05f, 0.32f, new Vector2(0.8f, 0.8f));
                 }), k_Blaster, k_BlasterShot, 1.4f),
 
                 Build(Definition("Viper", d =>
@@ -83,6 +87,7 @@ namespace Icaro.EditorTools
                     Shop(d, "Viper", "Submetralhadora. Altíssima cadência para ativar os efeitos de acerto das cartas.",
                         "V", new Color(0.45f, 1f, 0.45f), 95);
                     Gun(d, 1000f, 60, 1.4f, 2.5f, 0.25f);
+                    Aim(d, 0.18f, 0.15f, 0.8f);
                     Shot(d, 22f, 320f, 0.04f, 100f);
                     d.Suppressed = true;
                 }), k_Blaster, k_BlasterShot, 0.8f),
@@ -92,10 +97,12 @@ namespace Icaro.EditorTools
                     Shop(d, "Liberdade", "Escopeta automática. Mesmo dano a qualquer distância, mira toda manual.", "L",
                         new Color(1f, 0.82f, 0.3f), 120);
                     Gun(d, 150f, 12, 2.5f, 9f, 1.6f);
+                    Aim(d, 2.2f, 0.5f, 0.75f);
                     d.PelletsPerShot = 10;
                     Shot(d, 25f, 140f, 0.08f, 60f);
                     d.AimMode = WeaponAimMode.None;
                     d.ProcCoefficient = 0.3f;
+                    Kick(d, 0.14f, 12f, 2.5f, 0.07f, 0.42f, new Vector2(0.85f, 0.9f));
                 }), k_Shotgun, k_ShotgunShot, 1f),
             };
 
@@ -177,6 +184,25 @@ namespace Icaro.EditorTools
             d.ReloadTime = reload;
             d.SpreadAngle = spread;
             d.RecoilForce = recoil;
+        }
+
+        // Coice do sprite das armas de cadência baixa: quadro de tiro mais longo e giro em volta da mão
+        static void Aim(WeaponDefinition d, float up, float side, float recovery)
+        {
+            d.AimKickUp = up;
+            d.AimKickSide = side;
+            d.AimRecovery = recovery;
+        }
+
+        static void Kick(WeaponDefinition d, float hold, float angle, float random, float kick, float time, Vector2 pivot)
+        {
+            d.FireHoldTime = hold;
+            d.RecoilAngle = angle;
+            d.RecoilAngleRandom = random;
+            d.RecoilKick = kick;
+            d.RecoilTime = time;
+            d.RecoilAttack = 0.12f;
+            d.RecoilPivot = pivot;
         }
 
         static void Shot(WeaponDefinition d, float damage, float speed, float radius, float range)

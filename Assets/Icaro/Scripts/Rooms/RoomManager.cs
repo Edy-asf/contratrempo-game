@@ -172,7 +172,9 @@ namespace Icaro
 
             yield return RunQuota();
 
-            // Escolha de 2 itens entre 4 ao limpar a sala (no chefe, Raro com o dobro da chance); as portas abrem depois
+            // Respiro (câmera lenta, faixa e Cronitas voando até o jogador) e a escolha de 2 itens entre 4 (no chefe,
+            // Raro com o dobro da chance); o domo se desfaz depois
+            yield return RoomClearSequence.Play(this);
             yield return ItemDraft.Offer(IsBoss);
 
             State = RoomState.Cleared;
@@ -182,7 +184,7 @@ namespace Icaro
                 m_Dome.Shatter();
             OnRoomCleared?.Invoke(this);
             OnAnyRoomCleared?.Invoke(this);
-            VisorBanner.Show("Arena limpa", "Domo desfeito", BannerTone.Success);
+            VisorBanner.Show("Domo desfeito", "Siga em frente", BannerTone.Success);
         }
 
         // ---------- cota contínua ----------

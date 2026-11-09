@@ -45,17 +45,12 @@ namespace Icaro
         [Tooltip("Distância da câmera (m) em que o tiro nasce, na direção da ponta do cano desenhada")]
         public float MuzzleDistance = 0.6f;
 
-        [Tooltip("Segundos de cada quadro de tiro")]
+        [Tooltip("Segundos de cada quadro de tiro (quando a ficha da arma não tem FireHoldTime)")]
         public float FireFrameTime = 0.045f;
 
-        [Tooltip("Segundos para a arma subir da borda ao trocar")]
-        public float RaiseTime = 0.25f;
-
-        [Tooltip("Balanço ao andar (pixels do desenho em código, 160 de altura)")]
-        public float BobAmount = 4f;
-
-        [Tooltip("Quanto o sprite atrasa ao virar a câmera (pixels do desenho em código por grau)")]
-        public float SwayPerDegree = 0.6f;
+        // Movimento da arma (abaixar e levantar, troca, balanço): no asset Resources/WeaponMotionSettings (menu
+        // "Ícaro > Ajustes do movimento da arma"), para os ajustes feitos no Play ficarem salvos
+        static WeaponMotionSettings M => WeaponMotionSettings.Current;
 
         const float k_HotHeat = 0.55f;
         const int k_GridX = 24;
@@ -91,6 +86,10 @@ namespace Icaro
             public bool Left;
             public float FireTime = -1f;
             public bool Alt;
+            public Matrix4x4 Layout = Matrix4x4.identity;
+            // Coice: giro deste tiro (graus) e de onde o coice partiu (giro, recuo) quando o tiro chegou
+            public float ShotAngle;
+            public Vector2 RecoilFrom;
         }
 
         struct Painted
@@ -136,9 +135,150 @@ namespace Icaro
 
         Camera PlayerCamera => m_Controller && m_Controller.PlayerCamera ? m_Controller.PlayerCamera : Camera.main;
 
+        // ---------- arma abaixada ----------
+        // Quem pede a arma abaixada (a abertura, a escolha de cartas). Enquanto houver alguém, ela abaixa; quando o
+        // último solta, ela levanta. Estático para valer mesmo antes de o HUD existir; dono destruído conta como solto.
+        static readonly HashSet<object> s_Lowerers = new HashSet<object>();
+        static bool s_LowerInstant;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetLowerers()
+        {
+            s_Lowerers.Clear();
+            s_LowerInstant = false;
+            s_TestRaiseAt = -1f;
+        }
+
+        // Teste pelo Inspector do WeaponMotionSettings: abaixa (e levanta) a arma para conferir o movimento
+        static readonly object s_TestOwner = new object();
+        static float s_TestRaiseAt = -1f;
+
+        public static bool TestLowered
+        {
+            get => s_Lowerers.Contains(s_TestOwner);
+            set
+            {
+                s_TestRaiseAt = -1f;
+                if (value)
+                    Lower(s_TestOwner);
+                else
+                    Raise(s_TestOwner);
+            }
+        }
+
+        // Abaixa e, logo depois de ficar abaixada, levanta
+        public static void TestCycle()
+        {
+            Lower(s_TestOwner);
+            s_TestRaiseAt = Time.unscaledTime + M.LowerTime + 0.35f;
+        }
+
+        // Abaixa a arma (instant: já começa abaixada, sem animação, como na abertura)
+        public static void Lower(object owner, bool instant = false)
+        {
+            if (owner == null)
+                return;
+            s_Lowerers.Add(owner);
+            if (instant)
+                s_LowerInstant = true;
+        }
+
+        // Solta o pedido; sem mais ninguém pedindo, a arma levanta
+        public static void Raise(object owner)
+        {
+            if (owner != null)
+                s_Lowerers.Remove(owner);
+        }
+
+        // Pose atual de abaixar (x, y em fração da altura do sprite; z = giro em graus) e a animação em curso
+        bool m_Down;
+        float m_PoseStart = -10f;
+        Vector3 m_PoseFrom;
+        Vector3 m_Pose;
+
+        Vector3 DownPose => new Vector3(M.LoweredOffset.x, M.LoweredOffset.y, M.LoweredAngle);
+
+        // Totalmente abaixada (fora da tela): os quads nem desenham
+        bool FullyDown => m_Down && Time.unscaledTime - m_PoseStart >= M.LowerTime;
+
+        void UpdateLowered()
+        {
+            if (s_TestRaiseAt >= 0f && Time.unscaledTime >= s_TestRaiseAt)
+            {
+                s_TestRaiseAt = -1f;
+                Raise(s_TestOwner);
+            }
+
+            s_Lowerers.RemoveWhere(o => o is UnityEngine.Object u && !u);
+            bool down = s_Lowerers.Count > 0;
+            if (s_LowerInstant)
+            {
+                s_LowerInstant = false;
+                if (down)
+                {
+                    m_Down = true;
+                    m_Pose = m_PoseFrom = DownPose;
+                    m_PoseStart = -10f;
+                    return;
+                }
+            }
+
+            if (down != m_Down)
+            {
+                m_Down = down;
+                m_PoseFrom = m_Pose;
+                m_PoseStart = Time.unscaledTime;
+            }
+
+            float duration = Mathf.Max(0.01f, m_Down ? M.LowerTime : M.LiftTime);
+            float u = Mathf.Clamp01((Time.unscaledTime - m_PoseStart) / duration);
+            Vector3 to = m_Down ? DownPose : Vector3.zero;
+            float x, y, angle;
+            if (m_Down)
+            {
+                // Abaixar: o cano tomba primeiro e a arma cai para o canto, acelerando (o peso puxa)
+                angle = Smooth(u / 0.65f);
+                y = u * u * u;
+                x = EaseIn(Mathf.Clamp01((u - 0.1f) / 0.9f));
+            }
+            else
+            {
+                // Levantar: a arma sobe rápido de baixo, entra do lado logo depois e o cano endireita por último,
+                // passando um pouco do ponto e assentando. Os três em ritmos diferentes desenham um arco, não uma reta
+                y = EaseOut(u / 0.8f);
+                x = EaseOut(Mathf.Clamp01((u - 0.1f) / 0.75f));
+                angle = EaseOutBack(Mathf.Clamp01((u - 0.2f) / 0.8f), M.LiftSettle);
+            }
+
+            m_Pose = new Vector3(Mathf.Lerp(m_PoseFrom.x, to.x, x), Mathf.Lerp(m_PoseFrom.y, to.y, y),
+                Mathf.LerpUnclamped(m_PoseFrom.z, to.z, angle));
+        }
+
+        static float Smooth(float t)
+        {
+            t = Mathf.Clamp01(t);
+            return t * t * (3f - 2f * t);
+        }
+
+        static float EaseIn(float t) => t * t;
+
+        static float EaseOut(float t)
+        {
+            t = 1f - Mathf.Clamp01(t);
+            return 1f - t * t * t;
+        }
+
+        static float EaseOutBack(float t, float overshoot)
+        {
+            t = Mathf.Clamp01(t) - 1f;
+            return 1f + t * t * ((overshoot + 1f) * t + overshoot);
+        }
+
         void Awake()
         {
             Instance = this;
+            if (s_Lowerers.Count > 0)
+                s_LowerInstant = true;
             if (Application.isEditor || Debug.isDebugBuild)
                 gameObject.AddComponent<WeaponSpriteTuner>();
         }
@@ -269,6 +409,7 @@ namespace Icaro
                 done.Assign(ItemArt.ToTexture(done.Canvas, done.Name));
 
             m_Heat = Mathf.Max(0f, m_Heat - Time.deltaTime * 0.45f);
+            UpdateLowered();
 
             WeaponController weapon = m_Weapons ? m_Weapons.GetActiveWeapon() : null;
             string key = KeyOf(weapon);
@@ -291,8 +432,8 @@ namespace Icaro
             ActiveDefinition = show ? icaro.Definition : null;
             if (m_Right != null)
             {
-                m_Right.Renderer.enabled = show;
-                m_Left.Renderer.enabled = show && akimbo;
+                m_Right.Renderer.enabled = show && !FullyDown;
+                m_Left.Renderer.enabled = show && akimbo && !FullyDown;
             }
 
             if (!show)
@@ -321,12 +462,20 @@ namespace Icaro
             {
                 side.Material.mainTexture = FrameFor(frames, icaro, side);
                 side.Material.SetColor("_BaseColor", tint);
-                Vector2 position = anchor + motion + ImportedMotion(frames, icaro, side) * height;
+                Vector2 position = anchor + motion + ImportedMotion(frames, icaro, side) * height +
+                                   new Vector2(m_Pose.x, m_Pose.y) * height;
                 // O balanço nunca puxa o canto para dentro da tela além de onde a ficha o pôs
                 position.x = Mathf.Max(position.x, Mathf.Min(anchor.x, corner.x));
                 position.y = Mathf.Min(position.y, Mathf.Max(anchor.y, corner.y));
+                // Giro do coice em volta da mão (RecoilPivot), no plano da tela; positivo na ficha = horário (o cano,
+                // para cima e à esquerda da mão, sobe e abre)
+                Vector2 recoil = Recoil(side, definition);
+                var pivot = new Vector3((definition.RecoilPivot.x - 1f) * width, (1f - definition.RecoilPivot.y) * height, 0f);
                 Matrix4x4 layout = Matrix4x4.TRS(new Vector3(position.x, position.y, 1f),
-                    Quaternion.Euler(0f, definition.SpriteTilt, 0f), new Vector3(width, height, 1f));
+                                       Quaternion.Euler(0f, definition.SpriteTilt, 0f), Vector3.one) *
+                                   Matrix4x4.Translate(pivot) * Matrix4x4.Rotate(Quaternion.Euler(0f, 0f, m_Pose.z - recoil.x)) *
+                                   Matrix4x4.Translate(-pivot) * Matrix4x4.Scale(new Vector3(width, height, 1f));
+                side.Layout = layout;
                 if (side == m_Right)
                     m_Layout = layout;
                 side.Quad.localPosition = Vector3.zero;
@@ -413,7 +562,7 @@ namespace Icaro
         // centro da tela: o tiro sai de onde a arma aparece. Devolve a ponta na tela (pixels)
         Vector2 AlignMuzzle(Vector2 uv, Side side, Transform muzzle)
         {
-            Vector3 local = ToCamera(m_Layout, new Vector2(uv.x - 1f, 1f - uv.y), side.Left);
+            Vector3 local = ToCamera(side.Layout, new Vector2(uv.x - 1f, 1f - uv.y), side.Left);
             Vector3 screen = WeaponCamera.WorldToScreenPoint(side.Quad.TransformPoint(local));
             Camera camera = PlayerCamera;
             if (!muzzle || !camera)
@@ -470,12 +619,28 @@ namespace Icaro
             if (icaro && icaro.IsReloading && frames.Reload.Length == 0)
                 return new Vector2(0f, -Mathf.Sin(icaro.ReloadProgress * Mathf.PI) * 0.35f);
             // Coice de cada lado no próprio tiro (recua para o canto)
-            float sinceShot = Time.time - side.FireTime;
-            float kickTime = FireFrameTime * 2f;
-            if (frames.Fire.Length > 1 || side.FireTime < 0f || sinceShot >= kickTime)
+            if (frames.Fire.Length > 1 || !icaro)
                 return Vector2.zero;
-            float kick = (1f - sinceShot / kickTime) * 0.02f;
+            float kick = Recoil(side, icaro.Definition).y;
             return new Vector2(kick, -kick * 0.8f);
+        }
+
+        // Coice de um lado agora: (giro em graus, recuo em fração da altura do sprite). Sobe rápido de onde estava até
+        // o máximo do tiro (RecoilAttack) e volta desacelerando até parar no fim do RecoilTime
+        static Vector2 Recoil(Side side, WeaponDefinition definition)
+        {
+            if (side.FireTime < 0f || !definition)
+                return Vector2.zero;
+            float t = Time.time - side.FireTime;
+            float total = Mathf.Max(0.01f, definition.RecoilTime);
+            if (t >= total)
+                return Vector2.zero;
+            var peak = new Vector2(side.ShotAngle, definition.RecoilKick);
+            float attack = total * definition.RecoilAttack;
+            if (t < attack)
+                return Vector2.Lerp(side.RecoilFrom, peak, Mathf.SmoothStep(0f, 1f, t / attack));
+            float u = (t - attack) / Mathf.Max(0.001f, total - attack);
+            return peak * ((1f - u) * (1f - u));
         }
 
         static string KeyOf(WeaponController weapon)
@@ -590,6 +755,11 @@ namespace Icaro
                 return;
             bool left = icaro && icaro.Definition && icaro.Definition.Akimbo && icaro.LastShotSecond;
             Side side = left ? m_Left : m_Right;
+            WeaponDefinition definition = icaro ? icaro.Definition : null;
+            side.RecoilFrom = Recoil(side, definition);
+            side.ShotAngle = definition
+                ? definition.RecoilAngle + UnityEngine.Random.Range(-1f, 1f) * definition.RecoilAngleRandom
+                : 0f;
             side.FireTime = Time.time;
             side.Alt = m_Shots++ % 2 == 1;
             if (!(icaro && icaro.Definition && icaro.Definition.Suppressed))
@@ -660,9 +830,11 @@ namespace Icaro
             bool hot = m_Heat > k_HotHeat;
             float sinceShot = Time.time - side.FireTime;
             int fireCount = frames.Fire.Length;
-            if (fireCount > 0 && side.FireTime >= 0f && sinceShot < FireFrameTime * fireCount)
+            float hold = icaro && icaro.Definition ? icaro.Definition.FireHoldTime : 0f;
+            float frameTime = hold > 0f ? hold / Mathf.Max(1, fireCount) : FireFrameTime;
+            if (fireCount > 0 && side.FireTime >= 0f && sinceShot < frameTime * fireCount)
             {
-                int frame = Mathf.Min(fireCount - 1, Mathf.FloorToInt(sinceShot / FireFrameTime));
+                int frame = Mathf.Min(fireCount - 1, Mathf.FloorToInt(sinceShot / frameTime));
                 Texture2D fire = frame < 2 && hot && frames.HotFire[frame] ? frames.HotFire[frame]
                     : frame < 2 && side.Alt && frames.FireAlt[frame] ? frames.FireAlt[frame]
                     : frames.Fire[frame];
@@ -686,8 +858,8 @@ namespace Icaro
             }
 
             m_BobPhase += dt * 9f * speed;
-            float bobX = Mathf.Sin(m_BobPhase) * BobAmount * speed;
-            float bobY = -Mathf.Abs(Mathf.Cos(m_BobPhase)) * BobAmount * 0.75f * speed;
+            float bobX = Mathf.Sin(m_BobPhase) * M.BobAmount * speed;
+            float bobY = -Mathf.Abs(Mathf.Cos(m_BobPhase)) * M.BobAmount * 0.75f * speed;
 
             if (m_Controller && dt > 0f)
             {
@@ -696,14 +868,14 @@ namespace Icaro
                 float dyaw = Mathf.DeltaAngle(m_LastYaw, yaw), dpitch = Mathf.DeltaAngle(m_LastPitch, pitch);
                 m_LastYaw = yaw;
                 m_LastPitch = pitch;
-                var target = new Vector2(Mathf.Clamp(-dyaw * SwayPerDegree, -10f, 10f),
-                    Mathf.Clamp(dpitch * SwayPerDegree, -8f, 8f));
+                var target = new Vector2(Mathf.Clamp(-dyaw * M.SwayPerDegree, -10f, 10f),
+                    Mathf.Clamp(dpitch * M.SwayPerDegree, -8f, 8f));
                 m_Sway = Vector2.Lerp(m_Sway, target, 1f - Mathf.Exp(-dt * 10f));
             }
 
             var motion = new Vector2(bobX + m_Sway.x, bobY + m_Sway.y) / WeaponSpritePainter.Height;
 
-            float raise = Mathf.Clamp01((Time.time - m_RaiseStart) / Mathf.Max(0.01f, RaiseTime));
+            float raise = Mathf.Clamp01((Time.time - m_RaiseStart) / Mathf.Max(0.01f, M.RaiseTime));
             motion.y -= (1f - raise) * (1f - raise);
             return motion;
         }

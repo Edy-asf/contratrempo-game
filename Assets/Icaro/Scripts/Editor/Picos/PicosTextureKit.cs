@@ -30,6 +30,26 @@ namespace Icaro.EditorTools
             // Kit gótico do Blender (PicosGothicKit): escamas de pedra cinza das cúpulas e agulhas; tecido violeta dos
             // estandartes e o claro (emblemas, lona, cordas e sacos)
             public Material Scales, Cloth, ClothLight;
+
+            // Água congelada (PicosIceTextures): a cascata vista de frente e o rio visto de cima, com UV pelo mundo
+            public Material IceFall, IceSheet;
+
+            // Tecnologia (PicosTechTextures): a liga escura das peças de metal e a luz lilás das janelas e cristais
+            public Material Alloy, Glow;
+
+            // Naves (PicosTechTextures): o casco claro de painéis e o vidro escuro da cabine (sem pedra nem gótico)
+            public Material Hull, ShipGlass;
+
+            // Kit gótico das Vilas do Alto (PicosGothicTextures; pedido do usuário em 2026-11-08: tudo tinha a mesma
+            // pedra): o aço claro escovado e a liga lavrada das peças de tecnologia; a pedra por função (soco, coluna,
+            // escultura, móveis, moldura); quatro tipos de parede sorteados por peça (cantaria, fiadas, alvenaria
+            // rústica, reboco caído) e três tons de escamas
+            public Material Steel, Engraved, StoneSocle, StoneColumn, StoneCarving, StoneFurniture, StoneMolding;
+            public Material[] GothWalls, GothScales;
+
+            // Estragos do ataque (kit AR_Ataque, PicosGothicTextures): madeira carbonizada, pedra queimada (quebras e
+            // interior das casas), chão queimado, vidro lilás fundido, cristal apagado e o carbonizado
+            public Material CharWood, BurntStone, Scorch, FusedGlass, DeadCrystal, Carbon;
         }
 
         static readonly Color k_Rock = new Color(0.16f, 0.15f, 0.17f);
@@ -72,6 +92,9 @@ namespace Icaro.EditorTools
             };
             BuildPavings(set);
             BuildVillage(set);
+            BuildIce(set);
+            BuildTech(set);
+            BuildGothic(set);
             return set;
         }
 

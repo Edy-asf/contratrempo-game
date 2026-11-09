@@ -283,7 +283,7 @@ namespace Icaro
         {
             if (!m_Weapons)
                 return;
-            fov = Mathf.Clamp(fov, 60f, 110f);
+            fov = Mathf.Clamp(fov, GameSettings.MinFieldOfView, GameSettings.MaxFieldOfView);
             GameSettings.FieldOfView = fov;
             m_Weapons.DefaultFov = fov;
             m_Weapons.SetFov(fov);

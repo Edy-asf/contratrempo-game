@@ -3,6 +3,9 @@
 // o tamanho e o espelhamento; y na altura). Assim milhares de sprites viram uma malha por bloco, sem girar objetos no
 // processador. A luz é a mesma do Lit dos sprites (sem brilho especular nem reflexos, recorte por alfa, emissão
 // opcional, névoa, sombras recebidas); não projeta sombra (como antes).
+// Animação opcional (_Frames > 1): a textura é uma tira de quadros lado a lado; cada sprite começa num quadro sorteado
+// pelo próprio pé e troca de quadro a _FrameRate por segundo. Com _TimeFollow 1, o relógio também anda com o
+// multiplicador de tempo (soma o relógio das nuvens, _IcaroCloudTime, que anda multiplicador - 1 por segundo).
 Shader "Icaro/BillboardSprite"
 {
     Properties
@@ -12,6 +15,9 @@ Shader "Icaro/BillboardSprite"
         _Cutoff("Recorte", Range(0, 1)) = 0.5
         _EmissionMap("Brilho", 2D) = "black" {}
         [HDR] _EmissionColor("Cor do brilho", Color) = (0, 0, 0, 1)
+        _Frames("Quadros da animação", Float) = 1
+        _FrameRate("Quadros por segundo", Float) = 8
+        _TimeFollow("Segue o multiplicador (0 a 1)", Range(0, 1)) = 0
     }
 
     SubShader
@@ -36,7 +42,24 @@ Shader "Icaro/BillboardSprite"
             half4 _BaseColor;
             half _Cutoff;
             half4 _EmissionColor;
+            float _Frames;
+            float _FrameRate;
+            float _TimeFollow;
         CBUFFER_END
+
+        float _IcaroCloudTime;
+
+        // Quadro da animação deste sprite (tira horizontal de _Frames quadros)
+        float2 AnimatedUV(float2 uv, float3 pivot)
+        {
+            float frames = max(_Frames, 1.0);
+            if (frames < 1.5)
+                return uv;
+            float seed = frac(sin(dot(pivot, float3(12.9898, 78.233, 37.719))) * 43758.5453);
+            float clock = _Time.y + _IcaroCloudTime * _TimeFollow;
+            float frame = floor(fmod(clock * _FrameRate + seed * frames, frames));
+            return float2((uv.x + frame) / frames, uv.y);
+        }
 
         struct Attributes
         {
@@ -107,7 +130,7 @@ Shader "Icaro/BillboardSprite"
                 output.positionWS = positionWS;
                 output.normalWS = normalWS;
                 output.positionCS = TransformWorldToHClip(positionWS);
-                output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
+                output.uv = TRANSFORM_TEX(AnimatedUV(input.uv, input.pivot), _BaseMap);
                 output.fogFactor = ComputeFogFactor(output.positionCS.z);
                 return output;
             }
@@ -175,7 +198,7 @@ Shader "Icaro/BillboardSprite"
                 half3 normalWS;
                 Billboard(input, positionWS, normalWS);
                 output.positionCS = TransformWorldToHClip(positionWS);
-                output.uv = TRANSFORM_TEX(input.uv, _BaseMap);
+                output.uv = TRANSFORM_TEX(AnimatedUV(input.uv, input.pivot), _BaseMap);
                 return output;
             }
 

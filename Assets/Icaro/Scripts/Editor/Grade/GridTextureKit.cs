@@ -1041,6 +1041,10 @@ namespace Icaro.EditorTools
             return material;
         }
 
+        // Sprites animados do lote (tira de quadros na textura): quadros, quadros por segundo e quanto seguem o
+        // multiplicador de tempo, pelo material de sprite; os outros ficam parados (_Frames 1)
+        internal static readonly Dictionary<Material, Vector3> SpriteAnimation = new Dictionary<Material, Vector3>();
+
         // Variante do material de sprite para o shader Icaro/BillboardSprite (giro na placa de vídeo), com a mesma
         // textura, cor, recorte e brilho
         internal static Material BillboardMaterial(Material lit)
@@ -1065,6 +1069,10 @@ namespace Icaro.EditorTools
                 material.EnableKeyword("_EMISSION");
             else
                 material.DisableKeyword("_EMISSION");
+            Vector3 animation = SpriteAnimation.TryGetValue(lit, out Vector3 a) ? a : new Vector3(1f, 8f, 0f);
+            material.SetFloat("_Frames", animation.x);
+            material.SetFloat("_FrameRate", animation.y);
+            material.SetFloat("_TimeFollow", animation.z);
             material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
             material.enableInstancing = true;
             EditorUtility.SetDirty(material);

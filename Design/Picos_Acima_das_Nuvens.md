@@ -95,7 +95,7 @@ São as salas da Via logo depois do Arquipélago (9 a 16), a partir da 17.
 6. **Cidade flutuante, a parte final do bioma (3 ou 4 salas dentro dela):** imensa e bem detalhada, com uma catedral no meio. O chefe (Oráculo) fica no fim.
 
 **A cidade e o entorno:**
-- A cidade flutua.
+- A cidade flutua. Nome: Archen Kaedra, a Cidade Perdida (decidido em 2026-11-09).
 - Em volta dela há vilas menores em montanhas próximas, ligadas entre si por pontes, mas sem ligação direta com a cidade.
 - A cidade tem uma só entrada e saída: uma ponte colossal com um portão e duas grandes torres de vigia.
 - Não haverá mosteiro: o usuário quer a cidade como o grande destaque. A lista antiga (mosteiro, bairro flutuante, caverna-cidade, observatório, doca de dirigíveis) foi descartada.
@@ -122,6 +122,33 @@ São as salas da Via logo depois do Arquipélago (9 a 16), a partir da 17.
 - Revisão de 2026-10-29: o primeiro esqueleto (anel de colunas em volta da cidade, ilhas voadoras no caminho, descida de 300 m em escada) não ficou natural. Decidido: um maciço grande como o do Bastião, com as vilas na encosta (sela, ombro, ponta de contraforte, paredão), caminho escavado e pontes só sobre vãos de verdade; ilhas voadoras só como cenário; chegada uns 150 m acima da cidade, para ter vista dela. Ficam no caminho: Escalonada, Sinos, Engrenagens, Vila-Ponte, Pendurada e o portão.
 - Etapas: 1 esqueleto em blocos (feito em 2026-10-28, `PicosHighlands.cs`), 2 montanhas do Blender, 3 silhueta da cidade, 4 detalhe vila por vila.
 - Arenas (2026-10-29): provavelmente uma por vila; o usuário vai detalhar depois. Por enquanto só o detalhe das vilas.
+- Detalhe das vilas (kit gótico das Vilas do Alto, inteiras e só abandonadas): Vila Escalonada feita em 2026-10-29. Vila dos Sinos feita em 2026-10-30:
+  - o campanário com o relógio parado às 11h58 e o sino grande;
+  - a capela com a sineira;
+  - arcos com sino nas chegadas;
+  - o pátio do fundidor, com sinos novos nos berços e uma cabrilha com um sino içado pela metade.
+
+  - Vila das Engrenagens (2026-10-31, escolhas do usuário: 1.a engrenagens paradas, 2.b a estação do teleférico no meio da praça e a Casa da Roda num canto, 3. todos os elementos): a vila dos mecânicos e relojoeiros que fizeram o relógio da torre e o teleférico. Estação no meio (casa de máquinas, galpão de embarque, roda motriz deitada, cabine parada; os cabos saem dela para a torre), Casa da Roda (engrenagem gigante de 10 m e o trem de engrenagens numa parede com o relógio parado às 11h58, como o campanário), oficinas, depósitos com guindaste, casas do relojoeiro, trilhos de vagoneta em arco com a plataforma giratória e vagonetas, bancadas, pilhas de engrenagens e cargas.
+  - Vila-Ponte (2026-11-06): passagem, não arena (pequena demais). Escolhas do usuário:
+    - 1.B Ponte dos Moleiros;
+    - 2.A casas debruçadas sobre o vazio em mãos-francesas, com sacadas e latrinas penduradas;
+    - 3.a o Moinho Grande atravessando a rua (túnel) com a roda maior sob o vão do meio;
+    - 3.c a grua de pisar com o cesto parado no meio da descida;
+    - 4.a torre do portão em cada cabeceira (as duas casas de cada cabeceira ficam);
+    - 5.c arcos de pedra trabalhados por cima da rua.
+    Adaptação: a garganta tem ~150 m de fundo e as bordas ao norte são baixas, então não cabe um rio na altura dos arcos. A água vinha por um aqueduto pela fenda ao norte até a roda grande; o que caía dela congelou numa coluna até o fundo. Rodas menores ficam sobre cavaletes nas bancadas de rocha perto das cabeceiras, com calhas pela face norte da ponte.
+    Depois (pedido do usuário em 2026-11-06): uma cachoeira gigante congelada enche a fenda de parede a parede (do fundo até o alto da cabeceira, ~436 m) e cobre de gelo as paredes dela; no fundo, o rio congelado passa embaixo da ponte (os pilares ficam em pé nele) e termina pouco antes da beira do sul numa língua de gelo até a rocha (em 2026-11-07 a queda pela beira saiu: cobria os blocos de rocha lá embaixo, onde não faz sentido ter água; saiu também um pedaço da cascata que passava da fenda onde a frente recua). O aqueduto agora tira a água da cascata (a ponta entra no gelo); o tanque e a cascata pequena da parede oeste saíram. Texturas novas de água congelada (cascata e rio), porque a antiga não parecia gelo. Corrigidas as faces no mesmo plano da ponte (piso das cabeceiras, parapeito dentro das casas, fundo das casas, moinho e muralhas das torres).
+  Próximas: Pendurada e o portão.
+  - Vila das Engrenagens, versão futurista (2026-11-07): a transformação em "Vila dos Artífices" (peças do AR_Casas com cristal) foi recusada em 2026-11-08 porque reaproveitava tudo. Ela vai ser refeita do zero, com ideia nova e peças novas. A Forja Celeste e a Vila Suspensa continuam como opções. Escolhida a **Vila Suspensa** (2026-11-08): a praça flutua 12 m acima do ombro numa ilha de pedra sobre quatro pilares de luz, com a barriga de máquinas à mostra, escadas de degraus flutuantes, oficinas de térreo aberto, o farol regulador e a estação do teleférico na beira. No chão ficam as casas dos aprendizes, um guindaste que segura um bloco num feixe e um anel sendo montado no ar.
+  - Ideia guardada para a Vila Escalonada, a primeira vila (pedido do usuário em 2026-11-08), a fazer depois: **Vila do Observatório**.
+    - Um observatório com cúpula de escamas meio aberta e um telescópio de liga com a lente acesa, apontado para o eclipse.
+    - Casas-biblioteca com janelas acesas.
+    - Uma esfera armilar colossal.
+    - Uma torre de relógio de sol com o gnômon partido.
+    - O piso da praça é um mostrador gigante, com as horas em runas acesas.
+    - Mesas de pedra com cartas celestes, lunetas em tripé e orbes-planeta flutuando.
+    - O teleférico sai do alto do observatório.
+- Montanha das vilas refeita (2026-11-01): a esculpida e cortada acumulava defeitos; a de colunas recortadas foi recusada. Decidido: uma montanha maciça só, por mapa de altura em blocos de arenito de topo plano (`Ferramentas/Picos/macico_vilas3.py`), paredão colado nos caminhos do lado da montanha (sem mureta desse lado), caminhos 2 m mais largos, escadas sem patamar no meio das subidas e curvas em rampa, cume dominante de 680 m visível da cidade.
 
 ## Fauna (a decidir, com entrevista)
 
@@ -179,3 +206,7 @@ Cada bioma tem fauna própria. O Golem pode aparecer, porque combina com autôma
 ## A decidir
 
 - Quem são os inimigos das arenas, já que não há fauna. Ideia: autômatos e guardiões dos Aeônidas, ecos de luz e o Golem.
+
+**Engrenagens → Estaleiro Celeste (2026-11-08).** A Vila Suspensa (praça numa ilha sobre pilares de luz) foi recusada pela proposta: não fazia sentido num ombro de ~46 m. Regra que fica: o elemento grande de cada vila vai para fora da área de jogo e a praça fica livre. Escolhida a ideia 6, o Estaleiro Celeste: a vila construía naves; uma nave inacabada fica atracada sobre o vazio, presa por uma doca de liga, com a proa em esqueleto e um guindaste trazendo um painel do casco. Nave, doca, guindaste, trenó e a cabine do teleférico são futuristas (casco de painéis, liga, vidro escuro, lilás), nunca de pedra nem góticos; a arquitetura da praça (galpões, depósito, casas, torre de controle) continua gótica. A nave liga a vila ao final do jogo (a Dédalo). A refazer pela mesma regra: as cápsulas do trilho da Ponte do Reino (`PR_Capsula`, hoje capelas de pedra).
+
+**Engrenagens: volta aos Artífices (2026-11-08).** O Estaleiro Celeste foi recusado ("não tinha nada no meio da vila, somente na borda": cada vila precisa de uma peça central do tamanho da praça, com as beiras completando). Depois de um esboço de vila genérica, o usuário preferiu voltar à Vila dos Artífices (a versão de cristal) e fazer as mudanças a partir dela. O código do Estaleiro (`PicosShipyard.cs`, kit AR_Estaleiro), da Suspensa e da vila genérica ficou sem uso. Regra que vale para as mudanças: veículos (as vagonetas-cápsula do trilho, a cabine do teleférico) são futuristas, sem pedra nem gótico.

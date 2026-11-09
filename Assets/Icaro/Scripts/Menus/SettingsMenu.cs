@@ -6,54 +6,80 @@ using UnityEngine.InputSystem;
 
 namespace Icaro
 {
-    // Tela de configurações (do título e da pausa), em abas:
+    // Tela de configurações (do título e da pausa): as abas são faixas na esquerda (a atual larga, com o texto ciano) e
+    // a aba aberta fica num painel de vidro à direita, com "Restaurar padrão" (só daquela aba). Abas:
     // - Jogo: mira assistida e intensidade, números de dano, marcador de acerto, tremor de câmera, setas de ameaça,
     //   contador de FPS.
     // - Vídeo: modo de tela, resolução, qualidade, VSync, limite de FPS, escala de renderização, sombras, brilho,
     //   campo de visão e intensidade dos efeitos de tempo na tela.
     // - Áudio: volume geral e da música.
-    // - Controles: sensibilidade, inverter Y e as teclas (ações do Microgame, dash e loja), com "Restaurar teclas".
-    // Tudo é aplicado e salvo na hora (GameSettings). Esc ou "Voltar" fecham.
+    // - Controles: sensibilidade, inverter Y e as teclas (ações do Microgame, dash e loja).
+    // Teclado: W/S passam pelas linhas, A/D ajustam, Enter altera, Q/E (ou Tab) trocam de aba, Esc volta. Tudo é
+    // aplicado e salvo na hora (GameSettings).
     public class SettingsMenu
     {
         static readonly string[] k_Tabs = { "Jogo", "Vídeo", "Áudio", "Controles" };
-        const float k_RowStep = 58f;
+        const float k_RowStep = 55f;
+        const float k_TabFade = 0.18f;
 
-        readonly MenuKit m_Nav = new MenuKit();
+        static readonly Vector2 k_PanelPosition = new Vector2(660f, -240f);
+        static readonly Vector2 k_PanelSize = new Vector2(1170f, 690f);
+
+        readonly MenuKit m_Nav = new MenuKit { Keyboard = false };
         readonly MenuKit m_Rows = new MenuKit();
-        readonly List<MenuKit.ButtonControl> m_TabButtons = new List<MenuKit.ButtonControl>();
+        readonly List<MenuKit.StripButton> m_TabStrips = new List<MenuKit.StripButton>();
         RectTransform m_Root;
         RectTransform m_Content;
+        CanvasGroup m_ContentGroup;
+        TextMeshProUGUI m_Header;
         Action m_Back;
         int m_Tab;
+        float m_TabAge;
+        bool m_Closing;
 
         public bool IsWaitingKey => m_Rows.Waiting != null;
 
         public void Build(Transform parent, Action back)
         {
             m_Back = back;
-            m_Root = ItemUI.Rect("Configuracoes", parent, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1200f, 980f));
-            ItemUI.Fill("Fundo", m_Root, 0f, new Color(0.04f, 0.06f, 0.08f, 0.96f));
+            m_Closing = false;
+            m_Root = ItemUI.Rect("Configuracoes", parent, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            m_Root.anchorMin = Vector2.zero;
+            m_Root.anchorMax = Vector2.one;
+            m_Root.sizeDelta = Vector2.zero;
 
-            TextMeshProUGUI title = ItemUI.Text("Titulo", m_Root, new Vector2(0.5f, 1f), new Vector2(0f, -24f),
-                new Vector2(1100f, 60f), 46f, TextAlignmentOptions.Center, MenuKit.Accent);
-            title.fontStyle = FontStyles.Bold;
-            title.text = "Configurações";
+            ItemUI.Fill("Escurecer", m_Root, 0f, new Color(MenuKit.Dark.r, MenuKit.Dark.g, MenuKit.Dark.b, 0.37f));
+            MenuKit.LeftShade(m_Root, 900f, 0.9f);
+            MenuTitle.Create(m_Root, "CONFIGURAÇÕES", new Vector2(96f, -70f), 96f, GameMenus.TitleBlue, false);
 
             for (int i = 0; i < k_Tabs.Length; i++)
             {
                 int tab = i;
-                float x = (i - (k_Tabs.Length - 1) * 0.5f) * 250f;
-                m_TabButtons.Add(m_Nav.Button(m_Root, k_Tabs[i], new Vector2(x, -110f), new Vector2(230f, 50f),
-                    () => ShowTab(tab), new Vector2(0.5f, 1f)));
+                m_TabStrips.Add(m_Nav.Strip(m_Root, k_Tabs[i], -300f - i * 75f, () => ShowTab(tab, false), i * 0.04f,
+                    430f, 560f));
             }
 
-            m_Nav.Button(m_Root, "Voltar", new Vector2(0f, 50f), new Vector2(260f, 56f), () => m_Back?.Invoke(),
-                new Vector2(0.5f, 0f));
+            m_Nav.Strip(m_Root, "Voltar", -870f, Close, 0.2f, 430f, 560f);
 
-            m_Content = ItemUI.Rect("Conteudo", m_Root, new Vector2(0.5f, 1f), new Vector2(0f, -170f),
-                new Vector2(MenuKit.RowWidth, 700f));
-            ShowTab(m_Tab);
+            RectTransform panel = MenuKit.Glass(m_Root, "Painel", k_PanelPosition, k_PanelSize);
+            m_Header = MenuKit.Label("Aba", panel, new Vector2(0f, 1f), new Vector2(40f, -30f), new Vector2(600f, 44f), 34f,
+                TextAlignmentOptions.TopLeft, MenuKit.Accent, ItemFonts.VisorWide);
+            m_Header.rectTransform.pivot = new Vector2(0f, 1f);
+
+            m_Content = ItemUI.Rect("Conteudo", panel, new Vector2(0.5f, 1f), new Vector2(0f, -96f), Vector2.zero);
+            m_Content.anchorMin = new Vector2(0f, 1f);
+            m_Content.anchorMax = new Vector2(1f, 1f);
+            m_Content.pivot = new Vector2(0.5f, 1f);
+            m_Content.sizeDelta = new Vector2(-20f, 580f);
+            m_Content.anchoredPosition = new Vector2(0f, -96f);
+            m_ContentGroup = m_Content.gameObject.AddComponent<CanvasGroup>();
+
+            MenuKit.Footer(m_Root, new[]
+            {
+                ("ENTER", "ALTERAR"), ("W/S", "NAVEGAR"), ("A/D", "AJUSTAR"), ("Q/E", "ABAS"), ("ESC", "VOLTAR"),
+            }, "AS MUDANÇAS SÃO SALVAS NA HORA");
+
+            ShowTab(m_Tab, true);
         }
 
         public void Destroy()
@@ -63,7 +89,7 @@ namespace Icaro
             m_Root = null;
             m_Nav.Clear();
             m_Rows.Clear();
-            m_TabButtons.Clear();
+            m_TabStrips.Clear();
         }
 
         public void Tick()
@@ -72,30 +98,57 @@ namespace Icaro
                 return;
 
             Keyboard keyboard = Keyboard.current;
-            if (!IsWaitingKey && keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+            if (!IsWaitingKey && !m_Nav.Busy && keyboard != null && !m_Closing)
             {
-                m_Back?.Invoke();
-                return;
+                if (keyboard.escapeKey.wasPressedThisFrame)
+                {
+                    UiSounds.Play(UiSounds.Unclick, 0.7f);
+                    Close();
+                    return;
+                }
+
+                int step = keyboard.eKey.wasPressedThisFrame || keyboard.tabKey.wasPressedThisFrame &&
+                    !keyboard.shiftKey.isPressed ? 1 :
+                    keyboard.qKey.wasPressedThisFrame || keyboard.tabKey.wasPressedThisFrame ? -1 : 0;
+                if (step != 0)
+                {
+                    UiSounds.Play(UiSounds.Click, 0.6f);
+                    ShowTab((m_Tab + step + k_Tabs.Length) % k_Tabs.Length, true);
+                    return;
+                }
             }
 
+            for (int i = 0; i < m_TabStrips.Count; i++)
+                m_TabStrips[i].Selected = i == m_Tab;
             if (!IsWaitingKey)
                 m_Nav.Tick();
+            if (!m_Root)
+                return;
             m_Rows.Tick();
 
-            // Aba atual destacada
-            for (int i = 0; i < m_TabButtons.Count; i++)
-            {
-                if (i == m_Tab)
-                    m_TabButtons[i].Background.color = new Color(0.18f, 0.42f, 0.52f, 1f);
-            }
+            // Linhas da aba nova entram deslizando
+            m_TabAge += Time.unscaledDeltaTime;
+            float u = Mathf.Clamp01(m_TabAge / k_TabFade);
+            m_ContentGroup.alpha = Mathf.Ceil(u * 4f) / 4f;
+            m_Content.anchoredPosition = new Vector2(Mathf.Round((1f - u * (2f - u)) * 24f / 3f) * 3f, -96f);
         }
 
-        void ShowTab(int tab)
+        void Close()
+        {
+            if (m_Closing)
+                return;
+            m_Closing = true;
+            m_Back?.Invoke();
+        }
+
+        void ShowTab(int tab, bool focusFirst)
         {
             m_Tab = tab;
+            m_TabAge = 0f;
             m_Rows.Clear();
             for (int i = m_Content.childCount - 1; i >= 0; i--)
                 UnityEngine.Object.Destroy(m_Content.GetChild(i).gameObject);
+            m_Header.text = k_Tabs[tab].ToUpperInvariant();
 
             switch (tab)
             {
@@ -104,6 +157,20 @@ namespace Icaro
                 case 2: BuildAudio(); break;
                 default: BuildControls(); break;
             }
+
+            // O botão de restaurar fica no cabeçalho do painel, mas entra na lista depois das linhas (último com W/S)
+            RectTransform panel = (RectTransform)m_Content.parent;
+            Transform old = panel.Find("Botao_Restaurar padrão");
+            if (old)
+                UnityEngine.Object.Destroy(old.gameObject);
+            m_Rows.OutlineButton(panel, "Restaurar padrão", new Vector2(-40f, -30f), new Vector2(280f, 42f), () =>
+            {
+                GameSettings.ResetTab(m_Tab);
+                m_Rows.RefreshAll();
+            });
+
+            if (focusFirst)
+                m_Rows.FocusFirst();
         }
 
         static float Y(int row) => -row * k_RowStep;
@@ -145,8 +212,8 @@ namespace Icaro
                 v => GameSettings.Shadows = v);
             m_Rows.Slider(c, "Brilho", Y(7), -1f, 1f, 0.05f, () => GameSettings.Brightness,
                 v => GameSettings.Brightness = v, v => (v >= 0f ? "+" : "") + v.ToString("0.00"));
-            m_Rows.Slider(c, "Campo de visão", Y(8), 60f, 110f, 1f, () => GameSettings.FieldOfView,
-                v => GameSettings.FieldOfView = v, v => $"{v:0}°");
+            m_Rows.Slider(c, "Campo de visão", Y(8), GameSettings.MinFieldOfView, GameSettings.MaxFieldOfView, 1f,
+                () => GameSettings.FieldOfView, v => GameSettings.FieldOfView = v, v => $"{v:0}°");
             m_Rows.Slider(c, "Efeitos de tempo na tela", Y(9), 0f, 1f, 0.05f, () => GameSettings.ScreenEffects,
                 v => GameSettings.ScreenEffects = v, Percent);
         }
@@ -171,13 +238,7 @@ namespace Icaro
             foreach ((string label, string action) in GameSettings.RebindableActions)
                 m_Rows.KeyAction(c, label, Y(row++), action);
             m_Rows.KeyCustom(c, "Dash", Y(row++), () => GameSettings.DashKey, k => GameSettings.DashKey = k);
-            m_Rows.KeyCustom(c, "Abrir loja", Y(row++), () => GameSettings.ShopKey, k => GameSettings.ShopKey = k);
-
-            m_Rows.Button(c, "Restaurar teclas", new Vector2(0f, Y(row) - 10f), new Vector2(300f, 48f), () =>
-            {
-                GameSettings.ResetBindings();
-                m_Rows.RefreshAll();
-            }, new Vector2(0.5f, 1f));
+            m_Rows.KeyCustom(c, "Abrir loja", Y(row), () => GameSettings.ShopKey, k => GameSettings.ShopKey = k);
         }
 
         // ---------- listas ----------
