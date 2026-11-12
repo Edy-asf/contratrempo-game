@@ -72,7 +72,7 @@ namespace Icaro
             if (!Application.isPlaying)
                 return;
             float rate = Mathf.Max(0f, TimeManager.CurrentMultiplier - 1f) * Speed;
-            m_Clock += Time.deltaTime * rate;
+            m_Clock += KairosClock.DeltaTime * rate;
             Shader.SetGlobalFloat(s_Time, m_Clock);
             EnsureDepth();
         }

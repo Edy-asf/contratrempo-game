@@ -16,6 +16,66 @@ namespace Icaro.EditorTools
         const float k_EngineTip = 40f;          // do topo do colar à ponta do cristal, no kit
         const float k_CityRingInner = 359f, k_CityRingOuter = 381f;   // anel que gira sob a cidade (raio 370), com os colares
 
+        static Collider s_CityRock;
+
+        // A rocha da ilha esculpida no Blender (Ferramentas/Picos/rocha_cidade.py): o topo plano na altura da cidade com a
+        // mesma beira do SkyIsland, paredão de colunas e massas penduradas até dentro da nuvem; pingentes sem colisão. Sem
+        // o FBX, volta o cone do SkyIsland
+        static bool PlaceCityRock(Vector3 city)
+        {
+            s_CityRock = null;
+            string path = $"{IcaroAssetUtility.Root}/Models/Picos/Cidade_Rocha.fbx";
+            if (AssetImporter.GetAtPath(path) is ModelImporter importer && !importer.isReadable)
+            {
+                importer.isReadable = true;
+                importer.SaveAndReimport();
+            }
+
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (!model)
+            {
+                Debug.LogWarning($"[Ícaro] Picos: falta {path} (rode Ferramentas/Picos/rocha_cidade.py no Blender); a ilha da cidade usa o cone do gerador.");
+                return false;
+            }
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(model, s_World);
+            go.name = "Cidade_Rocha";
+            go.transform.SetPositionAndRotation(city, model.transform.rotation);
+            foreach (MeshRenderer renderer in go.GetComponentsInChildren<MeshRenderer>())
+            {
+                bool ice = renderer.name.EndsWith("_Gelo");
+                var materials = new Material[renderer.sharedMaterials.Length];
+                for (int i = 0; i < materials.Length; i++)
+                    materials[i] = ice ? s_Materials.Ice : s_Materials.Mountain;
+                renderer.sharedMaterials = materials;
+                if (!ice)
+                {
+                    var collider = renderer.gameObject.AddComponent<MeshCollider>();
+                    collider.sharedMesh = renderer.GetComponent<MeshFilter>().sharedMesh;
+                    s_CityRock = collider;
+                }
+            }
+
+            Physics.SyncTransforms();
+            return true;
+        }
+
+        // Raio do paredão da ilha num ângulo e altura: pela rocha do Blender (raio de fora para dentro), senão pelo contorno
+        // do SkyIsland
+        static float CityWall(Vector3 city, float angle, float y)
+        {
+            if (s_CityRock)
+            {
+                var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+                var origin = new Vector3(city.x, y, city.z) + outward * (k_CityRadius + 120f);
+                if (s_CityRock.Raycast(new Ray(origin, -outward), out RaycastHit hit, k_CityRadius + 120f))
+                    return k_CityRadius + 120f - hit.distance;
+                return 0f;
+            }
+
+            return IslandWall(city, k_CityRadius, 4101, 40, angle, y);
+        }
+
         static void BuildCityEngines(Vector3 city, Vector3 toBridge)
         {
             var root = new GameObject("Motores_Antigravidade").transform;
@@ -33,11 +93,11 @@ namespace Icaro.EditorTools
                 foreach (float offset in new[] { 0f, 5f, -5f, 10f, -10f, 15f, -15f })
                 {
                     float angle = bridge + (30f + 60f * k + offset) * Mathf.Deg2Rad;
-                    float wall = IslandWall(city, k_CityRadius, 4101, 40, angle, y);
+                    float wall = CityWall(city, angle, y);
                     float center = wall + k_EngineInset * k_EngineScale;
                     bool bulge = false;
                     for (float drop = 6f; drop <= k_EngineTip * k_EngineScale; drop += 6f)
-                        bulge |= IslandWall(city, k_CityRadius, 4101, 40, angle, y - drop) > wall + 3f;
+                        bulge |= CityWall(city, angle, y - drop) > wall + 3f;
                     if (bulge || (center > k_CityRingInner - 4f && center < k_CityRingOuter + 4f))
                         continue;
                     var outward = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));

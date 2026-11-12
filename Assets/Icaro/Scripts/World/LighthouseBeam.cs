@@ -8,6 +8,6 @@ namespace Icaro
         [Tooltip("Graus por segundo")]
         public float Speed = 24f;
 
-        void Update() => transform.Rotate(Vector3.up, Speed * Time.deltaTime, Space.World);
+        void Update() => transform.Rotate(Vector3.up, Speed * KairosClock.DeltaTime, Space.World);
     }
 }

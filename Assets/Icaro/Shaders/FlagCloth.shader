@@ -40,6 +40,9 @@ Shader "Icaro/FlagCloth"
         CBUFFER_END
 
         float _IcaroCloudTime;
+        // Relógio do mundo (KairosClock): parado fora de combate; sem ele (_IcaroWorldClockOn 0), o relógio normal
+        float _IcaroWorldTime;
+        float _IcaroWorldClockOn;
 
         struct Attributes
         {
@@ -55,7 +58,7 @@ Shader "Icaro/FlagCloth"
         {
             float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
             normalWS = TransformObjectToWorldNormal(input.normalOS);
-            float clock = _Time.y + _IcaroCloudTime * _TimeFollow;
+            float clock = lerp(_Time.y, _IcaroWorldTime, _IcaroWorldClockOn) + _IcaroCloudTime * _TimeFollow;
             float weight = input.color.g;
             float phase = input.color.r * 6.2832;
             float wave = sin(clock * _Speed + phase - weight * 3.0) + 0.5 * sin(clock * _Speed * 1.7 + phase * 2.0 - weight * 5.0);

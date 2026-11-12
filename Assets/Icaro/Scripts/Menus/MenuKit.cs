@@ -1028,7 +1028,10 @@ namespace Icaro
                 Sprite("Contorno", cap.transform, MenuArt.Outline, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                     Vector2.zero, new Vector2(keyWidth, 26f), Muted, true);
                 keyText.transform.SetParent(cap.transform, false);
+                // O Label nasce com o pivô na âncora (esquerda): sem centralizar o pivô, o texto começava no meio da
+                // caixa e invadia o texto da ação
                 keyText.rectTransform.anchorMin = keyText.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+                keyText.rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 keyText.rectTransform.anchoredPosition = new Vector2(0f, 1f);
                 keyText.rectTransform.sizeDelta = new Vector2(keyWidth, 26f);
                 x += keyWidth + 10f;

@@ -65,6 +65,7 @@ namespace Icaro.EditorTools
                 counts[baseKey] = n + 1;
                 var piece = go.AddComponent<GeneratedPiece>();
                 piece.Key = n == 0 ? baseKey : $"{baseKey}#{n}";
+                piece.Model = model;
                 piece.GeneratedPosition = p;
                 piece.GeneratedRotation = t.rotation;
                 piece.GeneratedScale = t.localScale;
@@ -131,6 +132,7 @@ namespace Icaro.EditorTools
                         go.transform.localScale = e.Scale;
                         var piece = go.AddComponent<GeneratedPiece>();
                         piece.Key = e.Key;
+                        piece.Model = e.Model;
                         piece.GeneratedPosition = e.Position;
                         piece.GeneratedRotation = e.Rotation;
                         piece.GeneratedScale = e.Scale;
@@ -266,9 +268,11 @@ namespace Icaro.EditorTools
             foreach (GeneratedPiece piece in addedPieces)
             {
                 string source = KitSource(piece.gameObject);
-                if (source == null)
+                // Blocos do traçado de Archen Kaedra: recriados pelo nome do modelo (PicosBuilder.BlockFromModel)
+                bool block = source == null && !string.IsNullOrEmpty(piece.Model) && piece.Model.StartsWith("Bloco_");
+                if (source == null && !block)
                 {
-                    Debug.LogWarning($"[Ícaro] Ajustes manuais: {piece.name} não é uma peça do kit (AR_/PR_ dos Picos); fica de fora.", piece);
+                    Debug.LogWarning($"[Ícaro] Ajustes manuais: {piece.name} não é uma peça do kit (AR_/PR_ dos Picos) nem um bloco; fica de fora.", piece);
                     continue;
                 }
                 addedKeys.Add(piece.Key);
@@ -277,8 +281,8 @@ namespace Icaro.EditorTools
                 entry.Added = true;
                 entry.Deleted = false;
                 entry.Hidden = !piece.gameObject.activeSelf;
-                entry.Model = System.IO.Path.GetFileNameWithoutExtension(source);
-                entry.Folder = System.IO.Path.GetDirectoryName(source).Replace('\\', '/');
+                entry.Model = block ? piece.Model : System.IO.Path.GetFileNameWithoutExtension(source);
+                entry.Folder = block ? PicosBuilder.BlockFolderTag : System.IO.Path.GetDirectoryName(source).Replace('\\', '/');
                 entry.ParentPath = t.parent && t.parent.IsChildOf(root) ? PathFrom(root, t.parent) : "";
                 entry.Position = t.position;
                 entry.Rotation = t.rotation;

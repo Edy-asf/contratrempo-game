@@ -26,7 +26,7 @@ namespace Icaro
 
         [Header("Rotação")]
         [Tooltip("Graus por segundo a 1,0x (negativo inverte o sentido)")]
-        [Range(-20f, 20f)] public float DegreesPerSecond = 2f;
+        [Range(-20f, 20f)] public float DegreesPerSecond = 6f;
 
         [Tooltip("1 = velocidade proporcional ao multiplicador de tempo; maior = acelera mais no fim")]
         [Range(0f, 3f)] public float SpeedExponent = 1f;

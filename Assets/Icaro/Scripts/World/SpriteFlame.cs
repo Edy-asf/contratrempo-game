@@ -13,10 +13,14 @@ namespace Icaro
         [Tooltip("Altura da chama (m)")]
         public float Height = 1.1f;
 
+        [Tooltip("Chama lilás (os braseiros da praça da basílica); desligado, a azul-esverdeada de sempre")]
+        public bool Lilac;
+
         const int k_Frames = 12, k_Width = 40, k_HeightPx = 40;
 
-        static Sprite[] s_Frames;
+        static readonly Sprite[][] s_Sets = new Sprite[2][];
         static Material s_Material;
+        Sprite[] s_Frames;
 
         SpriteRenderer m_Renderer;
         Transform m_Camera;
@@ -25,8 +29,10 @@ namespace Icaro
 
         void Awake()
         {
-            if (s_Frames == null || s_Frames[0] == null)
-                Build();
+            int set = Lilac ? 1 : 0;
+            if (s_Sets[set] == null || s_Sets[set][0] == null)
+                s_Sets[set] = Build(set == 1);
+            s_Frames = s_Sets[set];
             m_Renderer = GetComponent<SpriteRenderer>();
             if (!m_Renderer)
                 m_Renderer = gameObject.AddComponent<SpriteRenderer>();
@@ -42,7 +48,7 @@ namespace Icaro
 
         void LateUpdate()
         {
-            int frame = (int)(Time.time * FramesPerSecond + m_Phase) % k_Frames;
+            int frame = (int)(KairosClock.WorldTime * FramesPerSecond + m_Phase) % k_Frames;
             if (frame != m_Frame)
             {
                 m_Frame = frame;
@@ -66,16 +72,20 @@ namespace Icaro
         // Fogo que sobe: forma larga afinando para cima, que balança de um lado para o outro (mais no alto), recortada
         // por ruído que corre para cima (duas amostras misturadas para o último quadro emendar no primeiro) e pintada
         // em quatro tons, do miolo claro à borda escura; fagulhas soltas acima da chama
-        static void Build()
+        static Sprite[] Build(bool lilac)
         {
-            Shader shader = Shader.Find("Sprites/Default");
-            s_Material = shader ? new Material(shader) { name = "Chama_Sprite" } : null;
-            var core = new Color(0.85f, 1f, 0.95f);
-            var bright = new Color(0.3f, 1f, 0.8f);
-            var middle = new Color(0.05f, 0.8f, 0.68f);
-            var dark = new Color(0.02f, 0.45f, 0.48f, 0.9f);
+            if (!s_Material)
+            {
+                Shader shader = Shader.Find("Sprites/Default");
+                s_Material = shader ? new Material(shader) { name = "Chama_Sprite" } : null;
+            }
+
+            Color core = lilac ? new Color(1f, 0.93f, 1f) : new Color(0.85f, 1f, 0.95f);
+            Color bright = lilac ? new Color(0.86f, 0.62f, 1f) : new Color(0.3f, 1f, 0.8f);
+            Color middle = lilac ? new Color(0.62f, 0.32f, 0.95f) : new Color(0.05f, 0.8f, 0.68f);
+            Color dark = lilac ? new Color(0.34f, 0.12f, 0.62f, 0.9f) : new Color(0.02f, 0.45f, 0.48f, 0.9f);
             const float scale = 0.17f, climb = 3.4f;
-            s_Frames = new Sprite[k_Frames];
+            var frames = new Sprite[k_Frames];
             for (int f = 0; f < k_Frames; f++)
             {
                 var texture = new Texture2D(k_Width, k_HeightPx, TextureFormat.RGBA32, false)
@@ -118,9 +128,11 @@ namespace Icaro
 
                 texture.SetPixels(pixels);
                 texture.Apply(false, true);
-                s_Frames[f] = Sprite.Create(texture, new Rect(0, 0, k_Width, k_HeightPx), new Vector2(0.5f, 0f),
+                frames[f] = Sprite.Create(texture, new Rect(0, 0, k_Width, k_HeightPx), new Vector2(0.5f, 0f),
                     PixelsPerUnit);
             }
+
+            return frames;
         }
     }
 }

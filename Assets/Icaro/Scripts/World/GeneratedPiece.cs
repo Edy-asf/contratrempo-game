@@ -10,6 +10,7 @@ namespace Icaro
     public class GeneratedPiece : MonoBehaviour
     {
         public string Key;
+        public string Model;    // o modelo (FBX do kit ou "Bloco_<x>x<y>x<z>_<tom>"), para recriar as cópias feitas à mão
         public Vector3 GeneratedPosition;
         public Quaternion GeneratedRotation = Quaternion.identity;
         public Vector3 GeneratedScale = Vector3.one;

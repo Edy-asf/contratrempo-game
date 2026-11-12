@@ -1197,7 +1197,7 @@ namespace Icaro.EditorTools
             return count > 0 ? sum / count : Color.gray;
         }
 
-        static Material LoadOrCreate(string name)
+        internal static Material LoadOrCreate(string name)
         {
             string path = $"{MaterialsFolder}/{name}.mat";
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);

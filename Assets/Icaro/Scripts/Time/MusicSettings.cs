@@ -51,6 +51,12 @@ namespace Icaro
         [Tooltip("Volume das camadas rítmicas fora de combate (sala ativa = 1)")]
         [Range(0f, 1f)] public float OutOfCombatLayers = 0.5f;
 
+        [Tooltip("Volume da música com o mundo congelado fora de combate (0 = silêncio; 1 = normal)")]
+        [Range(0f, 1f)] public float FrozenVolume;
+
+        [Tooltip("Tom da música no fim da parada (a fita desacelera até ele enquanto some, e volta a rodar ao começar a luta)")]
+        [Range(0.1f, 1f)] public float FrozenPitch = 0.35f;
+
         [Tooltip("Segundos de transição ao trocar de faixa (bioma)")]
         [Min(0f)] public float CrossfadeTime = 3f;
 

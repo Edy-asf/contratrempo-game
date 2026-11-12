@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace Icaro
 {
-    // Respiro entre o último abate de uma sala e a escolha de cartas (RoomManager.RunRoom): o tempo cai para câmera
-    // lenta por um instante (SlowScale por SlowTime segundos) e volta numa rampa, a faixa do visor anuncia a arena
-    // limpa e todos os cristais de Cronita soltos voam até o jogador; a escolha abre quando eles chegam (ou depois de
-    // CollectTimeout). A física acompanha a câmera lenta (fixedDeltaTime na mesma proporção, devolvido no fim). Com o
+    // Respiro no último abate de uma sala (RoomManager.RunRoom): o tempo cai para câmera lenta por um instante
+    // (SlowScale por SlowTime segundos) e volta numa rampa, a faixa do visor anuncia a arena limpa e todos os
+    // cristais de Cronita soltos voam até o jogador (Play). Depois que o domo se desfaz e o multiplicador desce, Collect
+    // espera os cristais chegarem (ou CollectTimeout). A física acompanha a câmera lenta (fixedDeltaTime na mesma proporção, devolvido no fim). Com o
     // menu de pausa aberto, ele manda no tempo e o respiro só espera. Jogador morto: termina na hora.
     public static class RoomClearSequence
     {
@@ -14,7 +14,6 @@ namespace Icaro
         const float k_SlowTime = 1.6f;
         const float k_RampTime = 0.9f;
         const float k_CollectTimeout = 1.8f;
-        const float k_MinBreath = 0.6f;
 
         static float s_BaseFixedDelta = -1f;
 
@@ -50,8 +49,11 @@ namespace Icaro
             if (!MenuOpen())
                 SetScale(1f);
             Time.fixedDeltaTime = s_BaseFixedDelta;
+        }
 
-            // Cristais chegando (os que caíram depois do primeiro chamado também)
+        // Cristais chegando (os que caíram depois do primeiro chamado também)
+        public static IEnumerator Collect()
+        {
             float wait = 0f;
             while (wait < k_CollectTimeout && !PlayerDead())
             {
@@ -59,7 +61,7 @@ namespace Icaro
                 {
                     wait += Time.unscaledDeltaTime;
                     CronitaPickup.AttractAll();
-                    if (CronitaPickup.ActiveCount == 0 && wait >= k_MinBreath)
+                    if (CronitaPickup.ActiveCount == 0)
                         break;
                 }
 

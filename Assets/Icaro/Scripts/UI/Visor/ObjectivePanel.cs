@@ -148,6 +148,14 @@ namespace Icaro
                 return;
             }
 
+            // Entrada da sala (mundo acordando, domo e faixa): a cota ainda não existe, então "faltam 0" não é cumprido
+            if (!room.QuotaStarted)
+            {
+                kind = room.IsBoss && !string.IsNullOrEmpty(room.BossName) ? 1 : 3;
+                context = room;
+                return;
+            }
+
             int remaining = room.RemainingEnemies;
             if (room.IsBoss && !string.IsNullOrEmpty(room.BossName))
             {

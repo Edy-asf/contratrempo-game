@@ -66,7 +66,8 @@ namespace Icaro
             }
             float speed = settings.DegreesPerSecond *
                           Mathf.Pow(Mathf.Max(1f, TimeManager.CurrentMultiplier), settings.SpeedExponent);
-            m_Angle = Mathf.Repeat(m_Angle + speed * Time.deltaTime, 360f);
+            // Fora de combate o céu para (KairosClock), com o rastro congelado como numa foto
+            m_Angle = Mathf.Repeat(m_Angle + speed * KairosClock.DeltaTime, 360f);
             Shader.SetGlobalFloat(k_Angle, m_Angle * Mathf.Deg2Rad);
             // O rastro fica atrás do sentido do giro: com o giro invertido, o shader recebe o rastro negativo
             float trail = Mathf.Min(Mathf.Abs(speed) * settings.TrailSeconds, settings.MaxTrailDegrees) * Mathf.Deg2Rad;

@@ -105,6 +105,8 @@ Shader "Icaro/NightSky"
             float _IcaroStarAngle;
             float _IcaroStarTrail;
             float4 _IcaroStarAxis;   // polo celeste (xyz); sem valor, o polo antigo quase no zênite
+            float _IcaroWorldTime;   // relógio do mundo (KairosClock), parado fora de combate
+            float _IcaroWorldClockOn;
             float _IcaroPoleFade;    // raio (radianos) em volta dos polos em que o rastro encurta até sumir
             float4 _IcaroStarLook;   // ajustes do céu: densidade, brilho e espessura (multiplicam); w = 1 se definido
             float4 _IcaroAurora0;    // aurora: intensidade, cortinas, distância entre elas, ondulação
@@ -435,7 +437,7 @@ Shader "Icaro/NightSky"
                 float pieceShiftZ = tuned ? _IcaroAurora4.y : 0.0;
                 float pieceSpread = tuned ? _IcaroAurora4.z : 7.0;
                 float pieceDrift = tuned ? _IcaroAurora4.w : 0.8;
-                a.time = _Time.y * a.speed * _AuroraSpeed;
+                a.time = lerp(_Time.y, _IcaroWorldTime, _IcaroWorldClockOn) * a.speed * _AuroraSpeed;
 
                 half3 sum = 0;
                 [unroll]

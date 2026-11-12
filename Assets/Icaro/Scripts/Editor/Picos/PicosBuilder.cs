@@ -285,13 +285,16 @@ namespace Icaro.EditorTools
             GridSceneKit.CreateObject(k_Prefix + "_Liga", "Liga", s_Alloy, s_Materials.Alloy, s_World, false);
             CreateRuin("Ruinas", s_Ruins, true);
             // Ajustes manuais do usuário nas peças do kit (antes das salas, para o NavMesh já ver as peças no lugar)
-            ManualAdjustmentsTool.Apply(s_World, (model, folder, parent) =>
-                PicosGothicKit.Place(s_Materials, model, Vector3.zero, 0f, parent, true, folder));
+            ManualAdjustmentsTool.Apply(s_World, (model, folder, parent) => folder == BlockFolderTag
+                ? BlockFromModel(model, parent)
+                : PicosGothicKit.Place(s_Materials, model, Vector3.zero, 0f, parent, true, folder));
+            EndCityBlocks();
             BuildArenaRoom();
             BuildSaddleRoom();
             BuildBastionRoom();
             BuildIsleRoom();
             BuildGuardVillageRoom();
+            BuildArchenKaedraRooms();
 
             Snowfall(new Vector3(-6f, 30f, -50f));
             Snowfall(k_NextPeak + Vector3.up * 30f);
@@ -299,6 +302,7 @@ namespace Icaro.EditorTools
             Snowfall(k_Bastion + Vector3.up * 30f);
             Snowfall(k_Isle + Vector3.up * 30f);
             BuildSprites();
+            BuildFarDetail();
             var hazard = s_World.gameObject.AddComponent<SeaHazard>();
             hazard.SeaLevel = k_CloudY - 25f;   // dentro da nuvem, já fora da vista
             s_World.gameObject.AddComponent<CameraFarClip>().Distance = 3800f;   // o mar de nuvens cobre o caminho todo
@@ -3111,9 +3115,12 @@ namespace Icaro.EditorTools
 
         // Um maciço sorteado no ponto, girado e escalado, um pouco mais alto ou mais baixo, com o material das montanhas;
         // entra na lista dos fiapos de névoa
-        static void PlaceMassif(GameObject[] models, Vector3 at, float scale, Transform parent)
+        static void PlaceMassif(GameObject[] models, Vector3 at, float scale, Transform parent) =>
+            PlaceMassif(models[s_Random.Next(models.Length)], at, scale, parent);
+
+        static void PlaceMassif(GameObject model, Vector3 at, float scale, Transform parent)
         {
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(models[s_Random.Next(models.Length)], parent);
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
             go.transform.SetPositionAndRotation(new Vector3(at.x, R(-30f, 30f), at.z), Quaternion.Euler(0f, R(0f, 360f), 0f));
             go.transform.localScale = Vector3.one * scale;
             foreach (MeshRenderer renderer in go.GetComponentsInChildren<MeshRenderer>())

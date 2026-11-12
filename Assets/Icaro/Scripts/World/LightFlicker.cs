@@ -22,8 +22,11 @@ namespace Icaro
 
         void Update()
         {
-            float t = Time.time;
-            if (t >= m_OffUntil && Random.value < FailuresPerSecond * Time.deltaTime)
+            // Fora de combate a luz fica parada no estado em que estava (KairosClock)
+            if (KairosClock.Scale <= 0f)
+                return;
+            float t = KairosClock.WorldTime;
+            if (t >= m_OffUntil && Random.value < FailuresPerSecond * KairosClock.DeltaTime)
                 m_OffUntil = t + Random.Range(0.05f, 0.25f);
             float hum = 0.85f + 0.15f * Mathf.PerlinNoise(t * 6f, 0.3f);
             m_Light.intensity = t < m_OffUntil ? m_Base * 0.1f : m_Base * hum;

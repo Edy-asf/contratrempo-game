@@ -69,6 +69,16 @@ namespace Icaro
             OnChanged?.Invoke();
         }
 
+        // Devolve a carteira guardada ao trocar de cena (RunCarry)
+        public void Restore(int cronitas, int rerollTokens, int damageUpgrades, int fireRateUpgrades)
+        {
+            Cronitas = Mathf.Max(0, cronitas);
+            RerollTokens = Mathf.Max(0, rerollTokens);
+            DamageUpgrades = Mathf.Max(0, damageUpgrades);
+            FireRateUpgrades = Mathf.Max(0, fireRateUpgrades);
+            OnChanged?.Invoke();
+        }
+
         public void AddFireRateUpgrade()
         {
             FireRateUpgrades++;

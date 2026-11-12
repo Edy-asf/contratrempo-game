@@ -24,7 +24,7 @@ namespace Icaro
 
         void Update()
         {
-            m_Offset += Speed * (Time.deltaTime * Mathf.Max(1f, TimeManager.CurrentMultiplier));
+            m_Offset += Speed * (KairosClock.DeltaTime * Mathf.Max(1f, TimeManager.CurrentMultiplier));
             m_Offset.x = Mathf.Repeat(m_Offset.x, 1f);
             m_Offset.y = Mathf.Repeat(m_Offset.y, 1f);
             m_Renderer.GetPropertyBlock(m_Block);

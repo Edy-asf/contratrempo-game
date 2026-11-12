@@ -6,6 +6,12 @@ namespace Icaro
     // chefe tem a própria subclasse com os números dos ataques. Fases: abaixo de PhaseTwoAt da vida entra na fase 2 e,
     // se PhaseThreeAt > 0, abaixo dela entra na fase 3; a cada fase o intervalo entre ataques encolhe por
     // PhaseGapFactor e os padrões ficam mais densos.
+    public enum BossTimeRewind
+    {
+        DamageSlices,
+        KillsOnly,
+    }
+
     public abstract class BossDefinition : EnemyDefinition
     {
         [Header("Chefe")]
@@ -29,5 +35,16 @@ namespace Icaro
 
         [Tooltip("Efeitos compartilhados dos ataques")]
         public BossKit Kit;
+
+        [Header("Multiplicador de tempo")]
+        [Tooltip("Como o chefe baixa o multiplicador: por fatias de vida tirada (DamageSlices) ou só pelos abates " +
+                 "dos inimigos que vêm com ele (KillsOnly, para chefes que invocam)")]
+        public BossTimeRewind TimeRewind = BossTimeRewind.DamageSlices;
+
+        [Tooltip("Fração da vida de cada fatia (0,1 = a cada 10% da vida tirada)")]
+        [Range(0.02f, 0.5f)] public float TimeSlice = 0.1f;
+
+        [Tooltip("Quanto cada fatia tira do multiplicador")]
+        [Min(0f)] public float TimeSliceReduction = 0.15f;
     }
 }

@@ -127,6 +127,8 @@ namespace Icaro
             return clip;
         }
 
+        float m_Freeze = 1f;
+
         void Update()
         {
             if (m_Current.Sources == null && m_Current.Rendering.IsCompleted)
@@ -138,7 +140,10 @@ namespace Icaro
             float k = KairosBeat.Intensity;
             m_Combat = Mathf.MoveTowards(m_Combat, RoomManager.Active ? 1f : Settings.OutOfCombatLayers,
                 Time.unscaledDeltaTime * 0.5f);
-            float pitch = Mathf.Lerp(1f, Settings.PitchAtMax, k);
+            // Mundo congelado (KairosClock): a fita desacelera e some; ao começar a luta, volta a rodar
+            float freeze = KairosClock.Scale;
+            float pitch = Mathf.Lerp(1f, Settings.PitchAtMax, k) * Mathf.Lerp(Settings.FrozenPitch, 1f, freeze);
+            m_Freeze = Mathf.Lerp(Settings.FrozenVolume, 1f, freeze);
 
             Apply(m_Current, multiplier, k, pitch);
             Apply(m_Next, multiplier, k, pitch);
@@ -192,8 +197,10 @@ namespace Icaro
                 if (!source)
                     continue;
                 float target = Settings.Volume * GameSettings.MusicVolume * set.Fade *
-                               LayerGain(k_Layers[i], multiplier, k);
-                source.volume = Mathf.MoveTowards(source.volume, target, Time.unscaledDeltaTime * 0.6f);
+                               LayerGain(k_Layers[i], multiplier, k) * m_Freeze;
+                // Parando, o volume acompanha a fita; no resto, muda devagar
+                float rate = m_Freeze < 0.999f && target < source.volume ? 3f : 0.6f;
+                source.volume = Mathf.MoveTowards(source.volume, target, Time.unscaledDeltaTime * rate);
                 source.pitch = pitch;
             }
         }

@@ -175,7 +175,12 @@ namespace Icaro
             GameSettings.Apply();
             bool debugStart = PlayerPrefs.HasKey(ViaDebugTeleport.StartBiomeKey) ||
                               PlayerPrefs.HasKey(ViaDebugTeleport.StartRoomKey);
-            if (SkipTitleOnce)
+            if (RunCarry.Arriving)
+            {
+                // Chegando por um portal de outra cena: a run continua, sem título nem abertura
+                SkipTitleOnce = false;
+            }
+            else if (SkipTitleOnce)
             {
                 // Recomeçar a run: só o visor religando
                 SkipTitleOnce = false;
@@ -877,6 +882,13 @@ namespace Icaro
             AudioListener.pause = false;
             MenuBackdropFx.Target = 0f;
             Scene scene = SceneManager.GetActiveScene();
+            // A run trocou de cena por um portal: recomeçar (ou o menu) volta para a cena onde ela começou
+            string home = RunCarry.TakeHomeScene(scene.path);
+            if (home != scene.path)
+            {
+                RunCarry.LoadScene(home);
+                return;
+            }
 #if UNITY_EDITOR
             // No Editor a cena pode não estar nas Build Settings
             if (scene.buildIndex < 0)

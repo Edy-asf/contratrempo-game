@@ -27,15 +27,17 @@ namespace Icaro.EditorTools
             if (name.StartsWith("MAT_Madeira_Queimada"))
                 return set.CharWood ?? set.Wood;
             if (name.StartsWith("MAT_Pedra_Queimada"))
-                return set.BurntStone ?? set.Dark;
+                return kit && set.BurntWalls != null ? set.BurntWalls[WallKind(model, worn)] : set.BurntStone ?? set.Dark;
             if (name.StartsWith("MAT_Chao_Queimado"))
                 return set.Scorch ?? set.Dark;
             if (name.StartsWith("MAT_Vidro_Fundido"))
                 return set.FusedGlass ?? set.Glass;
             if (name.StartsWith("MAT_Cristal_Apagado"))
                 return set.DeadCrystal ?? set.Dark;
+            // Carbonizado: nas construções (bancas, tendas, estruturas) vira a liga lavrada com fuligem; só os corpos, as
+            // manchas de fuligem e as cinzas do acampamento continuam quase pretos
             if (name.StartsWith("MAT_Carbonizado"))
-                return set.Carbon ?? set.Dark;
+                return set.CharMetal != null && model != null && !HasAny(model, k_CarbonKept) ? set.CharMetal : set.Carbon ?? set.Dark;
             if (name.StartsWith("MAT_Liga_Clara"))
                 return set.Steel;
             if (name.StartsWith("MAT_Liga_Lavrada"))
@@ -93,8 +95,9 @@ namespace Icaro.EditorTools
         // da Vila-Ponte (moinho, torres do portão, casas debruçadas, arcos) usa o comum; as outras casas alternam entre o
         // comum e o alternado pelo nome do modelo (cada modelo sai sempre igual)
         static readonly string[] k_Monumental =
-            { "Catedral", "Capela", "Campanario", "Torre", "Salao", "Sineira", "Espiral", "Estacao", "Portal", "Monumento" };
-        static readonly string[] k_BridgeVillage = { "Moinho", "Torre_Portao", "Debrucada", "Arco_Rua", "Grua" };
+            { "Catedral", "Capela", "Campanario", "Torre", "Salao", "Sineira", "Espiral", "Estacao", "Portal", "Monumento", "Basilica", "Colunata", "Podio", "Muralha", "Viaduto" };
+        static readonly string[] k_CarbonKept = { "Corpos", "Mancha", "Acampamento", "Braseiro" };
+        static readonly string[] k_BridgeVillage ={ "Moinho", "Torre_Portao", "Debrucada", "Arco_Rua", "Grua" };
 
         static bool HasAny(string model, string[] keys)
         {

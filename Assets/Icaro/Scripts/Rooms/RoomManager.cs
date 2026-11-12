@@ -60,7 +60,7 @@ namespace Icaro
 
         public Transform BossPoint;
 
-        [Tooltip("Onde surgem a loja e o Metrônomo depois do chefe (vazio = o meio da sala)")]
+        [Tooltip("Onde surge a loja depois do chefe (vazio = o meio da sala)")]
         public Transform RewardPoint;
 
         [Tooltip("Pontos de spawn da arena (longe da entrada e fora da visão inicial)")]
@@ -73,6 +73,9 @@ namespace Icaro
 
         // Inimigos da sala ao todo (cota + chefe) e quantos ainda faltam surgir ou estão vivos
         public int TotalEnemies { get; private set; }
+
+        // A cota da sala já foi montada (na entrada, antes dela, ainda não há inimigos a contar)
+        public bool QuotaStarted { get; private set; }
         public int RemainingEnemies => m_ToSpawn + m_Pending + CountAlive() + (m_BossPending ? 1 : 0);
 
         // Cota (sem o chefe) e limite de vivos desta sala
@@ -107,11 +110,6 @@ namespace Icaro
         int m_ToSpawn;
         int m_Pending;
 
-        // Inimigos marcados (soltam o orbe do tempo): espalhados pela cota, a cada m_MarkSpacing surgidos
-        int m_Spawned;
-        int m_MarksLeft;
-        float m_MarkSpacing;
-        float m_NextMarkAt;
         bool m_BossPending;
         Transform m_Player;
         ArenaDome m_Dome;
@@ -161,30 +159,86 @@ namespace Icaro
             StartCoroutine(RunRoom());
         }
 
+        // Segundos de cada etapa da entrada e da saída da sala (tempo sem escala)
+        const float k_WakeTime = 0.75f;
+        const float k_DomeTime = 1f;
+        const float k_BannerTimeout = 6f;
+        const float k_DrainTime = 1.5f;
+
+        // Ordem (pedido do usuário): o mundo acorda em 1,0x (sem o multiplicador crescer), o domo sobe, a faixa da
+        // sala aparece e some, e só então os inimigos começam a surgir e o multiplicador a crescer. No último abate:
+        // câmera lenta com "Arena limpa", o domo se desfaz, o multiplicador desce contando até 1,0x (com as Cronitas
+        // voando até o jogador), o mundo congela e vêm as cartas; depois delas, "Siga em frente".
         IEnumerator RunRoom()
         {
             State = RoomState.Active;
             Active = this;
+            TimeManager time = TimeManager.Instance;
+
+            if (time && !time.WorldAwake)
+            {
+                time.WakeWorld();
+                yield return Unscaled(k_WakeTime);
+            }
+
             if (m_Dome)
                 m_Dome.Lock(m_Player);
             OnRoomActivated?.Invoke(this);
-            VisorBanner.Show(RoomName, "Arena selada", BannerTone.Warning);
+            yield return Unscaled(k_DomeTime);
+
+            EnemyDefinition bossDefinition = BossDefinitionForRoom;
+            if (bossDefinition && bossDefinition.Prefab)
+            {
+                BossName = string.IsNullOrEmpty(bossDefinition.DisplayName)
+                    ? bossDefinition.name.Replace("Inimigo_", "").Replace("Chefe_", "")
+                    : bossDefinition.DisplayName;
+                VisorBanner.Show(BossName, RoomName, BannerTone.Danger);
+            }
+            else
+            {
+                VisorBanner.Show(RoomName, "Arena selada", BannerTone.Warning);
+            }
+
+            for (float t = 0f; t < k_BannerTimeout && VisorBanner.Busy; t += Time.unscaledDeltaTime)
+                yield return null;
 
             yield return RunQuota();
 
-            // Respiro (câmera lenta, faixa e Cronitas voando até o jogador) e a escolha de 2 itens entre 4 (no chefe,
-            // Raro com o dobro da chance); o domo se desfaz depois
+            // Último abate: o multiplicador para de crescer e fica no valor durante a câmera lenta
+            if (time)
+                time.EndCombat();
             yield return RoomClearSequence.Play(this);
+
+            if (m_Dome)
+                m_Dome.Shatter();
+            CronitaPickup.AttractAll();
+            if (time)
+                yield return time.DrainToOne(k_DrainTime);
+            yield return RoomClearSequence.Collect();
+
+            if (time)
+            {
+                time.FreezeWorld();
+                var freeze = time.GetComponent<WorldFreeze>();
+                yield return Unscaled(freeze ? freeze.FreezeTime : 1.4f);
+            }
+
+            // Escolha de 2 itens entre 4 (no chefe, Raro com o dobro da chance)
             yield return ItemDraft.Offer(IsBoss);
 
             State = RoomState.Cleared;
             if (Active == this)
                 Active = null;
-            if (m_Dome)
-                m_Dome.Shatter();
             OnRoomCleared?.Invoke(this);
             OnAnyRoomCleared?.Invoke(this);
-            VisorBanner.Show("Domo desfeito", "Siga em frente", BannerTone.Success);
+            VisorBanner.Show("Siga em frente", "", BannerTone.Success);
+        }
+
+        // Espera em tempo sem escala (não para no menu de pausa: a pausa já para o resto)
+        static IEnumerator Unscaled(float seconds)
+        {
+            for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+                yield return null;
         }
 
         // ---------- cota contínua ----------
@@ -196,32 +250,22 @@ namespace Icaro
             Quota = Balance.QuotaFor(ArenaNumber, bossRoom);
             AliveLimit = Balance.AliveLimitFor(ArenaNumber, bossRoom);
             m_ToSpawn = Quota;
+            QuotaStarted = true;
             m_Pending = 0;
             m_Alive.Clear();
             m_PendingByType.Clear();
             TotalEnemies = Quota + (bossRoom ? 1 : 0);
 
-            // Marcados: um a cada MarkEvery da cota (no mínimo MarkMin), no meio de cada trecho; a sala do chefe não
-            // tem (o chefe solta os orbes dele)
-            TimeOrbSettings orbs = Balance.TimeOrbs;
-            m_Spawned = 0;
-            m_MarksLeft = bossRoom || orbs == null || Quota <= 0
-                ? 0
-                : Mathf.Min(Quota, Mathf.Max(orbs.MarkMin, Mathf.RoundToInt(Quota / (float)orbs.MarkEvery)));
-            m_MarkSpacing = m_MarksLeft > 0 ? Quota / (float)m_MarksLeft : 0f;
-            m_NextMarkAt = m_MarkSpacing * 0.5f;
+            // Os inimigos começam a surgir e o multiplicador a crescer juntos (a entrada da sala já deu o respiro
+            // que o FirstSpawnDelay dava)
+            if (TimeManager.Instance)
+                TimeManager.Instance.BeginCombat();
 
             if (bossRoom)
             {
                 m_BossPending = true;
-                BossName = string.IsNullOrEmpty(bossDefinition.DisplayName)
-                    ? bossDefinition.name.Replace("Inimigo_", "").Replace("Chefe_", "")
-                    : bossDefinition.DisplayName;
-                VisorBanner.Show(BossName, RoomName, BannerTone.Danger);
                 StartCoroutine(SpawnBoss());
             }
-
-            yield return new WaitForSeconds(Balance.FirstSpawnDelay);
 
             while (m_ToSpawn > 0)
             {
@@ -341,18 +385,17 @@ namespace Icaro
             GameObject boss = Spawn(BossDefinitionForRoom, position, true);
             m_BossPending = false;
             Boss = boss.GetComponent<Health>();
+
+            // Chefe que baixa o tempo por fatias de vida tirada (os que invocam baixam só pelos abates dos reforços)
+            if (Boss && BossDefinitionForRoom is BossDefinition bossDefinition &&
+                bossDefinition.TimeRewind == BossTimeRewind.DamageSlices)
+                BossTimeSlices.Attach(Boss, bossDefinition.TimeSlice, bossDefinition.TimeSliceReduction);
             if (Boss)
                 Boss.OnDie += () =>
                 {
                     // Chefe derrotado: fragmentos garantidos, espalhados em volta dele
                     Vector3 center = Boss ? Boss.transform.position + Vector3.up : position;
                     ShopDirector.DropFor(BossDefinitionForRoom, center, ArenaNumber, false, true);
-                    TimeOrbSettings orbs = Balance.TimeOrbs;
-                    for (int i = 0; orbs != null && i < orbs.BossOrbs; i++)
-                    {
-                        float angle = i * Mathf.PI * 2f / Mathf.Max(1, orbs.BossOrbs);
-                        TimeOrb.Spawn(orbs, center + new Vector3(Mathf.Cos(angle), 0.5f, Mathf.Sin(angle)) * 3f);
-                    }
                     Boss = null;
                 };
         }
@@ -473,18 +516,6 @@ namespace Icaro
             if (!boss && !definition.Pooled && Random.value < Balance.EliteChance(ArenaNumber))
                 EliteAffix.Apply(enemy, (EliteModifier)Random.Range(1, 4), Balance);
 
-            // Marcado (solta o orbe do tempo ao morrer); os voadores do pool passam a vez para o próximo
-            if (!boss)
-            {
-                m_Spawned++;
-                if (m_MarksLeft > 0 && !definition.Pooled && m_Spawned >= m_NextMarkAt)
-                {
-                    TimeMark.Apply(enemy, Balance.TimeOrbs);
-                    m_MarksLeft--;
-                    m_NextMarkAt += m_MarkSpacing;
-                }
-            }
-
             // Sai da lista ao morrer (e desinscreve, porque instâncias do pool voltam a nascer)
             var health = enemy.GetComponent<Health>();
             if (health && !boss)
@@ -494,6 +525,10 @@ namespace Icaro
                 {
                     m_Alive.Remove(enemy);
                     health.OnDie -= onDie;
+
+                    // Abate: tira do multiplicador a vida da ficha (com o fator de elite, sem a escala por sala)
+                    float baseHealth = health.MaxHealth / Mathf.Max(0.01f, stats.HealthMultiplier);
+                    TimeManager.RewardKill(definition, baseHealth, enemy.transform.position + Vector3.up);
                     ShopDirector.DropFor(definition, enemy.transform.position + Vector3.up, ArenaNumber,
                         stats.Elite != EliteModifier.None, false);
                 };

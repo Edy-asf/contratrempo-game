@@ -3,9 +3,9 @@ using UnityEngine.AI;
 
 namespace Icaro
 {
-    // Recompensas depois de cada chefe e Cronitas da run. Lojas e Metrônomos só aparecem depois de um chefe: os
-    // Metrônomos que a Via tem no meio de cada bioma ficam escondidos (um deles vira o modelo), e quando um chefe é
-    // derrotado surgem na arena dele uma loja e um Metrônomo (de uso único). Também solta as Cronitas dos inimigos
+    // Recompensas depois de cada chefe e Cronitas da run. A loja só aparece depois de um chefe, no meio da arena dele.
+    // O Metrônomo saiu do jogo (o tempo volta a 1,0x ao limpar cada sala): os que a Via ainda tem nas cenas ficam
+    // escondidos. Também solta as Cronitas dos inimigos
     // (RoomManager). Tudo em jogo, sem precisar regenerar a Via. Valores e prefabs no ShopSettings (CombatBalance.Shop). O PlayerStats cria este componente.
     public class ShopDirector : MonoBehaviour
     {
@@ -13,7 +13,6 @@ namespace Icaro
         static ShopSettings s_Fallback;
 
         ShopSettings m_Settings;
-        Metronome m_MetronomeTemplate;
 
         // Ficha da loja (padrão, se a cena não tiver uma ligada)
         public static ShopSettings Settings
@@ -44,14 +43,11 @@ namespace Icaro
             if (!FindAnyObjectByType<CronitaHUD>())
                 gameObject.AddComponent<CronitaHUD>();
 
-            // Os Metrônomos da Via só aparecem depois dos chefes: esconde todos e guarda um como modelo
+            // Os Metrônomos que as cenas da Via ainda têm saíram do jogo: ficam escondidos
             foreach (Metronome metronome in Metronome.All.ToArray())
             {
-                if (!metronome)
-                    continue;
-                if (!m_MetronomeTemplate)
-                    m_MetronomeTemplate = metronome;
-                metronome.gameObject.SetActive(false);
+                if (metronome)
+                    metronome.gameObject.SetActive(false);
             }
 
             RoomManager.OnAnyRoomCleared += OnRoomCleared;
@@ -64,27 +60,13 @@ namespace Icaro
                 s_Instance = null;
         }
 
-        // Depois do chefe: uma loja e um Metrônomo lado a lado no meio da arena (ou no RewardPoint da sala)
+        // Depois do chefe: uma loja no meio da arena (ou no RewardPoint da sala)
         void OnRoomCleared(RoomManager room)
         {
             if (!room || !room.IsBoss)
                 return;
             Vector3 center = room.RewardPoint ? room.RewardPoint.position : room.transform.position;
-            Vector3 side = Vector3.right * Settings.OffsetFromMetronome;
-            // O Metrônomo é de uso único: nasce do lado mais longe do jogador, para não ser gasto sem querer
-            if (BossTarget.Exists && BossTarget.FlatDistance(center + side) > BossTarget.FlatDistance(center - side))
-                side = -side;
-            SpawnTerminal(center + side, "Loja do Chefe");
-            SpawnMetronome(center - side);
-        }
-
-        void SpawnMetronome(Vector3 position)
-        {
-            if (!m_MetronomeTemplate)
-                return;
-            Metronome metronome = Instantiate(m_MetronomeTemplate, GroundPoint(position),
-                m_MetronomeTemplate.transform.rotation);
-            metronome.gameObject.SetActive(true);
+            SpawnTerminal(center, "Loja do Chefe");
         }
 
         static Vector3 GroundPoint(Vector3 position)

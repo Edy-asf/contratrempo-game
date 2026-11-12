@@ -36,6 +36,31 @@ namespace Icaro
 
         PlayerWallet m_Wallet;
 
+        // Números da run guardados ao trocar de cena (RunCarry)
+        public class Totals
+        {
+            public float PlayTime, MaxMultiplier, DamageDealt, DamageTaken;
+            public int RoomsCleared, BossesDefeated, Kills, CronitasEarned;
+        }
+
+        public Totals Save() => new Totals
+        {
+            PlayTime = PlayTime, MaxMultiplier = MaxMultiplier, DamageDealt = DamageDealt, DamageTaken = DamageTaken,
+            RoomsCleared = RoomsCleared, BossesDefeated = BossesDefeated, Kills = Kills, CronitasEarned = CronitasEarned,
+        };
+
+        public void Load(Totals totals)
+        {
+            PlayTime = totals.PlayTime;
+            MaxMultiplier = Mathf.Max(MaxMultiplier, totals.MaxMultiplier);
+            DamageDealt = totals.DamageDealt;
+            DamageTaken = totals.DamageTaken;
+            RoomsCleared = totals.RoomsCleared;
+            BossesDefeated = totals.BossesDefeated;
+            Kills = totals.Kills;
+            CronitasEarned = totals.CronitasEarned;
+        }
+
         void Awake() => Instance = this;
 
         void OnEnable()

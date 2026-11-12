@@ -16,6 +16,9 @@ namespace Icaro
 
         public float BobSpeed = 0.2f;
 
+        [Tooltip("Continua girando com o mundo congelado fora de combate (o portal aberto depois do chefe)")]
+        public bool IgnoreFreeze;
+
         Vector3 m_Base;
         float m_Phase;
 
@@ -27,8 +30,9 @@ namespace Icaro
 
         void Update()
         {
-            m_Phase += Time.deltaTime * BobSpeed;
-            transform.Rotate(Axis, DegreesPerSecond * Time.deltaTime, Space.World);
+            float dt = IgnoreFreeze ? Time.deltaTime : KairosClock.DeltaTime;
+            m_Phase += dt * BobSpeed;
+            transform.Rotate(Axis, DegreesPerSecond * dt, Space.World);
             transform.position = m_Base + Vector3.up * (Mathf.Sin(m_Phase) * Bob);
         }
     }

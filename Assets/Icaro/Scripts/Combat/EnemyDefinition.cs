@@ -52,6 +52,10 @@ namespace Icaro
                  "CombatBalance, 20% ou 25% em chefes; 1 = sem limite)")]
         [Range(0f, 1f)] public float MaxHitFraction;
 
+        [Tooltip("Quanto o abate deste inimigo tira do multiplicador de tempo (0 = pela vida da ficha: " +
+                 "MaxHealth / TimeManager.HealthPerStep). Elites com mais vida tiram mais na mesma proporção")]
+        [Min(0f)] public float TimeReduction;
+
 
         [Header("Cronitas")]
         [Tooltip("Cronitas (moeda da run) que este inimigo solta ao morrer, antes dos bônus de sala e de elite")]

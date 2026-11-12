@@ -24,6 +24,8 @@ namespace Icaro.EditorTools
         static readonly List<Vector3[]> s_ChainRails = new List<Vector3[]>();
         static readonly List<(Vector3 floor, Vector3 facing)> s_SpritePortals = new List<(Vector3, Vector3)>();
         static readonly List<(Vector3 front, Vector3 facing)> s_SpriteShrines = new List<(Vector3, Vector3)>();
+        // Oferendas dos peregrinos na praça da basílica: velas acesas, sorteadas depois de tudo (não mudam o resto)
+        static readonly List<Vector3> s_SpriteVotives = new List<Vector3>();
 
         // Sprites recusados (2026-11-06): as malhas, materiais e texturas que a geração anterior deixou são apagados
         static readonly string[] k_RemovedSprites =
@@ -38,6 +40,7 @@ namespace Icaro.EditorTools
             s_ChainRails.Clear();
             s_SpritePortals.Clear();
             s_SpriteShrines.Clear();
+            s_SpriteVotives.Clear();
         }
 
         struct SpriteDef
@@ -80,6 +83,8 @@ namespace Icaro.EditorTools
                 PlaceCandles(set);
                 LightLanterns(set);
                 PlaceFlags(poles, ropes, flags);
+                foreach (Vector3 p in s_SpriteVotives)
+                    Candles(set, p, 3, 0.7f);
             }
             finally
             {
@@ -338,6 +343,9 @@ namespace Icaro.EditorTools
                         continue;
                     Pennant(flags, rail[i] + Vector3.down * 0.08f, along);
                 }
+
+            // Archen Kaedra: as linhas que o gerador da cidade deixou (no fim, para não mudar o sorteio do resto)
+            CityFlagLines(ropes, flags);
         }
 
         static void Pole(MeshData mesh, Vector3 foot, float height, float thickness)

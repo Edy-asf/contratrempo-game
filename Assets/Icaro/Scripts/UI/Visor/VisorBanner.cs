@@ -71,6 +71,9 @@ namespace Icaro
         float m_NextMicrogameCheck;
         bool m_MicrogameRemoved;
 
+        // Há um aviso na tela ou na fila (a sala espera a faixa dela sumir antes dos inimigos)
+        public static bool Busy => s_Instance && (s_Instance.m_Current != null || s_Instance.m_Queue.Count > 0);
+
         // Mostra um aviso; sem a faixa (cena sem jogador), cai no aviso do Microgame
         public static void Show(string title, string subtitle = "", BannerTone tone = BannerTone.Normal)
         {

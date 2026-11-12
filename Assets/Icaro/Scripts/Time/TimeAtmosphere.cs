@@ -98,7 +98,7 @@ namespace Icaro
             if (m_Music && m_Music.isActiveAndEnabled && m_Music.HasBeat)
                 KairosBeat.Phase = m_Music.BeatPosition;
             else
-                KairosBeat.Phase += KairosBeat.BpmFor(TimeManager.CurrentMultiplier) / 60f * Time.deltaTime;
+                KairosBeat.Phase += KairosBeat.BpmFor(TimeManager.CurrentMultiplier) / 60f * KairosClock.DeltaTime;
         }
 
         void LateUpdate()
@@ -134,8 +134,10 @@ namespace Icaro
 
         void UpdateSpores(float k, float pulse)
         {
-            float speed = Mathf.Lerp(1f, SporeSpeedAtMax, k);
-            bool speedChanged = Mathf.Abs(speed - m_AppliedSporeSpeed) > 0.01f;
+            // Fora de combate os esporos param no ar (KairosClock)
+            float speed = Mathf.Lerp(1f, SporeSpeedAtMax, k) * KairosClock.Scale;
+            bool speedChanged = Mathf.Abs(speed - m_AppliedSporeSpeed) > 0.01f ||
+                                (speed == 0f && m_AppliedSporeSpeed != 0f);
             if (speedChanged)
                 m_AppliedSporeSpeed = speed;
 

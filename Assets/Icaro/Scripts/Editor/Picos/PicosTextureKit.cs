@@ -50,6 +50,8 @@ namespace Icaro.EditorTools
             // Estragos do ataque (kit AR_Ataque, PicosGothicTextures): madeira carbonizada, pedra queimada (quebras e
             // interior das casas), chão queimado, vidro lilás fundido, cristal apagado e o carbonizado
             public Material CharWood, BurntStone, Scorch, FusedGlass, DeadCrystal, Carbon;
+            public Material[] BurntWalls;
+            public Material CharMetal;
         }
 
         static readonly Color k_Rock = new Color(0.16f, 0.15f, 0.17f);

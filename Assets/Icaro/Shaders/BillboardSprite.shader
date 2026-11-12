@@ -48,6 +48,9 @@ Shader "Icaro/BillboardSprite"
         CBUFFER_END
 
         float _IcaroCloudTime;
+        // Relógio do mundo (KairosClock): parado fora de combate; sem ele (_IcaroWorldClockOn 0), o relógio normal
+        float _IcaroWorldTime;
+        float _IcaroWorldClockOn;
 
         // Quadro da animação deste sprite (tira horizontal de _Frames quadros)
         float2 AnimatedUV(float2 uv, float3 pivot)
@@ -56,7 +59,7 @@ Shader "Icaro/BillboardSprite"
             if (frames < 1.5)
                 return uv;
             float seed = frac(sin(dot(pivot, float3(12.9898, 78.233, 37.719))) * 43758.5453);
-            float clock = _Time.y + _IcaroCloudTime * _TimeFollow;
+            float clock = lerp(_Time.y, _IcaroWorldTime, _IcaroWorldClockOn) + _IcaroCloudTime * _TimeFollow;
             float frame = floor(fmod(clock * _FrameRate + seed * frames, frames));
             return float2((uv.x + frame) / frames, uv.y);
         }

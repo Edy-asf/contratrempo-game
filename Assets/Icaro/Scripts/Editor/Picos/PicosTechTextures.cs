@@ -76,10 +76,18 @@ namespace Icaro.EditorTools
 
             // Estragos do ataque (kit AR_Ataque): a pedra queimada tem desgaste e fuligem forte; vidro fundido e cristal
             // apagado com algum reflexo
-            set.CharWood = GridTextureKit.Surface("Picos_Madeira_Queimada", PaintCharWood(2151), Color.black);
-            set.BurntStone = GridTextureKit.Surface("Picos_Pedra_Queimada", PaintBurntStone(2152), Color.black);
-            Weathered(set.BurntStone, 0.3f, 0.3f, 0.4f, 0.55f);
-            set.Scorch = GridTextureKit.Surface("Picos_Chao_Queimado", PaintScorch(2153), Color.black);
+            // Queimado = a textura original com muita fuligem (pedido do usuário em 2026-11-11: as texturas próprias de
+            // queimado ficavam pretas e sem forma): a pedra queimada usa o tijolo do tipo de construção da peça
+            // (WallKind), a madeira queimada a madeira e o chão queimado a laje, no shader de desgaste com a fuligem
+            // cobrindo mais da metade em manchas; os pintores antigos (PaintCharWood, PaintBurntStone, PaintScorch)
+            // ficam sem uso
+            set.BurntWalls = new Material[set.GothWalls.Length];
+            for (int i = 0; i < set.GothWalls.Length; i++)
+                set.BurntWalls[i] = Sooty(set.GothWalls[i].name + "_Fuligem", set.GothWalls[i], 0.6f, 0.45f);
+            set.BurntStone = set.BurntWalls[2];
+            set.CharWood = Sooty("Picos_Madeira_Fuligem", set.Wood, 0.65f, 0.3f);
+            set.Scorch = Sooty("Picos_Laje_Fuligem", set.Pavings[0], 0.55f, 0.25f);
+            set.CharMetal = Sooty("Picos_Liga_Lavrada_Fuligem", set.Engraved, 0.6f, 0.3f);
             set.FusedGlass = GridTextureKit.Surface("Picos_Vidro_Fundido", PaintFusedGlass(2154), Color.black);
             Shine(set.FusedGlass, 0.1f, 0.8f);
             set.DeadCrystal = GridTextureKit.Surface("Picos_Cristal_Apagado", PaintDeadCrystal(2155), Color.black);
@@ -110,6 +118,20 @@ namespace Icaro.EditorTools
             m.SetFloat("_SootStrength", 0.75f);
             m.SetFloat("_StreakDensity", 0.18f);
             EditorUtility.SetDirty(m);
+        }
+
+        // Cópia de um material com a mesma textura e muita fuligem por cima (a cor da fuligem um pouco mais clara que a
+        // das casas e sem cobrir tudo, para a textura continuar lendo nas manchas e entre elas)
+        static Material Sooty(string name, Material source, float soot, float grime)
+        {
+            Material m = GridTextureKit.LoadOrCreate(name);
+            m.shader = source.shader;
+            m.CopyPropertiesFromMaterial(source);
+            Weathered(m, grime, 0.5f, 0.35f, soot, 3f);
+            m.SetColor("_SootColor", new Color(0.2f, 0.17f, 0.16f));
+            m.SetFloat("_SootStrength", 0.7f);
+            EditorUtility.SetDirty(m);
+            return m;
         }
 
         static void Shine(Material m, float metallic, float smoothness)

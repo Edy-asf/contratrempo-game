@@ -255,6 +255,7 @@ namespace Icaro.EditorTools
                          { (-330f, 620f, 280f), (-60f, 720f, 300f), (230f, 680f, 300f), (0f, 900f, 320f), (520f, 650f, 160f), (-560f, 620f, 160f) })
                     Clear(HP(e, n, 0f), r);
                 DistantField(new Vector2(k_High.x, k_High.z), 150, 100, 1400, "Macicos_Vilas");
+                CityBackdrop(city);
 
                 Snowfall(villages["Escalonada"].Center + Vector3.up * 30f);
                 Snowfall(villages["Engrenagens"].Center + Vector3.up * 30f);
@@ -271,6 +272,107 @@ namespace Icaro.EditorTools
                 s_BastionPortal.ArrivalTitle = "Vilas do Alto";
                 s_BastionPortal.ArrivalSubtitle = "Picos acima das Nuvens";
             }
+        }
+
+        // Montanhas ao fundo da cidade (pedido do usuário em 2026-11-10: mais montanhas no fundo, principalmente em volta da
+        // cidade), com sorteio próprio, sem mudar o resto do mapa. Um anel do meio (520 a 1250 m do centro da cidade) de
+        // maciços do Blender e montanhas grandes do gerador, fora do lado norte (o vale entre as vilas e a cidade), e um
+        // anel do fundo (1250 a 2300 m) de maciços leves grandes, menos para o norte (o maciço das Vilas fica lá). Cada uma
+        // confere a própria pegada contra as áreas do caminho (ponte, vilas, ilhas, torres), o maciço das Vilas, as
+        // montanhas já postas e a cidade.
+        static void CityBackdrop(Vector3 city)
+        {
+            System.Random saved = s_Random;
+            s_Random = new System.Random(9301);
+            try
+            {
+                GameObject[] near = LoadMassifs(""), far = LoadMassifs("_Longe");
+                if (near.Length == 0 || far.Length == 0)
+                    return;
+                float[] nearRadius = MassifRadii(near), farRadius = MassifRadii(far);
+                var kinds = new[]
+                {
+                    PicosMountainKit.Kind.Tower, PicosMountainKit.Kind.Crown, PicosMountainKit.Kind.Ridge,
+                    PicosMountainKit.Kind.Broken, PicosMountainKit.Kind.Cluster,
+                };
+                var root = new GameObject("Macicos_Cidade").transform;
+                root.SetParent(s_World, false);
+                var placed = new List<(Vector2 Center, float Radius)>();
+                const int k_Mid = 34, k_Back = 46;
+                int mid = 0, back = 0;
+                for (int attempt = 0; attempt < 4000 && (mid < k_Mid || back < k_Back); attempt++)
+                {
+                    bool background = mid >= k_Mid;
+                    float a = R(0f, Mathf.PI * 2f);
+                    float north = Mathf.Sin(a);
+                    if (!background && north > 0.64f)
+                        continue;
+                    if (background && north > 0f && s_Random.NextDouble() < 0.7 * north)
+                        continue;
+                    float d = background ? R(1250f, 2300f) : R(520f, 1250f);
+                    var p = new Vector2(city.x + Mathf.Cos(a) * d, city.z + Mathf.Sin(a) * d);
+
+                    // O que vai ali: maciço (com a pegada do modelo) ou montanha grande do gerador
+                    bool generated = !background && s_Random.NextDouble() < 0.35;
+                    int model = s_Random.Next(near.Length);
+                    float scale = background ? R(1.5f, 2.5f) : R(0.9f, 1.5f);
+                    float size = R(40f, 80f);
+                    float footprint = generated ? size * 2f : (background ? farRadius[model % far.Length] : nearRadius[model]) * scale;
+                    float margin = background ? 20f : 50f;
+
+                    if (Vector2.Distance(p, new Vector2(city.x, city.z)) < k_CityRadius + 120f + footprint)
+                        continue;
+                    bool blocked = false;
+                    foreach (var clearing in s_Clearings)
+                        blocked |= Vector2.Distance(p, clearing.Center) < clearing.Radius + footprint + margin;
+                    float e = p.x - k_High.x, n = p.y - k_High.z;
+                    blocked |= e > -820f - footprint && e < 820f + footprint && n > 230f - footprint && n < 1260f + footprint;
+                    foreach (PicosMountainKit.Placed pillar in PicosMountainKit.Pillars)
+                        blocked |= Vector2.Distance(p, new Vector2(pillar.Top.x, pillar.Top.z)) < pillar.BaseRadius + footprint * 0.6f;
+                    foreach (var other in placed)
+                        blocked |= Vector2.Distance(p, other.Center) < other.Radius + footprint * 0.7f;
+                    if (blocked)
+                        continue;
+
+                    placed.Add((p, footprint));
+                    if (generated)
+                        PicosMountainKit.Mountain(s_MountainFar, kinds[s_Random.Next(kinds.Length)],
+                            new Vector3(p.x, R(60f, 200f), p.y), size, s_Random, 2);
+                    else
+                        PlaceMassif(background ? far[model % far.Length] : near[model], new Vector3(p.x, 0f, p.y), scale, root);
+                    if (background)
+                        back++;
+                    else
+                        mid++;
+                }
+
+                Debug.Log($"[Ícaro] Fundo da cidade: {mid} montanhas no anel do meio e {back} no do fundo.");
+            }
+            finally
+            {
+                s_Random = saved;
+            }
+        }
+
+        // Raio da pegada de cada maciço na planta, em escala 1 e em qualquer giro (do pivô até o canto mais longe da caixa)
+        static float[] MassifRadii(GameObject[] models)
+        {
+            var radii = new float[models.Length];
+            for (int i = 0; i < models.Length; i++)
+            {
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(models[i]);
+                go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                foreach (MeshRenderer renderer in go.GetComponentsInChildren<MeshRenderer>())
+                {
+                    Bounds b = renderer.bounds;
+                    float x = Mathf.Max(Mathf.Abs(b.min.x), Mathf.Abs(b.max.x)), z = Mathf.Max(Mathf.Abs(b.min.z), Mathf.Abs(b.max.z));
+                    radii[i] = Mathf.Max(radii[i], Mathf.Sqrt(x * x + z * z));
+                }
+
+                Object.DestroyImmediate(go);
+            }
+
+            return radii;
         }
 
         // O maciço do Blender, posto sem girar no centro da cidade (nível 0), com colisão na rocha
@@ -1756,8 +1858,14 @@ namespace Icaro.EditorTools
         // um anel enorme girando por baixo
         static void BuildCitySketch(Vector3 city, Vector3 toBridge)
         {
+            s_CityCenter = city;
+            s_HasCity = true;
             var m = new RuinMesh(4101);
-            SkyIsland(city, k_CityRadius, Quaternion.identity, 4101, false, 40);
+            if (PlaceCityRock(city))
+                Clear(city, k_CityRadius + 40f);
+            else
+                SkyIsland(city, k_CityRadius, Quaternion.identity, 4101, false, 40);
+            PlaceCityWalls(city);
             // Toda a área da basílica (praça, colunatas e igreja) fica num pódio, para engrandecer e ser vista de longe nas vilas
             Vector3 plaza = city + Vector3.up * k_CityPodium;
             var slab = new MeshData();
@@ -1767,29 +1875,29 @@ namespace Icaro.EditorTools
             Pave(slab);
             s_Platforms.Add((plaza, 46f * k));
             foreach ((float from, float to) in new[] { (28f, 152f), (208f, 332f) })
-                ArquipelagoRuinKit.RichRing(m, plaza + Vector3.up * 6.5f * k, Vector3.up, toBridge, 52f * k, 7f * k, 13f * k, from, to, s_Random,
-                    false, false, plaza.y, 1000);
+                ArquipelagoRuinKit.RichRing(new RuinMesh(0), plaza + Vector3.up * 6.5f * k, Vector3.up, toBridge, 52f * k, 7f * k, 13f * k, from, to, s_Random,
+                    false, false, plaza.y, 1000);       // numa malha descartada: as colunatas vêm do kit, e os sorteios não mudam
             BlockMesh.ChamferBox(m.Pick(), plaza + Vector3.up * 11f * k, new Vector3(2.2f, 22f, 2.2f) * k, Quaternion.identity, 0.2f);
             Spike(m.Pick(), plaza + Vector3.up * 22f * k, Vector3.up, 3f * k, 1.4f * k, 4, 45f, 100f);
 
-            // Basílica e cúpula, também com o dobro do tamanho
+            // A basílica e a cúpula em blocos saíram para o kit (PicosBasilica); continuam montadas numa malha descartada, para os sorteios não mudarem
+            var oldBasilica = new RuinMesh(0);
             Quaternion facing = Quaternion.LookRotation(toBridge);
             Vector3 basilica = plaza - toBridge * 100f * k;
-            BlockMesh.ChamferBox(m.Pick(), basilica + Vector3.up * 15f * k, new Vector3(40f, 32f, 64f) * k, facing, 0.6f);
-            BlockMesh.ChamferBox(m.Pick(), basilica + toBridge * 31f * k + Vector3.up * 18f * k, new Vector3(56f, 38f, 6f) * k, facing, 0.6f);
+            BlockMesh.ChamferBox(oldBasilica.Pick(), basilica + Vector3.up * 15f * k, new Vector3(40f, 32f, 64f) * k, facing, 0.6f);
             Vector3 dome = basilica - toBridge * 8f * k;
             float baseY = plaza.y + 31f * k;
-            Prism(m.Pick(), dome, 15f * k, 15f * k, 24, baseY + 14f * k, baseY, true);
+            Prism(oldBasilica.Pick(), dome, 15f * k, 15f * k, 24, baseY + 14f * k, baseY, true);
             const float domeRadius = 16f * k;
             for (int i = 0; i < 6; i++)
             {
                 float p0 = i * 15f * Mathf.Deg2Rad, p1 = (i + 1) * 15f * Mathf.Deg2Rad;
-                Prism(m.Pick(), dome, domeRadius * Mathf.Cos(p1) + 0.4f * k, domeRadius * Mathf.Cos(p0), 24,
+                Prism(oldBasilica.Pick(), dome, domeRadius * Mathf.Cos(p1) + 0.4f * k, domeRadius * Mathf.Cos(p0), 24,
                     baseY + 14f * k + domeRadius * Mathf.Sin(p1), baseY + 14f * k + domeRadius * Mathf.Sin(p0), i == 5);
             }
 
-            Prism(m.Pick(), dome, 2.6f * k, 2.6f * k, 8, baseY + 21f * k + domeRadius, baseY + 13f * k + domeRadius, true);
-            Spike(m.Pick(), dome + Vector3.up * (baseY + 21f * k + domeRadius - plaza.y), Vector3.up, 6f * k, 1.2f * k, 8, 0f, 100f);
+            Prism(oldBasilica.Pick(), dome, 2.6f * k, 2.6f * k, 8, baseY + 21f * k + domeRadius, baseY + 13f * k + domeRadius, true);
+            Spike(oldBasilica.Pick(), dome + Vector3.up * (baseY + 21f * k + domeRadius - plaza.y), Vector3.up, 6f * k, 1.2f * k, 8, 0f, 100f);
 
             // Quarteirões e torres
             Vector3 across = Vector3.Cross(Vector3.up, toBridge);
@@ -1820,6 +1928,7 @@ namespace Icaro.EditorTools
                 Spike(scrap.Pick(), top, Vector3.up, width * 2.2f, width * 0.68f, 4, 45f, 100f);
             }
 
+            BuildBasilicaSquare(city, toBridge);
             BuildArchenKaedraBlocks(m, city, toBridge);
             TurningRing("Anel_Cidade", city + Vector3.down * 100f, 370f, 10f, 14f, 0f, 360f, 1.2f);
             CreateRuin("Cidade_Esboco", m, true);
