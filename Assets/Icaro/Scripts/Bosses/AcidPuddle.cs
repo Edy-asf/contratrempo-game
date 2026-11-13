@@ -48,7 +48,7 @@ namespace Icaro
 
         void Update()
         {
-            m_Age += Time.deltaTime;
+            m_Age += CombatTiming.DeltaTime;
             if (m_Age >= m_Duration)
             {
                 PrefabPool.Release(gameObject);

@@ -64,7 +64,7 @@ namespace Icaro
             Threat(m_Def.BreathDuration + 0.8f);
             Lean(-20f);
             Squash(-0.3f);
-            yield return new WaitForSeconds(WarningTime(0.8f));
+            yield return CombatTiming.Wait(WarningTime(0.8f));
 
             float duration = CombatTiming.Scaled(m_Def.BreathDuration);
             float interval = 1f / m_Def.BreathShotsPerSecond;
@@ -99,7 +99,7 @@ namespace Icaro
                 yield return Wait(m_Def.MeteorInterval);
             }
 
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
         }
 
         // Pisões: ondas de choque em sequência rápida, saindo do dragão
@@ -108,7 +108,7 @@ namespace Icaro
             HoldPosition = true;
             int count = ByPhase(m_Def.Stomps);
             Threat(count * m_Def.StompInterval + 1f);
-            yield return new WaitForSeconds(WarningTime(0.6f));
+            yield return CombatTiming.Wait(WarningTime(0.6f));
             for (int i = 0; i < count; i++)
             {
                 Squash(0.5f);
@@ -124,7 +124,7 @@ namespace Icaro
             int rings = ByPhase(m_Def.FlowerRings);
             Threat(rings * m_Def.FlowerInterval + 0.6f);
             Squash(-0.35f);
-            yield return new WaitForSeconds(WarningTime(0.6f));
+            yield return CombatTiming.Wait(WarningTime(0.6f));
             float offset = 0f;
             for (int r = 0; r < rings; r++)
             {

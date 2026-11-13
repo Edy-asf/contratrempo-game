@@ -126,6 +126,8 @@ namespace Icaro
 
             float density = m_BaseFogDensity * (1f + FogPulseAmount * k * (pulse - 0.3f));
             Color color = Color.Lerp(m_BaseFogColor, FogTint, FogTintAmount * k);
+            // Dentro da caverna do portal das Vilas do Alto a névoa escurece (CaveLight)
+            color = Color.Lerp(color, CaveLight.Fog, CaveLight.Inside * CaveLight.FogStrength);
             RenderSettings.fogDensity = density;
             RenderSettings.fogColor = color;
             m_LastFogDensity = density;

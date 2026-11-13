@@ -54,7 +54,10 @@ namespace Icaro
 
             if (damage >= 0f)
                 entry.Standard.Damage = damage;
-            entry.Standard.Speed = entry.BaseSpeed * TimeManager.CurrentMultiplier;
+            entry.Standard.Speed = entry.BaseSpeed * TimeManager.CurrentMultiplier * CombatTiming.WorldSpeed;
+            // Em voo, o projétil segue a câmera lenta das habilidades (a velocidade dele no Microgame é fixa no disparo)
+            if (!template.GetComponent<WorldSpeedProjectile>())
+                template.gameObject.AddComponent<WorldSpeedProjectile>();
             return template;
         }
 

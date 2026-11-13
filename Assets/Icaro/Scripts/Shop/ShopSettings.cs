@@ -47,18 +47,18 @@ namespace Icaro
         [Tooltip("Ficha para rerrolar as cartas de uma escolha de itens")]
         public int RerollPrice = 20;
 
-        [Tooltip("Calibrar a arma: dano extra por compra; o preço sobe a cada compra")]
-        public int DamageUpgradePrice = 45;
-        public int DamageUpgradePriceStep = 25;
-        public float DamageUpgradeAmount = 0.1f;
-
-        [Tooltip("Afinar o gatilho: cadência extra por compra; o preço sobe a cada compra")]
-        public int FireRateUpgradePrice = 45;
-        public int FireRateUpgradePriceStep = 25;
-        public float FireRateUpgradeAmount = 0.08f;
-
         [Tooltip("Aumento de preço por +1,0x de multiplicador de tempo (0,15 = +75% a 6,0x)")]
         public float Inflation = 0.15f;
+
+        [Header("Méton, o mercante")]
+        [Tooltip("Conversa do Méton (Balance/Dialogos/Dialogo_Meton; ligada pelo menu de criar os diálogos de rascunho)")]
+        public DialogueDefinition MerchantDialogue;
+
+        [Tooltip("Salas (índice global) depois das quais o Méton aparece, além de todo chefe")]
+        public int[] MerchantRooms = { 3, 6, 11, 14 };
+
+        [Tooltip("Distância na frente do jogador em que o Méton aparece (metros)")]
+        public float MerchantDistance = 6f;
 
         [Header("Loja")]
         [Tooltip("Itens à venda em cada loja (sorteados pela raridade, diferentes entre si)")]

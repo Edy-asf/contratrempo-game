@@ -6,13 +6,14 @@ using UnityEngine.AI;
 namespace Icaro
 {
     // Inimigo desenhado como sprite animado (estilo Doom), no lugar do visual 3D: um quad que gira só no eixo vertical
-    // para a câmera e mostra a célula da folha (EnemySpriteSet) do clipe e da direção atuais. A direção (frente,
-    // direita, costas, esquerda) vem do ângulo entre a frente do inimigo e a câmera. O clipe vem da IA
+    // para a câmera e mostra a célula da folha (EnemySpriteSet) do clipe e da direção atuais. A direção (4 ou 8, pela
+    // folha) vem do ângulo entre a frente do inimigo e a câmera. O clipe vem da IA
     // (ISpriteActionSource: parado, andando, aviso e golpe, estes presos à duração da ação) ou, sem ela, do
     // NavMeshAgent; ao levar dano, pisca e toca o clipe "Hit" (se estiver parado ou andando); ao morrer, deixa um
     // cadáver (EnemySpriteCorpse) tocando "Death". A animação segue o multiplicador de tempo (andar pelo teto de
     // movimento da ficha). O aviso de ataque pulsa em vermelho. Fica no filho "Visual" do inimigo; colisor, hitbox e
-    // ponto de mira continuam os do inimigo.
+    // ponto de mira continuam os do inimigo. O shader Icaro/EnemySprite põe o destaque (contorno, névoa mais leve;
+    // EnemyHighlightSettings), e o brilho mínimo sobe com ele.
     public class EnemySpriteView : MonoBehaviour
     {
         public EnemySpriteSet Set;
@@ -33,6 +34,8 @@ namespace Icaro
 
         static readonly int k_BaseMapST = Shader.PropertyToID("_BaseMap_ST");
         static readonly int k_EmissionColor = Shader.PropertyToID("_EmissionColor");
+        static readonly int k_PixelsPerMeter = Shader.PropertyToID("_PixelsPerMeter");
+        static readonly int k_OutlineOff = Shader.PropertyToID("_OutlineOff");
         static readonly Dictionary<EnemySpriteSet, Mesh> s_Meshes = new Dictionary<EnemySpriteSet, Mesh>();
 
         Transform m_Root;
@@ -40,6 +43,7 @@ namespace Icaro
         MeshRenderer m_Renderer;
         MaterialPropertyBlock m_Block;
         ISpriteActionSource m_Source;
+        ISpriteClipSource m_ClipSource;
         NavMeshAgent m_Agent;
         EnemyStats m_Stats;
         Health m_Health;
@@ -58,6 +62,7 @@ namespace Icaro
             m_Health = GetComponentInParent<Health>();
             m_Root = m_Health ? m_Health.transform : transform.root;
             m_Source = m_Root.GetComponent<ISpriteActionSource>();
+            m_ClipSource = m_Root.GetComponent<ISpriteClipSource>();
             m_Agent = m_Root.GetComponent<NavMeshAgent>();
             m_Stats = m_Root.GetComponent<EnemyStats>();
             m_Block = new MaterialPropertyBlock();
@@ -157,8 +162,8 @@ namespace Icaro
             if (away.sqrMagnitude > 0.0001f)
                 m_Sprite.rotation = Quaternion.LookRotation(away);
 
-            m_Direction = DirectionTo(eye);
-            float dt = Time.deltaTime;
+            m_Direction = DirectionTo(eye, Set.Directions);
+            float dt = CombatTiming.DeltaTime;
             m_FlashTime -= dt;
             m_HitTime -= dt;
 
@@ -171,6 +176,18 @@ namespace Icaro
             string name = action.ToString();
             bool warning = action == SpriteAction.Windup || action == SpriteAction.Windup2;
             bool busy = warning || action == SpriteAction.Attack || action == SpriteAction.Attack2;
+            // Clipe pelo nome (chefes): tem prioridade enquanto existir na folha
+            bool hidden = false;
+            string named = m_ClipSource != null ? m_ClipSource.SpriteClip : null;
+            if (!string.IsNullOrEmpty(named) && Set.Find(named) != null)
+            {
+                name = named;
+                progress = m_ClipSource.SpriteClipProgress;
+                warning = m_ClipSource.SpriteClipWarning;
+                hidden = m_ClipSource.SpriteHidden;
+                busy = true;
+            }
+
             if (!busy && m_HitTime > 0f && Set.Find("Hit") != null)
             {
                 name = "Hit";
@@ -192,33 +209,36 @@ namespace Icaro
             m_ClipTime += dt * speed;
             m_Frame = FrameAt(clip, m_ClipTime, progress);
 
+            EnemyHighlightSettings.Push();
             m_Renderer.GetPropertyBlock(m_Block);
             m_Block.SetVector(k_BaseMapST, Set.CellST(clip.Row + m_Direction, m_Frame));
-            Color emission = Color.white * MinBrightness;
+            m_Block.SetFloat(k_PixelsPerMeter, Set.PixelsPerMeter);
+            m_Block.SetFloat(k_OutlineOff, hidden ? 1f : 0f);
+            Color emission = Color.white * EnemyHighlightSettings.Brightness(MinBrightness);
             if (warning)
             {
-                float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 22f);
+                float pulse = 0.5f + 0.5f * Mathf.Sin(CombatTiming.Now * 22f);
                 emission = Color.Lerp(emission, TelegraphColor, 0.35f + 0.65f * pulse);
             }
-            if (m_FlashTime > 0f)
+            if (m_FlashTime > 0f && !hidden)
                 emission = Color.white * FlashBrightness;
             m_Block.SetColor(k_EmissionColor, emission / Mathf.Max(0.01f, Set.BodyGlow));
             m_Renderer.SetPropertyBlock(m_Block);
         }
 
-        // 0 frente, 1 direita, 2 costas, 3 esquerda: de que lado do inimigo a câmera está
-        int DirectionTo(Vector3 eye)
+        // De que lado do inimigo a câmera está, no sentido horário visto de cima a partir da frente: com 4 direções,
+        // 0 frente, 1 direita, 2 costas, 3 esquerda; com 8, as diagonais ficam entre elas (0 frente, 2 direita...)
+        int DirectionTo(Vector3 eye, int directions)
         {
             Vector3 forward = m_Root.forward;
             forward.y = 0f;
             Vector3 toEye = eye - m_Root.position;
             toEye.y = 0f;
             float angle = Vector3.SignedAngle(forward, toEye, Vector3.up);
-            if (Mathf.Abs(angle) <= 45f)
-                return 0;
-            if (Mathf.Abs(angle) >= 135f)
-                return 2;
-            return angle > 0f ? 1 : 3;
+            if (angle < 0f)
+                angle += 360f;
+            int n = directions == 8 ? 8 : 4;
+            return Mathf.RoundToInt(angle / (360f / n)) % n;
         }
 
         public static int FrameAt(EnemySpriteSet.Clip clip, float time, float progress)

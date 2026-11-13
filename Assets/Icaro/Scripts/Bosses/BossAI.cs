@@ -53,20 +53,20 @@ namespace Icaro
         const float k_WindupShare = 0.45f;
 
         float ThreatProgress =>
-            Mathf.Clamp01((Time.time - m_ThreatStart) / Mathf.Max(0.01f, m_ThreatEnd - m_ThreatStart));
+            Mathf.Clamp01((CombatTiming.Now - m_ThreatStart) / Mathf.Max(0.01f, m_ThreatEnd - m_ThreatStart));
 
         public SpriteAction SpriteAction
         {
             get
             {
-                if (Time.time < m_ThreatEnd)
+                if (CombatTiming.Now < m_ThreatEnd)
                     return ThreatProgress < k_WindupShare ? SpriteAction.Windup : SpriteAction.Attack;
                 return Agent && Agent.enabled && Agent.velocity.sqrMagnitude > 0.25f ? SpriteAction.Move
                     : SpriteAction.Idle;
             }
         }
 
-        public float SpriteActionProgress => Time.time < m_ThreatEnd && ThreatProgress < k_WindupShare
+        public float SpriteActionProgress => CombatTiming.Now < m_ThreatEnd && ThreatProgress < k_WindupShare
             ? ThreatProgress / k_WindupShare
             : -1f;
         Vector3 m_VisualPosition;
@@ -114,9 +114,9 @@ namespace Icaro
         IEnumerator Brain()
         {
             // Entrada: ruge (estica) antes do primeiro ataque
-            yield return new WaitForSeconds(0.8f);
+            yield return CombatTiming.Wait(0.8f);
             Squash(-0.35f);
-            yield return new WaitForSeconds(0.8f);
+            yield return CombatTiming.Wait(0.8f);
 
             while (!m_Dead)
             {
@@ -186,9 +186,9 @@ namespace Icaro
             }
 
             Agent.isStopped = false;
-            if (Time.time >= m_NextRepath)
+            if (CombatTiming.Now >= m_NextRepath)
             {
-                m_NextRepath = Time.time + 0.4f;
+                m_NextRepath = CombatTiming.Now + 0.4f;
                 Vector3 fromPlayer = transform.position - BossTarget.Feet;
                 fromPlayer.y = 0f;
                 if (fromPlayer.sqrMagnitude < 0.01f)
@@ -207,13 +207,13 @@ namespace Icaro
         // Encostar no chefe machuca (desencoraja ficar colado nele)
         void UpdateContact()
         {
-            if (!BossTarget.Exists || Time.time < m_NextContact || !Stats)
+            if (!BossTarget.Exists || CombatTiming.Now < m_NextContact || !Stats)
                 return;
             if (BossTarget.FlatDistance(transform.position) > BodyRadius + 0.6f)
                 return;
             if (BossTarget.Feet.y > transform.position.y + 4f)
                 return;
-            m_NextContact = Time.time + 1f;
+            m_NextContact = CombatTiming.Now + 1f;
             BossTarget.Damage(Stats.Damage, gameObject, BossTarget.Chest);
         }
 
@@ -226,7 +226,7 @@ namespace Icaro
             if (toPlayer.sqrMagnitude < 0.01f)
                 return;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(toPlayer),
-                1f - Mathf.Exp(-sharpness * Time.deltaTime));
+                1f - Mathf.Exp(-sharpness * CombatTiming.DeltaTime));
         }
 
         // ---------- animação procedural (cartoon) ----------
@@ -237,17 +237,20 @@ namespace Icaro
         // Inclina para a frente (positivo) ou para trás, em graus
         protected void Lean(float degrees) => m_Lean = degrees;
 
+        // Balanço contínuo do corpo (sobe e desce e estica de leve); 0 = parado (o sprite já respira sozinho)
+        protected virtual float IdleBob => 0.06f;
+
         void Animate()
         {
             if (!Visual)
                 return;
 
             // Mola do squash: volta ao normal com um pouco de balanço
-            float dt = Time.deltaTime;
+            float dt = CombatTiming.DeltaTime;
             m_SquashVelocity += (-m_Squash * 140f - m_SquashVelocity * 11f) * dt;
             m_Squash += m_SquashVelocity * dt;
             float squash = Mathf.Clamp(m_Squash, -0.5f, 0.5f);
-            float bob = Mathf.Sin(Time.time * 2.2f * Mathf.Max(1f, Mathf.Sqrt(TimeManager.CurrentMultiplier))) * 0.06f;
+            float bob = Mathf.Sin(CombatTiming.Now * 2.2f * Mathf.Max(1f, Mathf.Sqrt(TimeManager.CurrentMultiplier))) * IdleBob;
 
             Visual.localScale = new Vector3(m_VisualScale.x * (1f + squash * 0.5f),
                 m_VisualScale.y * (1f - squash + bob), m_VisualScale.z * (1f + squash * 0.5f));
@@ -287,7 +290,7 @@ namespace Icaro
         // ---------- utilidades para os ataques ----------
 
         // Espera um tempo de cadência (encurta com o multiplicador)
-        protected static WaitForSeconds Wait(float seconds) => new WaitForSeconds(CombatTiming.Scaled(seconds));
+        protected static CustomYieldInstruction Wait(float seconds) => CombatTiming.Wait(CombatTiming.Scaled(seconds));
 
         // Duração de um aviso (encurta com o multiplicador, nunca abaixo de 60%)
         protected static float WarningTime(float seconds) => CombatTiming.Warning(seconds);
@@ -303,8 +306,8 @@ namespace Icaro
         protected void Threat(float seconds)
         {
             ThreatSignals.Report(transform, seconds);
-            m_ThreatStart = Time.time;
-            m_ThreatEnd = Time.time + seconds;
+            m_ThreatStart = CombatTiming.Now;
+            m_ThreatEnd = CombatTiming.Now + seconds;
         }
 
         protected BossProjectile Shoot(Vector3 from, Vector3 direction, float speed, float damage, float size = 0.6f,
@@ -345,7 +348,7 @@ namespace Icaro
             const float height = 14f;
             const float speed = 30f;
             float fall = height / (speed * Kit.SpeedMultiplier);
-            yield return new WaitForSeconds(Mathf.Max(0f, warning - fall));
+            yield return CombatTiming.Wait(Mathf.Max(0f, warning - fall));
             Shoot(ground + Vector3.up * height, Vector3.down, speed, damage, size, 0f, 3f, radius);
         }
 
@@ -357,12 +360,15 @@ namespace Icaro
                 Agent.enabled = false;
 
             Squash(0.35f);
-            yield return new WaitForSeconds(0.15f);
+            yield return CombatTiming.Wait(0.15f);
             Squash(-0.45f);
 
             Vector3 start = transform.position;
             float duration = CombatTiming.Scaled(airTime);
-            for (float t = 0f; t < duration; t += Time.deltaTime)
+            // No ar o corpo não empurra o jogador: cair em cima dele com o colisor fazia o CharacterController ser
+            // empurrado para dentro do chão. No pouso, quem ficou embaixo é posto para fora do corpo e arremessado.
+            IgnorePlayer(true);
+            for (float t = 0f; t < duration; t += CombatTiming.DeltaTime)
             {
                 float k = t / duration;
                 transform.position = Vector3.Lerp(start, target, k) + Vector3.up * (4f * height * k * (1f - k));
@@ -371,6 +377,9 @@ namespace Icaro
             }
 
             transform.position = target;
+            Physics.SyncTransforms();
+            ShovePlayerOut(target);
+            StartCoroutine(RestorePlayerCollision());
             Squash(0.5f);
             if (agent)
             {
@@ -378,6 +387,79 @@ namespace Icaro
                 if (NavMesh.SamplePosition(target, out NavMeshHit hit, 4f, NavMesh.AllAreas))
                     Agent.Warp(hit.position);
             }
+        }
+
+        // ---------- pouso em cima do jogador ----------
+
+        Collider[] m_BodyColliders;
+
+        // Liga ou desliga a colisão entre o corpo do chefe e o do jogador
+        protected void IgnorePlayer(bool ignore)
+        {
+            CharacterController player = BossTarget.Character;
+            if (!player)
+                return;
+            m_BodyColliders ??= GetComponentsInChildren<Collider>(true);
+            foreach (Collider body in m_BodyColliders)
+                if (body && !body.isTrigger)
+                    Physics.IgnoreCollision(body, player, ignore);
+        }
+
+        // Volta a colisão quando o jogador já saiu de dentro do corpo (ou depois de 2 s)
+        IEnumerator RestorePlayerCollision()
+        {
+            for (float t = 0f; t < 2f; t += Time.deltaTime)
+            {
+                if (!BossTarget.Exists || BossTarget.FlatDistance(transform.position) > BodyRadius + 0.8f)
+                    break;
+                yield return null;
+            }
+
+            IgnorePlayer(false);
+        }
+
+        // Jogador embaixo do pouso: vai para a beira do corpo, no chão (achado por raio de cima), e é arremessado para
+        // longe. Nunca fica dentro do colisor do chefe (era o que o mandava para dentro do chão).
+        protected void ShovePlayerOut(Vector3 landing)
+        {
+            CharacterController body = BossTarget.Character;
+            if (!BossTarget.Exists || !body)
+                return;
+            Vector3 feet = BossTarget.Feet;
+            float reach = BodyRadius + body.radius + 0.3f;
+            if (BossTarget.FlatDistance(landing) > reach || feet.y > landing.y + 4f || feet.y < landing.y - 3f)
+                return;
+
+            Vector3 away = feet - landing;
+            away.y = 0f;
+            if (away.sqrMagnitude < 0.01f)
+                away = -transform.forward;
+            away.Normalize();
+
+            Vector3 spot = landing + away * reach;
+            if (Physics.Raycast(spot + Vector3.up * 4f, Vector3.down, out RaycastHit ground, 10f,
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore) && !ground.collider.transform.IsChildOf(transform))
+                spot.y = ground.point.y + 0.05f;
+            else
+                spot.y = Mathf.Max(feet.y, landing.y) + 0.05f;
+
+            bool was = body.enabled;
+            body.enabled = false;
+            body.transform.position = spot;
+            body.enabled = was;
+            Physics.SyncTransforms();
+            KnockPlayer(landing, 14f, 6f, 0.5f);
+        }
+
+        // Arremessa o jogador para longe de 'from' (velocidade horizontal e para cima em m/s, segundos sem controle)
+        protected static void KnockPlayer(Vector3 from, float speed, float up, float stun)
+        {
+            if (!BossTarget.Exists)
+                return;
+            Vector3 away = BossTarget.Feet - from;
+            away.y = 0f;
+            away = away.sqrMagnitude < 0.01f ? Vector3.forward : away.normalized;
+            PlayerThrow.Throw(away * speed + Vector3.up * up, stun);
         }
 
         // Ponto aleatório do NavMesh a 'distance' do jogador (para saltos e teleportes)
@@ -416,7 +498,7 @@ namespace Icaro
         {
             // Murcha e some
             Vector3 scale = Visual ? Visual.localScale : Vector3.one;
-            for (float t = 0f; t < 1.2f; t += Time.deltaTime)
+            for (float t = 0f; t < 1.2f; t += CombatTiming.DeltaTime)
             {
                 if (Visual)
                     Visual.localScale = Vector3.Lerp(scale, new Vector3(scale.x * 1.4f, 0.05f, scale.z * 1.4f),

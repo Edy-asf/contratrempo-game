@@ -75,7 +75,7 @@ namespace Icaro
 
         // Multiplicador do dano dos tiros (antes do crítico): o do CombatBalance, a Pólvora Sintética e o Coração Aeônida
         public float DamageMultiplier =>
-            BaseDamageMultiplier * (1f + Get(PlayerStat.DamageBonus)) * (1f + HeartBonus) * (1f + ShopDamageBonus);
+            BaseDamageMultiplier * (1f + Get(PlayerStat.DamageBonus)) * (1f + HeartBonus);
 
         // Coração Aeônida: +x de dano por 0,1x de multiplicador acima de 1,0x, até o teto do catálogo (pilhas extras
         // só chegam ao teto mais cedo)
@@ -117,15 +117,6 @@ namespace Icaro
 
         public float MaxHealth => m_Health ? m_Health.MaxHealth : 0f;
 
-        // Melhorias compradas na loja (dano e cadência), pela carteira
-        float ShopDamageBonus => PlayerWallet.Instance
-            ? PlayerWallet.Instance.DamageUpgrades * ShopDirector.Settings.DamageUpgradeAmount
-            : 0f;
-
-        float ShopFireRateBonus => PlayerWallet.Instance
-            ? PlayerWallet.Instance.FireRateUpgrades * ShopDirector.Settings.FireRateUpgradeAmount
-            : 0f;
-
         void Awake()
         {
             Instance = this;
@@ -154,6 +145,16 @@ namespace Icaro
                 gameObject.AddComponent<PlayerArsenal>();
             if (m_Controller && !GetComponent<AimRecoil>())
                 gameObject.AddComponent<AimRecoil>();
+            // Habilidades ativas (voltar no tempo, câmera lenta)
+            if (m_Controller && !GetComponent<PlayerAbilities>())
+                gameObject.AddComponent<PlayerAbilities>();
+            // Tradutor aeônida (conversas com os NPCs)
+            if (!GetComponent<PlayerTranslator>())
+                gameObject.AddComponent<PlayerTranslator>();
+            if (!GetComponent<DialogueMemory>())
+                gameObject.AddComponent<DialogueMemory>();
+            if (!GetComponent<NpcGuard>())
+                gameObject.AddComponent<NpcGuard>();
             // Modo livre para prints (imortal e voo, F11): só no Editor e em builds de desenvolvimento
             if (m_Controller && (Application.isEditor || Debug.isDebugBuild) && !GetComponent<PlayerFreeMode>())
                 gameObject.AddComponent<PlayerFreeMode>();
@@ -357,7 +358,7 @@ namespace Icaro
                 };
 
             weapon.DelayBetweenShots = original.Delay /
-                                       (1f + Get(PlayerStat.FireRate) + ShopFireRateBonus + AdrenalineBonus);
+                                       (1f + Get(PlayerStat.FireRate) + AdrenalineBonus);
             weapon.MaxAmmo = Mathf.Max(1, Mathf.RoundToInt(original.MaxAmmo * (1f + Get(PlayerStat.AmmoCapacity))));
         }
 

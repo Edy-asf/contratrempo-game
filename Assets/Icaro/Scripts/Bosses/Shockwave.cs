@@ -60,7 +60,7 @@ namespace Icaro
 
         void Update()
         {
-            m_Radius += m_Speed * m_Kit.SpeedMultiplier * Time.deltaTime;
+            m_Radius += m_Speed * m_Kit.SpeedMultiplier * CombatTiming.DeltaTime;
             if (m_Radius >= m_MaxRadius)
             {
                 PrefabPool.Release(gameObject);

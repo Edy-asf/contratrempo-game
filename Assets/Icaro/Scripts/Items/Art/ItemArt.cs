@@ -14,6 +14,8 @@ namespace Icaro
         static readonly Dictionary<string, Sprite> s_Icons = new Dictionary<string, Sprite>();
         static readonly Dictionary<ItemRarity, Sprite> s_Cards = new Dictionary<ItemRarity, Sprite>();
         static readonly Dictionary<ItemTag, Sprite> s_Badges = new Dictionary<ItemTag, Sprite>();
+        static readonly HashSet<string> s_NoIcon = new HashSet<string>();
+        static readonly HashSet<ItemTag> s_NoBadge = new HashSet<ItemTag>();
         static Sprite s_Glow;
         static Sprite s_Pixel;
 
@@ -26,13 +28,15 @@ namespace Icaro
                 return item.Icon;
 
             string key = item.name.StartsWith("Item_") ? item.name.Substring(5) : item.name;
-            if (!s_Icons.TryGetValue(key, out Sprite sprite))
-            {
-                PixelCanvas canvas = ItemIconPainter.Paint(key);
-                sprite = canvas != null ? ToSprite(canvas, "Icone_" + key) : null;
-                s_Icons[key] = sprite;
-            }
-
+            // O projeto entra em Play sem recarregar o domínio: o dicionário sobrevive, mas a textura criada em jogo
+            // é destruída ao sair do Play. Um sprite destruído (que o Unity compara como null) é desenhado de novo.
+            if (s_Icons.TryGetValue(key, out Sprite sprite) && (sprite || s_NoIcon.Contains(key)))
+                return sprite;
+            PixelCanvas canvas = ItemIconPainter.Paint(key);
+            sprite = canvas != null ? ToSprite(canvas, "Icone_" + key) : null;
+            if (!sprite)
+                s_NoIcon.Add(key);
+            s_Icons[key] = sprite;
             return sprite;
         }
 
@@ -50,12 +54,12 @@ namespace Icaro
 
         public static Sprite BadgeFor(ItemTag tag)
         {
-            if (!s_Badges.TryGetValue(tag, out Sprite sprite))
-            {
-                PixelCanvas canvas = ItemBadgePainter.Paint(tag);
-                s_Badges[tag] = sprite = canvas != null ? ToSprite(canvas, "Selo_" + tag) : null;
-            }
-
+            if (s_Badges.TryGetValue(tag, out Sprite sprite) && (sprite || s_NoBadge.Contains(tag)))
+                return sprite;
+            PixelCanvas canvas = ItemBadgePainter.Paint(tag);
+            s_Badges[tag] = sprite = canvas != null ? ToSprite(canvas, "Selo_" + tag) : null;
+            if (!sprite)
+                s_NoBadge.Add(tag);
             return sprite;
         }
 

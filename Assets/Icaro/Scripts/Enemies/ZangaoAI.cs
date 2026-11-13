@@ -12,6 +12,8 @@ namespace Icaro
     // e nunca sai do raio da arena. Tiro: com linha de visão, a cada ShotIntervalMin..Max o ferrão brilha
     // (MuzzleWarning, nunca abaixo de 60%) e dispara um projétil pequeno e rápido; no máximo MaxShooters Zangões
     // atiram ao mesmo tempo, os outros esperam a vez. Velocidade de voo, cadência e projétil seguem o multiplicador.
+    // Tiro em pixel art (EnemyBolt: gota âmbar com borda lilás e rastro em degraus), carga no ferrão (EnemyCharge) e
+    // sons gerados em código (EnemySounds).
     [RequireComponent(typeof(Health))]
     public class ZangaoAI : MonoBehaviour, ISpriteActionSource
     {
@@ -27,9 +29,6 @@ namespace Icaro
         [Tooltip("Brilho de aviso no ferrão (ligado só durante o aviso)")]
         public Transform MuzzleGlow;
 
-        public ZangaoProjectile ProjectilePrefab;
-
-        public AudioClip ShotSound;
 
         [Tooltip("Renderers que piscam ao levar dano")]
         public Renderer[] FlashRenderers;
@@ -49,6 +48,7 @@ namespace Icaro
         public static int ActiveCount => s_All.Count;
 
         ZangaoDefinition m_Definition;
+        EnemyCharge m_Charge;
         EnemyStats m_Stats;
         Health m_Health;
         Transform m_Player;
@@ -76,12 +76,12 @@ namespace Icaro
 
         // Para o sprite (EnemySpriteView): ferrão acendendo no aviso, disparo logo depois; senão voando
         public SpriteAction SpriteAction => m_WarningTimer >= 0f ? SpriteAction.Windup
-            : Time.time - m_LastShotTime < k_AttackShow ? SpriteAction.Attack
+            : CombatTiming.Now - m_LastShotTime < k_AttackShow ? SpriteAction.Attack
             : SpriteAction.Move;
 
         public float SpriteActionProgress => m_WarningTimer >= 0f
             ? 1f - Mathf.Clamp01(m_WarningTimer / Mathf.Max(0.0001f, CombatTiming.Warning(m_Definition.MuzzleWarning)))
-            : Time.time - m_LastShotTime < k_AttackShow ? (Time.time - m_LastShotTime) / k_AttackShow
+            : CombatTiming.Now - m_LastShotTime < k_AttackShow ? (CombatTiming.Now - m_LastShotTime) / k_AttackShow
             : -1f;
         Quaternion[] m_WingRest;
         MaterialPropertyBlock m_Block;
@@ -94,6 +94,7 @@ namespace Icaro
             if (!m_Definition)
                 m_Definition = ScriptableObject.CreateInstance<ZangaoDefinition>();
             m_Block = new MaterialPropertyBlock();
+            m_Charge = EnemyCharge.Create(Muzzle ? Muzzle : transform, EnemyFxStyle.Moth);
 
             if (Wings != null)
             {
@@ -174,7 +175,7 @@ namespace Icaro
         {
             if (m_ReleaseTimer >= 0f)
             {
-                m_ReleaseTimer -= Time.deltaTime;
+                m_ReleaseTimer -= CombatTiming.DeltaTime;
                 if (m_ReleaseTimer < 0f)
                     PrefabPool.Release(gameObject);
                 return;
@@ -199,18 +200,18 @@ namespace Icaro
         void UpdateFlight(float multiplier)
         {
             ZangaoDefinition d = m_Definition;
-            float dt = Time.deltaTime;
+            float dt = CombatTiming.DeltaTime;
 
-            if (Time.time >= m_NextGroundProbe)
+            if (CombatTiming.Now >= m_NextGroundProbe)
             {
-                m_NextGroundProbe = Time.time + k_GroundProbeInterval;
+                m_NextGroundProbe = CombatTiming.Now + k_GroundProbeInterval;
                 ProbeGround();
             }
 
             // Zigue-zague: de tempos em tempos, muda o ângulo em volta do jogador para um lado ou o outro
-            if (Time.time >= m_NextZigzag)
+            if (CombatTiming.Now >= m_NextZigzag)
             {
-                m_NextZigzag = Time.time + CombatTiming.Scaled(Random.Range(d.ZigzagIntervalMin, d.ZigzagIntervalMax));
+                m_NextZigzag = CombatTiming.Now + CombatTiming.Scaled(Random.Range(d.ZigzagIntervalMin, d.ZigzagIntervalMax));
                 m_OrbitAngle += Random.Range(0.4f, 1f) * d.ZigzagAngle * (Random.value < 0.5f ? -1f : 1f);
                 m_OrbitRadius = Random.Range(d.OrbitMin, d.OrbitMax);
                 m_Height = Random.Range(d.HeightMin, d.HeightMax);
@@ -224,7 +225,7 @@ namespace Icaro
             Vector3 desired = Vector3.ClampMagnitude(m_Target - transform.position, speed);
 
             // Ruído suave (Perlin), para o voo não ficar mecânico
-            float t = Time.time * 0.8f + m_NoiseSeed;
+            float t = CombatTiming.Now * 0.8f + m_NoiseSeed;
             desired += new Vector3(Mathf.PerlinNoise(t, 0f) - 0.5f, (Mathf.PerlinNoise(0f, t) - 0.5f) * 0.5f,
                 Mathf.PerlinNoise(t, t) - 0.5f) * (2f * d.NoiseStrength);
 
@@ -335,21 +336,21 @@ namespace Icaro
 
             if (m_WarningTimer >= 0f)
             {
-                m_WarningTimer -= Time.deltaTime;
+                m_WarningTimer -= CombatTiming.DeltaTime;
                 float warning = CombatTiming.Warning(d.MuzzleWarning);
                 SetGlow(true, 1f - Mathf.Clamp01(m_WarningTimer / warning));
                 if (m_WarningTimer < 0f)
                 {
                     SetGlow(false, 0f);
                     Fire(aimPoint);
-                    m_LastShotTime = Time.time;
+                    m_LastShotTime = CombatTiming.Now;
                     ReleaseShooterSlot();
                     m_ShotTimer = CombatTiming.Scaled(Random.Range(d.ShotIntervalMin, d.ShotIntervalMax));
                 }
                 return;
             }
 
-            m_ShotTimer -= Time.deltaTime;
+            m_ShotTimer -= CombatTiming.DeltaTime;
             if (m_ShotTimer > 0f)
                 return;
 
@@ -364,6 +365,9 @@ namespace Icaro
             m_HoldsShooterSlot = true;
             m_WarningTimer = CombatTiming.Warning(d.MuzzleWarning);
             ThreatSignals.Report(transform, m_WarningTimer + 0.4f);
+            // O chilro dura 0,22 s a 1,0x; com o aviso mais curto, o tom sobe
+            EnemySounds.Play(EnemySounds.MothCharge, transform.position, 0.35f, 0.22f / Mathf.Max(0.05f, m_WarningTimer),
+                0.08f, 3f);
         }
 
         bool HasLineOfSight(Vector3 aimPoint, float range)
@@ -381,17 +385,13 @@ namespace Icaro
 
         void Fire(Vector3 aimPoint)
         {
-            if (!ProjectilePrefab)
-                return;
-
             Vector3 origin = Muzzle ? Muzzle.position : transform.position;
             float damage = m_Stats ? m_Stats.Damage : m_Definition.Damage;
             float speed = m_Definition.ProjectileSpeed > 0f ? m_Definition.ProjectileSpeed : 40f;
-            ZangaoProjectile projectile = PrefabPool.Get(ProjectilePrefab, origin, Quaternion.identity);
-            projectile.Launch(gameObject, aimPoint - origin, speed, damage, m_Definition.ProjectileLifetime);
-
-            if (ShotSound)
-                AudioUtility.CreateSFX(ShotSound, origin, AudioUtility.AudioGroups.EnemyAttack, 1f, 3f);
+            EnemyBolt.Fire(EnemyFxStyle.Moth, gameObject, origin, aimPoint - origin, speed, damage,
+                m_Definition.ProjectileLifetime);
+            EnemyFxBurst.Play(EnemyFxSprites.Flash(EnemyFxStyle.Moth), origin, 30f, 1f, Muzzle);
+            EnemySounds.Play(EnemySounds.MothShot, origin, 0.6f, 1f, 0.1f, 3f);
         }
 
         void ReleaseShooterSlot()
@@ -411,11 +411,11 @@ namespace Icaro
                 : m_Velocity;
             if (look.sqrMagnitude > 0.01f)
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(look),
-                    1f - Mathf.Exp(-10f * multiplier * Time.deltaTime));
+                    1f - Mathf.Exp(-10f * multiplier * CombatTiming.DeltaTime));
 
             if (Wings != null && m_WingRest != null)
             {
-                m_WingPhase += Time.deltaTime * k_WingFrequency * multiplier;
+                m_WingPhase += CombatTiming.DeltaTime * k_WingFrequency * multiplier;
                 float flap = Mathf.Sin(m_WingPhase) * 35f;
                 for (int i = 0; i < Wings.Length; i++)
                 {
@@ -426,7 +426,7 @@ namespace Icaro
 
             if (m_FlashTimer > -1f)
             {
-                m_FlashTimer -= Time.deltaTime;
+                m_FlashTimer -= CombatTiming.DeltaTime;
                 Color emission = m_FlashTimer > 0f ? Color.white * 3f : Color.black;
                 SetFlash(emission);
                 if (m_FlashTimer <= 0f)
@@ -455,6 +455,14 @@ namespace Icaro
 
         void SetGlow(bool on, float progress)
         {
+            if (m_Charge)
+            {
+                if (on)
+                    m_Charge.Show(progress);
+                else
+                    m_Charge.Hide();
+            }
+
             if (!MuzzleGlow)
                 return;
             MuzzleGlow.gameObject.SetActive(on);

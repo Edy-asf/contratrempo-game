@@ -9,10 +9,11 @@ namespace Icaro
     {
         const int k_Rate = 44100;
 
-        static AudioClip s_Freeze, s_Unfreeze, s_Rewind, s_Up, s_Down, s_Drain;
+        static AudioClip s_Freeze, s_Unfreeze, s_Rewind, s_Up, s_Down, s_Drain, s_SlowIn, s_SlowOut, s_Tape;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => s_Freeze = s_Unfreeze = s_Rewind = s_Up = s_Down = s_Drain = null;
+        static void ResetStatics() =>
+            s_Freeze = s_Unfreeze = s_Rewind = s_Up = s_Down = s_Drain = s_SlowIn = s_SlowOut = s_Tape = null;
 
         // Duração da descida até 1,0x para a qual o som foi feito (tocado com o tom ajustado a outras durações)
         public const float DrainLength = 1.5f;
@@ -24,6 +25,61 @@ namespace Icaro
         public static AudioClip Rewind => s_Rewind ? s_Rewind : s_Rewind = Make("Tempo_Rebobinar", 0.42f, RewindWave);
         public static AudioClip MilestoneUp => s_Up ? s_Up : s_Up = Make("Tempo_Marco_Sobe", 1.6f, t => Bell(t, 98f, 1.6f));
         public static AudioClip MilestoneDown => s_Down ? s_Down : s_Down = Make("Tempo_Marco_Desce", 0.9f, t => Bell(t, 392f, 0.9f) * 0.7f);
+
+        // Habilidades: o mundo entrando em câmera lenta (um "vuuum" grave que desce, com o coração batendo devagar),
+        // saindo dela (o mesmo subindo) e a fita voltando (TapeLength segundos de rebobinar)
+        public const float TapeLength = 0.9f;
+        public static AudioClip SlowIn => s_SlowIn ? s_SlowIn : s_SlowIn = Make("Tempo_Lento", 1.6f, SlowInWave);
+        public static AudioClip SlowOut => s_SlowOut ? s_SlowOut : s_SlowOut = Make("Tempo_Lento_Fim", 0.8f, SlowOutWave);
+        public static AudioClip Tape => s_Tape ? s_Tape : s_Tape = Make("Tempo_Fita", TapeLength + 0.35f, TapeWave);
+
+        static float SlowInWave(float t)
+        {
+            // Varredura descendo de 260 Hz a 45 Hz, com um sopro grave e duas batidas de coração
+            float u = Mathf.Clamp01(t / 1.2f);
+            float phase = 260f * t - 215f * t * u * 0.5f;
+            float env = Mathf.Min(1f, t / 0.03f) * Mathf.Clamp01((1.6f - t) / 0.6f);
+            float sweep = (Mathf.Sin(2f * Mathf.PI * phase) * 0.5f + Mathf.Sin(2f * Mathf.PI * phase * 0.5f) * 0.35f) * env;
+            float air = Hash(t) * 0.06f * env * (1f - u);
+            float beat = Mathf.Sin(2f * Mathf.PI * 52f * t) * (Pulse(t - 0.35f) + Pulse(t - 1.05f) * 0.8f);
+            return sweep * 0.4f + air + beat * 0.55f;
+        }
+
+        static float SlowOutWave(float t)
+        {
+            float u = Mathf.Clamp01(t / 0.6f);
+            float phase = 50f * t + 300f * t * u * 0.5f;
+            float env = Mathf.Min(1f, t / 0.05f) * Mathf.Clamp01((0.8f - t) / 0.3f);
+            float sweep = (Mathf.Sin(2f * Mathf.PI * phase) * 0.45f + Mathf.Sin(2f * Mathf.PI * phase * 2f) * 0.15f) * env;
+            return sweep * 0.4f + Tick(t - 0.62f, 1800f, 0.35f);
+        }
+
+        // Fita rebobinando: chiado com tom subindo e estalos invertidos cada vez mais juntos, cortando no fim
+        static float TapeWave(float t)
+        {
+            float u = Mathf.Clamp01(t / TapeLength);
+            float env = Mathf.Min(1f, t / 0.04f) * (t < TapeLength ? 1f : Mathf.Clamp01(1f - (t - TapeLength) / 0.05f));
+            float phase = 320f * t + 900f * t * u * 0.5f;
+            float whir = (Mathf.Sin(2f * Mathf.PI * phase) * 0.3f + Mathf.Sin(2f * Mathf.PI * phase * 1.5f) * 0.15f) *
+                         (0.6f + 0.4f * Mathf.Sin(2f * Mathf.PI * 18f * t));
+            float hiss = Hash(t) * 0.12f;
+            float ticks = 0f;
+            float at = 0.03f;
+            for (int i = 0; i < 40 && at < TapeLength; i++)
+            {
+                float d = at - t;
+                if (d >= 0f && d < 0.025f)
+                    ticks += Mathf.Sin(2f * Mathf.PI * 1500f * t) * Mathf.Exp(-d * 180f) * 0.3f;
+                at += Mathf.Lerp(0.11f, 0.03f, at / TapeLength);
+            }
+
+            float thud = t >= TapeLength ? Mathf.Sin(2f * Mathf.PI * 60f * (t - TapeLength)) *
+                                           Mathf.Exp(-(t - TapeLength) * 9f) * 0.6f : 0f;
+            return (whir + hiss) * env * 0.5f + ticks + thud;
+        }
+
+        // Batida de coração (envelope curto)
+        static float Pulse(float t) => t < 0f ? 0f : Mathf.Exp(-t * 18f) * Mathf.Min(1f, t / 0.005f);
 
         // Fita parando: um acorde que desce de tom até sumir, com chiado, e um "tique" seco de relógio no fim
         static float FreezeWave(float t)

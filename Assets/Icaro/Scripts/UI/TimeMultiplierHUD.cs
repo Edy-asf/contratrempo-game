@@ -111,13 +111,13 @@ namespace Icaro
 
         void UpdateText(float multiplier)
         {
-            // Arredonda para as duas casas mostradas, para só reescrever o texto quando ele muda
-            float rounded = Mathf.Round(m_Shown * 100f) / 100f;
+            // Arredonda para as três casas mostradas, para só reescrever o texto quando ele muda
+            float rounded = Mathf.Round(m_Shown * 1000f) / 1000f;
             if (!Mathf.Approximately(rounded, m_DisplayedMultiplier))
             {
                 m_DisplayedMultiplier = rounded;
                 // Vírgula decimal fixa, sem depender dos dados de cultura da plataforma
-                Label.text = rounded.ToString("0.00", CultureInfo.InvariantCulture).Replace('.', ',') + "x";
+                Label.text = rounded.ToString("0.000", CultureInfo.InvariantCulture).Replace('.', ',') + "x";
                 PlaceDial();
             }
 
@@ -204,6 +204,8 @@ namespace Icaro
             // Cresce no pisca a partir do canto direito
             label.rectTransform.pivot = new Vector2(1f, 0.5f);
             label.rectTransform.anchoredPosition = new Vector2(-42f, -76f);
+            // Com o tempo parado, o número dá surtos de glitch
+            label.gameObject.AddComponent<MultiplierGlitch>();
             return label;
         }
 

@@ -179,8 +179,6 @@ MonoBehaviour:
   Wings: []
   Muzzle: {fileID: 6965298972124277468}
   MuzzleGlow: {fileID: 0}
-  ProjectilePrefab: {fileID: 5157940877949022501, guid: 8778d0a223735524fb5e79de9554cffc, type: 3}
-  ShotSound: {fileID: 8300000, guid: a56e3c9f90e17894eb1625f603eceb54, type: 3}
   FlashRenderers: []
 --- !u!114 &2137243130296868821
 MonoBehaviour:
@@ -237,7 +235,7 @@ Transform:
   m_GameObject: {fileID: 3978129841267784698}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.1, z: 0.4}
+  m_LocalPosition: {x: 0, y: -0.27159628, z: 0.1754299}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -39,7 +39,7 @@ namespace Icaro
 
         void Update()
         {
-            m_Time += Time.deltaTime;
+            m_Time += CombatTiming.DeltaTime;
             float t = Mathf.Clamp01(m_Time / m_Duration);
             float pulse = 0.6f + 0.4f * Mathf.Sin(m_Time * Mathf.Lerp(10f, 30f, t));
 

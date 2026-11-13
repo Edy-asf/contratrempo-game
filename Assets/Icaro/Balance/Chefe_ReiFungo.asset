@@ -26,6 +26,7 @@ MonoBehaviour:
   ProjectileSpeed: 0
   MovementMultiplierCap: 0
   MaxHitFraction: 0
+  TimeReduction: 0
   CronitaValue: 3
   MoveSpeed: 3
   PreferredDistance: 12
@@ -35,6 +36,9 @@ MonoBehaviour:
   PhaseGapFactor: 0.75
   AttackColor: {r: 0.45, g: 1, b: 0.7, a: 0.9}
   Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  TimeRewind: 0
+  TimeSlice: 0.1
+  TimeSliceReduction: 0.15
   RingCount: 3
   BulletsPerRing: 16
   BulletSpeed: 9

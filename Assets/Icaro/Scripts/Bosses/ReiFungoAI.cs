@@ -43,7 +43,7 @@ namespace Icaro
             HoldPosition = true;
             Threat(1.5f);
             Squash(0.3f);
-            yield return new WaitForSeconds(WarningTime(0.6f));
+            yield return CombatTiming.Wait(WarningTime(0.6f));
 
             int rings = m_Def.RingCount + (Phase >= 2 ? 2 : 0);
             int gap = Mathf.Max(2, m_Def.RingGap - (Phase >= 2 ? 1 : 0));
@@ -68,7 +68,7 @@ namespace Icaro
                 warning + CombatTiming.Scaled(m_Def.JumpAirTime), m_Def.AttackColor);
             Threat(warning + m_Def.JumpAirTime);
             Lean(-15f);
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
 
             yield return JumpTo(target, m_Def.JumpAirTime, 6f);
 
@@ -102,7 +102,7 @@ namespace Icaro
                 yield return Wait(0.12f);
             }
 
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
         }
     }
 }

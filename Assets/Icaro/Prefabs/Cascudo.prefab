@@ -96,7 +96,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: fps.AI::Unity.FPS.AI.DetectionModule
   DetectionSourcePoint: {fileID: 393320182045898116}
   DetectionRange: 40
-  AttackRange: 2.4
+  AttackRange: 7
   KnownTargetTimeout: 4
   Animator: {fileID: 0}
 --- !u!1 &6257109129767435296
@@ -596,12 +596,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.CascudoAI
   Visual: {fileID: 5831799296832972898}
   Shell: {fileID: 0}
-  AttackRange: 2.4
-  WindupDuration: 0.6
+  AttackRange: 7
+  WindupDuration: 0.8
   Damage: 22
   Cooldown: 1.6
-  HitboxSize: {x: 2.4, y: 1.8, z: 2.2}
-  HitboxForward: 1.3
+  LeapMaxDistance: 9
+  LeapHeight: 1.8
+  LeapTime: 0.55
+  LandTime: 0.4
+  SlamRadius: 3
+  SlamDodgeHeight: 1.2
+  HopHeight: 0.15
+  HopsPerMeter: 0.9
   PlayerSpeedDivisor: 3
   FallbackSpeed: 4.3
   RepathInterval: 0.25

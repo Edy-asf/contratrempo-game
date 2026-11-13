@@ -38,10 +38,10 @@ namespace Icaro
 
         // Para o sprite (EnemySpriteView): sem aviso de mira, a flor abre logo depois de cada rajada
         public SpriteAction SpriteAction =>
-            Time.time - m_LastShotTime < k_AttackShow ? SpriteAction.Attack : SpriteAction.Idle;
+            CombatTiming.Now - m_LastShotTime < k_AttackShow ? SpriteAction.Attack : SpriteAction.Idle;
 
-        public float SpriteActionProgress => Time.time - m_LastShotTime < k_AttackShow
-            ? (Time.time - m_LastShotTime) / k_AttackShow
+        public float SpriteActionProgress => CombatTiming.Now - m_LastShotTime < k_AttackShow
+            ? (CombatTiming.Now - m_LastShotTime) / k_AttackShow
             : -1f;
 
         void Start()
@@ -70,7 +70,7 @@ namespace Icaro
             float multiplier = TimeManager.CurrentMultiplier;
 
             if (SpikeRing)
-                SpikeRing.Rotate(Vector3.up, IdleSpinSpeed * multiplier * Time.deltaTime, Space.Self);
+                SpikeRing.Rotate(Vector3.up, IdleSpinSpeed * multiplier * CombatTiming.DeltaTime, Space.Self);
 
             GameObject target = m_Controller.KnownDetectedTarget;
             if (!target)
@@ -79,12 +79,12 @@ namespace Icaro
             Vector3 aimPosition = target.transform.position + Vector3.up * k_ChestHeight;
             TurnHead(aimPosition, multiplier);
 
-            if (m_Controller.IsSeeingTarget && Time.time >= m_NextShotTime)
+            if (m_Controller.IsSeeingTarget && CombatTiming.Now >= m_NextShotTime)
             {
                 m_Controller.TryAtack(aimPosition);
-                m_LastShotTime = Time.time;
+                m_LastShotTime = CombatTiming.Now;
                 ThreatSignals.Report(transform, 1f);
-                m_NextShotTime = Time.time + Mathf.Max(MinShotInterval, CombatTiming.Scaled(ShotInterval));
+                m_NextShotTime = CombatTiming.Now + Mathf.Max(MinShotInterval, CombatTiming.Scaled(ShotInterval));
             }
         }
 
@@ -96,7 +96,7 @@ namespace Icaro
             Vector3 direction = Vector3.ProjectOnPlane(aimPosition - Head.position, Vector3.up);
             if (direction.sqrMagnitude > 0.001f)
                 Head.rotation = Quaternion.Slerp(Head.rotation, Quaternion.LookRotation(direction),
-                    1f - Mathf.Exp(-AimSharpness * multiplier * Time.deltaTime));
+                    1f - Mathf.Exp(-AimSharpness * multiplier * CombatTiming.DeltaTime));
         }
     }
 }

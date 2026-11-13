@@ -3,7 +3,9 @@ using UnityEngine.AI;
 
 namespace Icaro
 {
-    // Recompensas depois de cada chefe e Cronitas da run. A loja só aparece depois de um chefe, no meio da arena dele.
+    // Recompensas e Cronitas da run. A loja é o Méton (MerchantNpc): ele aparece na frente do jogador depois de cada
+    // chefe e das salas de ShopSettings.MerchantRooms, quando a escolha de cartas termina; num chefe com RewardPoint
+    // (alto do templo do Arquipélago), aparece lá.
     // O Metrônomo saiu do jogo (o tempo volta a 1,0x ao limpar cada sala): os que a Via ainda tem nas cenas ficam
     // escondidos. Também solta as Cronitas dos inimigos
     // (RoomManager). Tudo em jogo, sem precisar regenerar a Via. Valores e prefabs no ShopSettings (CombatBalance.Shop). O PlayerStats cria este componente.
@@ -60,13 +62,18 @@ namespace Icaro
                 s_Instance = null;
         }
 
-        // Depois do chefe: uma loja no meio da arena (ou no RewardPoint da sala)
+        // Depois do chefe e das salas marcadas: o Méton
         void OnRoomCleared(RoomManager room)
         {
-            if (!room || !room.IsBoss)
+            if (!room)
                 return;
-            Vector3 center = room.RewardPoint ? room.RewardPoint.position : room.transform.position;
-            SpawnTerminal(center, "Loja do Chefe");
+            bool listed = System.Array.IndexOf(Settings.MerchantRooms ?? new int[0], room.ArenaNumber) >= 0;
+            if (!room.IsBoss && !listed)
+                return;
+            if (room.IsBoss && room.RewardPoint)
+                MerchantNpc.SpawnAt(GroundPoint(room.RewardPoint.position));
+            else
+                MerchantNpc.SpawnNearPlayer();
         }
 
         static Vector3 GroundPoint(Vector3 position)

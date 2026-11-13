@@ -13,8 +13,8 @@ namespace Icaro
         public static readonly Px[] Hide = R(0x15111d, 0x271f33, 0x3c324b, 0x574969, 0x7c6d92);
         public static readonly Px[] Metal = R(0x181b20, 0x2c3139, 0x464e58, 0x68727e, 0x939ea9);
         public static readonly Px[] Rust = R(0x2a120a, 0x4f2312, 0x7a3a1a, 0xa45a2a, 0xc98244);
-        public static readonly Px[] MothBody = R(0x130e17, 0x241a2a, 0x382a3e, 0x504056, 0x6c5874);
-        public static readonly Px[] MothWing = R(0x1d1420, 0x34233a, 0x4e3652, 0x6d4f6c, 0x92718c);
+        public static readonly Px[] MothBody = R(0x1e1622, 0x34263a, 0x4e3c54, 0x6c5874, 0x8e7a96);
+        public static readonly Px[] MothWing = R(0x5a4a6c, 0x8a76a0, 0xb7a6c8, 0xdcd0e6, 0xf6f0fa);
         public static readonly Px[] Glow = R(0x6a3208, 0xb0600e, 0xe89a22, 0xffcf5a, 0xfff2c0);
         public static readonly Px[] Bio = R(0x0b4a5a, 0x168a9a, 0x2cc6cf, 0x7aeef0, 0xe0fffd);
         public static readonly Px[] Bone = R(0x4a4436, 0x7a7158, 0xaaa07e, 0xd2c9a6, 0xf2ecd2);

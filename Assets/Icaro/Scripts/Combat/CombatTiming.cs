@@ -12,6 +12,48 @@ namespace Icaro
 
         public static float Multiplier => TimeManager.CurrentMultiplier;
 
+        // ---------- relógio do mundo (habilidades de tempo) ----------
+        // Velocidade do mundo dos inimigos: 1 normal, menos de 1 na câmera lenta da habilidade (TimeSlowAbility), 0
+        // enquanto o tempo volta (TimeRewind). Inimigos, projéteis deles, salas e cenário contam o tempo por DeltaTime,
+        // Now e Wait; o jogador continua no tempo normal (nunca usar Time.timeScale para isso).
+        static float s_WorldSpeed = 1f, s_BaseNow, s_BaseTime;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            s_WorldSpeed = 1f;
+            s_BaseNow = s_BaseTime = 0f;
+        }
+
+        public static float WorldSpeed
+        {
+            get => s_WorldSpeed;
+            set
+            {
+                value = Mathf.Max(0f, value);
+                if (Mathf.Approximately(value, s_WorldSpeed))
+                    return;
+                // O relógio continua de onde estava, só muda o ritmo
+                s_BaseNow = Now;
+                s_BaseTime = Time.time;
+                s_WorldSpeed = value;
+            }
+        }
+
+        // Segundos do mundo dos inimigos (no lugar de Time.time) e o passo do frame (no lugar de Time.deltaTime)
+        public static float Now => s_BaseNow + (Time.time - s_BaseTime) * s_WorldSpeed;
+        public static float DeltaTime => Time.deltaTime * s_WorldSpeed;
+
+        // Espera em segundos do mundo (no lugar de WaitForSeconds)
+        public static CustomYieldInstruction Wait(float seconds) => new WorldWait(seconds);
+
+        sealed class WorldWait : CustomYieldInstruction
+        {
+            readonly float m_End;
+            public WorldWait(float seconds) => m_End = Now + Mathf.Max(0f, seconds);
+            public override bool keepWaiting => Now < m_End;
+        }
+
         // Recarga, intervalo ou duração de ação: base / multiplicador
         public static float Scaled(float baseDuration) => baseDuration / Multiplier;
 

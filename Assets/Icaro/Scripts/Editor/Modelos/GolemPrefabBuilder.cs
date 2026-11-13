@@ -18,7 +18,7 @@ namespace Icaro.EditorTools
 
         const string k_Group = "Golem";
         const string k_Model = "Golem";
-        const float k_Height = 4.2f;
+        const float k_Height = 3.6f;
         const float k_Radius = 1.1f;
         const float k_Speed = 2.2f;
 
@@ -39,7 +39,7 @@ namespace Icaro.EditorTools
             EnemyPrefabBuilder.ConfigureAgent(root, radius: k_Radius, height: k_Height, speed: k_Speed, acceleration: 4f,
                 stoppingDistance: 2f);
             EnemyPrefabBuilder.AddStats(root, definition);
-            EnemyPrefabBuilder.AddHitReaction(root, recoil: 0.05f, centerHeight: 2.2f, burstScale: 2.4f);
+            EnemyPrefabBuilder.AddHitReaction(root, recoil: 0.05f, centerHeight: GolemPedraArt.CoreHeight, burstScale: 2.4f);
 
             Transform torso;
             Transform muzzle;
@@ -53,13 +53,13 @@ namespace Icaro.EditorTools
                 visual.gameObject.AddComponent<EnemySpriteView>().Set = sprites;
                 torso = new GameObject("Golem_Tronco").transform;
                 torso.SetParent(root.transform, false);
-                torso.localPosition = new Vector3(0f, 2.45f, 0f);
+                torso.localPosition = new Vector3(0f, GolemPedraArt.CoreHeight, 0f);
                 var coreSpot = new GameObject("Golem_Nucleo").transform;
                 coreSpot.SetParent(torso, false);
-                coreSpot.localPosition = new Vector3(0f, 0.3f, 0.55f);
+                coreSpot.localPosition = new Vector3(0f, 0f, GolemPedraArt.CoreForward * 0.5f);
                 muzzle = new GameObject("Laser_Origem").transform;
                 muzzle.SetParent(coreSpot, false);
-                muzzle.localPosition = new Vector3(0f, 0f, 0.35f);
+                muzzle.localPosition = new Vector3(0f, 0f, GolemPedraArt.CoreForward * 0.5f);
             }
             else if (model)
             {
@@ -80,6 +80,7 @@ namespace Icaro.EditorTools
             var ai = root.AddComponent<GolemAI>();
             ai.Torso = torso;
             ai.Muzzle = muzzle;
+            ai.FaceBeforeAim = sprites;
             ai.LineMaterial = CombatAssetsBuilder.LineMaterial;
             ai.ImpactVfx = AssetDatabase.LoadAssetAtPath<GameObject>(k_ImpactVfx);
             ai.AimSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_AimSound);

@@ -14,9 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.CombatBalance
   QuotaBase: 12
   QuotaPerRoom: 2.5
-  AliveBase: 6
-  AlivePerRoom: 0.75
-  AliveCeiling: 40
+  AliveBase: 4
+  AlivePerRoom: 0.4
+  AliveByRoomSize: 1
+  ReferenceArea: 2000
+  AreaExponent: 0.5
+  AreaFactorRange: {x: 0.5, y: 3}
+  AliveMin: 3
+  AliveCeiling: 20
   EnemyCountMultiplier: 1
   SpawnIntervalMin: 0.5
   SpawnIntervalMax: 1
@@ -190,7 +195,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   BossRoomHealthBonus: 1.25
   Bosses:
-  - {fileID: 11400000, guid: 63f4977d6fb163947bf47a78b0f2c114, type: 2}
+  - {fileID: 11400000, guid: aecf92deba43c844887dbb72583832e0, type: 2}
   - {fileID: 11400000, guid: a8e55911a189ece43a72ba66f7695346, type: 2}
   - {fileID: 11400000, guid: 620b56121eda0a940bd9b8e4655893fb, type: 2}
   - {fileID: 11400000, guid: 5062ec0994481aa44bbcacf11c233dd4, type: 2}
@@ -252,6 +257,8 @@ MonoBehaviour:
   Shop: {fileID: 11400000, guid: 686d477454adaf44a882c176dd3ac87e, type: 2}
   Items: {fileID: 11400000, guid: 9c64be95b20b2e242b10f052387c2f20, type: 2}
   PlayerMaxHealth: 125
+  PlayerHeight: 2
+  PlayerEyeHeight: 1.8
   PlayerBaseRegen: 1
   PlayerCritChance: 0.1
   PlayerCritMultiplier: 2

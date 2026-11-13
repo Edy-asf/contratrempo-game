@@ -14,7 +14,7 @@ namespace Icaro
         // Segundos do mundo (só andam com ele)
         public static float WorldTime { get; internal set; }
 
-        public static float DeltaTime => Time.deltaTime * Scale;
+        public static float DeltaTime => Time.deltaTime * Scale * CombatTiming.WorldSpeed;
 
         public static bool Frozen => Scale <= 0.001f;
 

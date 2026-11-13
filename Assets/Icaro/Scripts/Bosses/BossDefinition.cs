@@ -46,5 +46,19 @@ namespace Icaro
 
         [Tooltip("Quanto cada fatia tira do multiplicador")]
         [Min(0f)] public float TimeSliceReduction = 0.15f;
+
+        [Header("Reforços")]
+        [Tooltip("Inimigos que surgem junto com o chefe (sorteados por igual, com o MaxAlive de cada um). Vazio = a " +
+                 "tabela normal da sala")]
+        public EnemyDefinition[] Reinforcements;
+
+        [Tooltip("Total de reforços na luta (-1 = o BossQuota do CombatBalance; 0 = sem reforços)")]
+        [Min(-1)] public int ReinforcementQuota = -1;
+
+        [Tooltip("Reforços vivos ao mesmo tempo (-1 = o BossAliveLimit do CombatBalance)")]
+        [Min(-1)] public int ReinforcementAlive = -1;
+
+        [Tooltip("Ao morrer o chefe, os reforços vivos morrem juntos e os que faltam surgir não surgem mais")]
+        public bool ReinforcementsDieWithBoss = true;
     }
 }

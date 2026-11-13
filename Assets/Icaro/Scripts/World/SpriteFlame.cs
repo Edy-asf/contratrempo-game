@@ -16,9 +16,12 @@ namespace Icaro
         [Tooltip("Chama lilás (os braseiros da praça da basílica); desligado, a azul-esverdeada de sempre")]
         public bool Lilac;
 
+        [Tooltip("Chama laranja de fogo comum (as tochas da caverna do portal); tem prioridade sobre Lilac")]
+        public bool Warm;
+
         const int k_Frames = 12, k_Width = 40, k_HeightPx = 40;
 
-        static readonly Sprite[][] s_Sets = new Sprite[2][];
+        static readonly Sprite[][] s_Sets = new Sprite[3][];
         static Material s_Material;
         Sprite[] s_Frames;
 
@@ -29,9 +32,9 @@ namespace Icaro
 
         void Awake()
         {
-            int set = Lilac ? 1 : 0;
+            int set = Warm ? 2 : Lilac ? 1 : 0;
             if (s_Sets[set] == null || s_Sets[set][0] == null)
-                s_Sets[set] = Build(set == 1);
+                s_Sets[set] = Build(set);
             s_Frames = s_Sets[set];
             m_Renderer = GetComponent<SpriteRenderer>();
             if (!m_Renderer)
@@ -72,7 +75,7 @@ namespace Icaro
         // Fogo que sobe: forma larga afinando para cima, que balança de um lado para o outro (mais no alto), recortada
         // por ruído que corre para cima (duas amostras misturadas para o último quadro emendar no primeiro) e pintada
         // em quatro tons, do miolo claro à borda escura; fagulhas soltas acima da chama
-        static Sprite[] Build(bool lilac)
+        static Sprite[] Build(int set)
         {
             if (!s_Material)
             {
@@ -80,10 +83,10 @@ namespace Icaro
                 s_Material = shader ? new Material(shader) { name = "Chama_Sprite" } : null;
             }
 
-            Color core = lilac ? new Color(1f, 0.93f, 1f) : new Color(0.85f, 1f, 0.95f);
-            Color bright = lilac ? new Color(0.86f, 0.62f, 1f) : new Color(0.3f, 1f, 0.8f);
-            Color middle = lilac ? new Color(0.62f, 0.32f, 0.95f) : new Color(0.05f, 0.8f, 0.68f);
-            Color dark = lilac ? new Color(0.34f, 0.12f, 0.62f, 0.9f) : new Color(0.02f, 0.45f, 0.48f, 0.9f);
+            Color core = set == 2 ? new Color(1f, 0.97f, 0.78f) : set == 1 ? new Color(1f, 0.93f, 1f) : new Color(0.85f, 1f, 0.95f);
+            Color bright = set == 2 ? new Color(1f, 0.78f, 0.25f) : set == 1 ? new Color(0.86f, 0.62f, 1f) : new Color(0.3f, 1f, 0.8f);
+            Color middle = set == 2 ? new Color(0.98f, 0.45f, 0.08f) : set == 1 ? new Color(0.62f, 0.32f, 0.95f) : new Color(0.05f, 0.8f, 0.68f);
+            Color dark = set == 2 ? new Color(0.72f, 0.16f, 0.04f, 0.9f) : set == 1 ? new Color(0.34f, 0.12f, 0.62f, 0.9f) : new Color(0.02f, 0.45f, 0.48f, 0.9f);
             const float scale = 0.17f, climb = 3.4f;
             var frames = new Sprite[k_Frames];
             for (int f = 0; f < k_Frames; f++)

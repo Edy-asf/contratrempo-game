@@ -18,15 +18,17 @@ Hoje as folhas são desenhadas em código. **Ícaro > Sprites > Desenhar inimigo
 
 - **Grade:** células todas do mesmo tamanho, com fundo transparente. Use alfa cheio ou zero, sem meio-termo, porque o jogo recorta pelo alfa.
 - **Colunas:** uma por quadro. A coluna 0 fica à esquerda. Clipes com menos quadros deixam o resto da linha vazio.
-- **Linhas:** quatro por clipe, uma por direção, nesta ordem:
+- **Linhas:** uma por direção em cada clipe, no sentido horário visto de cima, a partir da frente. Com 4 direções (`"directions": 4`, o padrão):
   1. Frente: o inimigo de frente para o jogador.
   2. Direita: o lado direito do inimigo, com a cara virada para a direita da imagem.
   3. Costas.
   4. Esquerda: a cara virada para a esquerda da imagem.
 
+  Com 8 direções (`"directions": 8`): frente, frente-direita, direita, costas-direita, costas, costas-esquerda, esquerda e frente-esquerda. As diagonais da direita são desenhadas viradas para a direita da imagem, como a vista de lado, e as três da esquerda são os espelhos delas.
+
   A linha 0 é a de cima.
 - **Pixel art:** o Unity importa sem suavização (filtro Point) e sem compressão.
-- **Escala:** 16 pixels por metro, a mesma das árvores.
+- **Escala:** a do `pixelsPerMeter` do JSON (os desenhados em código usam 16 pixels por metro, a mesma das árvores, salvo os que pedem outra densidade).
 
 ## O mapa de brilho (PNG, opcional)
 
@@ -42,7 +44,7 @@ Hoje as folhas são desenhadas em código. **Ícaro > Sprites > Desenhar inimigo
   "name": "Cascudo",
   "cellWidth": 44, "cellHeight": 36,
   "columns": 5, "rows": 24,
-  "pixelsPerMeter": 16,
+  "pixelsPerMeter": 16, "directions": 4,
   "pivotX": 22, "pivotY": 1,
   "emission": "Cascudo_Brilho.png", "bodyGlow": 0.25,
   "clips": [
@@ -58,7 +60,8 @@ Hoje as folhas são desenhadas em código. **Ícaro > Sprites > Desenhar inimigo
 
 - **`pixelsPerMeter`:** quantos pixels valem 1 m no jogo. Define o tamanho do sprite.
 - **`pivotX`, `pivotY`:** o ponto do chão (os pés) dentro da célula, em pixels contados a partir do canto de baixo à esquerda. Nos voadores, é o centro do corpo.
-- **`row`:** a linha da frente do clipe. As outras três direções vêm logo abaixo.
+- **`row`:** a linha da frente do clipe. As outras direções vêm logo abaixo.
+- **`directions`:** 4 ou 8 (sem o campo, 4).
 - **`fps`:** quadros por segundo a 1,0x. A animação acelera com o multiplicador de tempo.
 - **`emission`, `bodyGlow`:** o mapa de brilho e quanto do corpo aparece nele. São opcionais.
 

@@ -26,7 +26,7 @@ namespace Icaro
 
         void Update()
         {
-            m_Remaining -= Time.deltaTime;
+            m_Remaining -= CombatTiming.DeltaTime;
             if (m_Remaining > 0f)
                 return;
 

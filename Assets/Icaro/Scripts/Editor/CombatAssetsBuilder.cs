@@ -18,6 +18,7 @@ namespace Icaro.EditorTools
         public const string VagantePath = Folder + "/Inimigo_Vagante.asset";
         public const string ZangaoPath = Folder + "/Inimigo_Zangao.asset";
         public const string ReiFungoPath = Folder + "/Chefe_ReiFungo.asset";
+        public const string PeDeMusgoPath = Folder + "/Chefe_PeDeMusgo.asset";
         public const string SapoPath = Folder + "/Chefe_Sapo.asset";
         public const string TribalPath = Folder + "/Chefe_Tribal.asset";
         public const string DragaoPath = Folder + "/Chefe_Dragao.asset";
@@ -89,8 +90,8 @@ namespace Icaro.EditorTools
             // Cascudo: o dobro da vida de um inimigo comum; substitui o Broto nas salas
             CreateIfMissing<CascudoDefinition>(CascudoPath, d =>
             {
-                d.DisplayName = "Tatu-lanterna";
-                d.MinArena = 1; d.MaxAlive = 6; d.CronitaValue = 3;
+                d.DisplayName = "Orbe";
+                d.MinArena = 1; d.MaxAlive = 4; d.CronitaValue = 3;
                 d.MaxHealth = 420f; d.Damage = 22f; d.AttackCooldown = 1.6f;
                 // Base = 1/3 do jogador: com teto de movimento 6, chega no máximo ao dobro da velocidade do jogador
                 d.MovementMultiplierCap = 6f;
@@ -108,7 +109,7 @@ namespace Icaro.EditorTools
             CreateIfMissing<ZangaoDefinition>(ZangaoPath, d =>
             {
                 d.DisplayName = "Mariposa-lanterna";
-                d.MinArena = 2; d.MaxAlive = 14; d.GroupMin = 3; d.GroupMax = 5; d.Pooled = true;
+                d.MinArena = 2; d.MaxAlive = 8; d.GroupMin = 2; d.GroupMax = 4; d.Pooled = true;
                 d.CronitaValue = 1;
                 d.MaxHealth = 52f; d.Damage = 4f; d.AttackCooldown = 2.5f; d.ProjectileSpeed = 45f;
             });
@@ -137,7 +138,7 @@ namespace Icaro.EditorTools
             balance.EliteMaterial = BossPrefabBuilder.Additive("Elite_Brilho");
             balance.Bosses = new EnemyDefinition[]
             {
-                AssetDatabase.LoadAssetAtPath<ReiFungoDefinition>(ReiFungoPath),
+                AssetDatabase.LoadAssetAtPath<PeDeMusgoDefinition>(PeDeMusgoPath),
                 AssetDatabase.LoadAssetAtPath<SapoDefinition>(SapoPath),
                 AssetDatabase.LoadAssetAtPath<TribalDefinition>(TribalPath),
                 AssetDatabase.LoadAssetAtPath<DragaoDefinition>(DragaoPath),
@@ -155,6 +156,15 @@ namespace Icaro.EditorTools
                 d.DisplayName = "Rei Fungo"; d.MaxHealth = 5000f; d.Damage = 20f;
                 d.MoveSpeed = 3f; d.PreferredDistance = 12f; d.AttackGap = 1.8f;
                 d.AttackColor = new Color(0.45f, 1f, 0.7f, 0.9f);
+            });
+            // O chefe do Bosque desde 2026-11-13 (o Rei Fungo continua no projeto, sem uso)
+            CreateIfMissing<PeDeMusgoDefinition>(PeDeMusgoPath, d =>
+            {
+                d.DisplayName = "Pé-de-Musgo"; d.MaxHealth = 5000f; d.Damage = 20f;
+                d.MoveSpeed = 3.2f; d.PreferredDistance = 13f; d.AttackGap = 1.7f;
+                d.PhaseTwoAt = 0.6f; d.PhaseThreeAt = 0.3f;
+                d.AttackColor = new Color(0.75f, 0.95f, 0.45f, 0.9f);
+                d.Reinforcements = new[] { Espinhento };
             });
             CreateIfMissing<SapoDefinition>(SapoPath, d =>
             {
@@ -177,7 +187,7 @@ namespace Icaro.EditorTools
             });
 
             // Estrutural: todos usam o kit compartilhado
-            foreach (string path in new[] { ReiFungoPath, SapoPath, TribalPath, DragaoPath })
+            foreach (string path in new[] { ReiFungoPath, PeDeMusgoPath, SapoPath, TribalPath, DragaoPath })
             {
                 var definition = AssetDatabase.LoadAssetAtPath<BossDefinition>(path);
                 definition.Kit = kit;
@@ -186,6 +196,8 @@ namespace Icaro.EditorTools
 
             BossPrefabBuilder.BuildBoss<ReiFungoAI>(AssetDatabase.LoadAssetAtPath<ReiFungoDefinition>(ReiFungoPath),
                 "Chefe_ReiFungo", 0.55f, new Color(0.4f, 0.7f, 0.9f));
+            BossPrefabBuilder.BuildBoss<PeDeMusgoAI>(AssetDatabase.LoadAssetAtPath<PeDeMusgoDefinition>(PeDeMusgoPath),
+                "Chefe_PeDeMusgo", 0.75f, new Color(0.35f, 0.5f, 0.3f));
             BossPrefabBuilder.BuildBoss<SapoAI>(AssetDatabase.LoadAssetAtPath<SapoDefinition>(SapoPath),
                 "Chefe_Sapo", 0.7f, new Color(0.9f, 0.8f, 0.2f));
             BossPrefabBuilder.BuildBoss<TribalAI>(AssetDatabase.LoadAssetAtPath<TribalDefinition>(TribalPath),

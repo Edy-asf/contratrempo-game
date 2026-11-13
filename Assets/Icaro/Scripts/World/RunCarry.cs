@@ -22,8 +22,12 @@ namespace Icaro
             public readonly List<WeaponDefinition> Weapons = new List<WeaponDefinition>();
             public WeaponDefinition ActiveWeapon;
             public float HealthRatio = 1f;
-            public int Cronitas, RerollTokens, DamageUpgrades, FireRateUpgrades;
+            public int Cronitas, RerollTokens;
             public RunStats.Totals Stats;
+            public readonly List<AbilityType> AbilitySlots = new List<AbilityType>();
+            public readonly List<AbilityType> AbilityStored = new List<AbilityType>();
+            public bool Translator;
+            public readonly List<string> HeardDialogues = new List<string>();
         }
 
         // Chegando de um portal: o menu de título e a abertura não aparecem
@@ -212,6 +216,18 @@ namespace Icaro
                 WeaponController active = weapons ? weapons.GetActiveWeapon() : null;
                 var activeIcaro = active ? active.GetComponent<IcaroWeapon>() : null;
                 snapshot.ActiveWeapon = activeIcaro ? activeIcaro.Definition : null;
+
+                var abilities = stats.GetComponent<PlayerAbilities>();
+                if (abilities)
+                {
+                    for (int i = 0; i < PlayerAbilities.SlotCount; i++)
+                        snapshot.AbilitySlots.Add(abilities.SlotAt(i));
+                    snapshot.AbilityStored.AddRange(abilities.Stored);
+                }
+
+                snapshot.Translator = PlayerTranslator.Owned;
+                if (DialogueMemory.Instance)
+                    snapshot.HeardDialogues.AddRange(DialogueMemory.Instance.Heard);
             }
 
             PlayerWallet wallet = PlayerWallet.Instance;
@@ -219,8 +235,6 @@ namespace Icaro
             {
                 snapshot.Cronitas = wallet.Cronitas;
                 snapshot.RerollTokens = wallet.RerollTokens;
-                snapshot.DamageUpgrades = wallet.DamageUpgrades;
-                snapshot.FireRateUpgrades = wallet.FireRateUpgrades;
             }
 
             if (RunStats.Instance)
@@ -236,8 +250,7 @@ namespace Icaro
             // A carteira primeiro: as melhorias da loja entram no cálculo dos itens
             PlayerWallet wallet = PlayerWallet.Instance;
             if (wallet)
-                wallet.Restore(snapshot.Cronitas, snapshot.RerollTokens, snapshot.DamageUpgrades,
-                    snapshot.FireRateUpgrades);
+                wallet.Restore(snapshot.Cronitas, snapshot.RerollTokens);
 
             PlayerStats stats = PlayerStats.Instance;
             if (stats)
@@ -254,6 +267,18 @@ namespace Icaro
                 var health = stats.GetComponent<Health>();
                 if (health)
                     health.CurrentHealth = Mathf.Max(1f, health.MaxHealth * snapshot.HealthRatio);
+
+                var abilities = stats.GetComponent<PlayerAbilities>();
+                if (abilities && (snapshot.AbilitySlots.Count > 0 || snapshot.AbilityStored.Count > 0))
+                    abilities.Restore(snapshot.AbilitySlots, snapshot.AbilityStored);
+
+                var translator = stats.GetComponent<PlayerTranslator>();
+                if (translator && snapshot.Translator)
+                    translator.Set(true);
+
+                var memory = stats.GetComponent<DialogueMemory>();
+                if (memory)
+                    memory.Restore(snapshot.HeardDialogues);
             }
 
             if (RunStats.Instance && snapshot.Stats != null)

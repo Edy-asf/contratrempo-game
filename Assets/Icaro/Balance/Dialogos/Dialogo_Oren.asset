@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96966963609b55145b336a68b8459422, type: 3}
+  m_Name: Dialogo_Oren
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.DialogueDefinition
+  Speaker: "Oren, o \xFAltimo sineiro"
+  SpeakerColor: {r: 0.5, g: 0.92, b: 1, a: 1}
+  IgnoreWithoutTranslator: 1
+  Repeat: {fileID: 0}
+  Nodes:
+  - Id: 
+    Text: "Shh... Ou\xE7a. Ainda est\xE1 ecoando. A \xFAltima badalada."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Fui eu que toquei o sino \xE0s 11h58. O Conselho mandou avisar a cidade. Ent\xE3o o sino caiu."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Espero a pr\xF3xima badalada desde ent\xE3o. Ela nunca vem. Por que veio at\xE9 aqui, m\xE1quina?"
+    Next: 
+    Event: 
+    Choices:
+    - Label: "Vim destruir o Cora\xE7\xE3o."
+      Next: fim_do_tempo
+      Event: 
+    - Label: "S\xF3 estou de passagem."
+      Next: passagem
+      Event: 
+  - Id: passagem
+    Text: "Ningu\xE9m est\xE1 de passagem num instante. Volte quando souber o que veio fazer."
+    Next: fim
+    Event: 
+    Choices: []
+  - Id: fim_do_tempo
+    Text: "Ent\xE3o... voc\xEA \xE9 a pr\xF3xima badalada."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Mas um sino n\xE3o toca sozinho. Ele precisa ser batido. Mostre que voc\xEA \xE9 forte o bastante."
+    Next: fim
+    Event: chefe_secreto
+    Choices: []

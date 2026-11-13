@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa24e7b0d8ac564fb9ff40f6c57d10e, type: 3}
+  m_Name: Chefe_PeDeMusgo
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.PeDeMusgoDefinition
+  Prefab: {fileID: 7162199781637776968, guid: 6bb79a49763e2db4098ae309db803e28, type: 3}
+  DisplayName: "P\xE9-de-Musgo"
+  MinArena: 1
+  MaxAlive: 0
+  RequiresHighSpawn: 0
+  GroupMin: 1
+  GroupMax: 1
+  Pooled: 0
+  MaxHealth: 5000
+  Damage: 20
+  AttackCooldown: 1
+  ProjectileSpeed: 0
+  MovementMultiplierCap: 0
+  MaxHitFraction: 0
+  TimeReduction: 0
+  CronitaValue: 3
+  MoveSpeed: 3.2
+  PreferredDistance: 13
+  AttackGap: 1.7
+  PhaseTwoAt: 0.6
+  PhaseThreeAt: 0.3
+  PhaseGapFactor: 0.75
+  AttackColor: {r: 0.75, g: 0.95, b: 0.45, a: 0.9}
+  Kit: {fileID: 11400000, guid: 28cba8fcc1952684b82f5880bdb395f6, type: 2}
+  TimeRewind: 0
+  TimeSlice: 0.1
+  TimeSliceReduction: 0.15
+  JumpWarning: 0.8
+  JumpAirTime: 0.9
+  JumpHeight: 7
+  ShadowLead: 1
+  SlamRadius: 4.5
+  SlamDamage: 30
+  ShockwaveSpeed: 13
+  ShockwaveDamage: 18
+  SecondJumpWarning: 0.75
+  GrabTriggerDistance: 10
+  GrabWarning: 0.8
+  GrabLunge: 3.5
+  GrabLungeTime: 0.22
+  GrabRange: 6
+  GrabHalfAngle: 50
+  GrabDamage: 32
+  GrabStun: 0.8
+  GrabThrow: {x: 16, y: 7}
+  ClodMinDistance: 12
+  ClodWarning: 0.9
+  ClodFlightTime: 1.3
+  ClodRadius: 3
+  ClodDamage: 24
+  ClodCount: {x: 1, y: 2, z: 3}
+  ClodShards: 6
+  ShardSpeed: 11
+  ShardDamage: 8
+  RoarWarning: 1
+  RoarTime: 1.2
+  SporeClouds: 3
+  CloudRadius: 4
+  CloudDuration: 8
+  CloudDps: 9
+  WeakPointOffset: {x: 1.6, y: 8.6}
+  WeakPointRadius: 0.9
+  WeakPointMultiplier: 2
+  StunTime: 2
+  HuntEdge: 0.8
+  HuntJumpAirTime: 0.9
+  HuntHide: {x: 2, y: 3}
+  PounceWarning: 0.8
+  PounceAirTime: 0.65
+  PounceRadius: 3.8
+  PounceDamage: 34
+  Reinforcements:
+  - {fileID: 11400000, guid: 561de3ddd0f1df346afcf61a50a44c5b, type: 2}
+  ReinforcementQuota: -1
+  ReinforcementAlive: -1
+  ReinforcementsDieWithBoss: 1

@@ -29,6 +29,9 @@ namespace Icaro
 
         public static bool Exists => Player && !s_Player.IsDead;
 
+        // Corpo do jogador (CharacterController)
+        public static CharacterController Character => Player ? s_Character : null;
+
         public static Vector3 Feet => Player ? s_Player.transform.position : Vector3.zero;
 
         // Altura do corpo agora (menor agachado)
@@ -41,11 +44,13 @@ namespace Icaro
         public static Vector3 Velocity => Player ? s_Player.CharacterVelocity : Vector3.zero;
 
         // Causa dano no jogador pelo evento central (os limites de justiça do PlayerDefenses valem)
-        public static void Damage(float amount, GameObject attacker, Vector3 point, bool continuous = false)
+        // heavy: golpe pesado (limite de dano por acerto maior, CombatBalance.HeavyMaxHitFraction)
+        public static void Damage(float amount, GameObject attacker, Vector3 point, bool continuous = false,
+            bool heavy = false)
         {
             if (!Exists || !s_Damageable || amount <= 0f)
                 return;
-            CombatEvents.ApplyDamage(s_Damageable, amount, attacker, point, continuous: continuous);
+            CombatEvents.ApplyDamage(s_Damageable, amount, attacker, point, continuous: continuous, heavy: heavy);
         }
 
         // Distância horizontal dos pés do jogador até um ponto

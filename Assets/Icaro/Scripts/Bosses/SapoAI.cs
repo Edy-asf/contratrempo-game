@@ -63,13 +63,13 @@ namespace Icaro
                 yield return Wait(0.1f);
             }
 
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
         }
 
         IEnumerator AcidDrop(Vector3 ground, float warning)
         {
             yield return DropFromSky(ground, warning, m_Def.AcidImpactDamage, m_Def.AcidRadius, 0.9f);
-            yield return new WaitForSeconds(0.45f);
+            yield return CombatTiming.Wait(0.45f);
             AcidPuddle.Spawn(Kit, ground, m_Def.AcidRadius, m_Def.PuddleDuration, m_Def.PuddleTickDamage,
                 m_Def.PuddleTickInterval, gameObject, k_Acid);
         }
@@ -98,7 +98,7 @@ namespace Icaro
             GroundTelegraph.Show(Kit, target, 4f, warning + CombatTiming.Scaled(m_Def.LeapAirTime), m_Def.AttackColor);
             Threat(warning + m_Def.LeapAirTime + 1f);
             Squash(0.4f);
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
 
             yield return JumpTo(target, m_Def.LeapAirTime, 8f);
             int waves = ByPhase(m_Def.Shockwaves);

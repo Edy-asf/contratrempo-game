@@ -82,6 +82,9 @@ namespace Icaro
         public int Quota { get; private set; }
         public int AliveLimit { get; private set; }
 
+        // Chão andável da arena em m² (NavMesh dentro do domo), medido ao começar a luta
+        public float FloorArea { get; private set; }
+
         // Inimigos vivos da sala, sem o chefe (pode ter entradas destruídas: checar null). Usado pela mira assistida.
         public IReadOnlyList<GameObject> AliveEnemies => m_Alive;
 
@@ -111,6 +114,8 @@ namespace Icaro
         int m_Pending;
 
         bool m_BossPending;
+        EnemyDefinition[] m_Reinforcements;
+        bool m_ReinforcementsCut;
         Transform m_Player;
         ArenaDome m_Dome;
         int m_LastSpawnPoint = -1;
@@ -248,7 +253,21 @@ namespace Icaro
             EnemyDefinition bossDefinition = BossDefinitionForRoom;
             bool bossRoom = bossDefinition && bossDefinition.Prefab;
             Quota = Balance.QuotaFor(ArenaNumber, bossRoom);
-            AliveLimit = Balance.AliveLimitFor(ArenaNumber, bossRoom);
+            FloorArea = ArenaFloor.AreaOf(this);
+            AliveLimit = Balance.AliveLimitFor(ArenaNumber, bossRoom, FloorArea);
+            // Reforços próprios do chefe (quais, quantos e quantos vivos)
+            m_Reinforcements = null;
+            m_ReinforcementsCut = false;
+            if (bossRoom && bossDefinition is BossDefinition bossData)
+            {
+                if (bossData.ReinforcementQuota >= 0)
+                    Quota = Mathf.RoundToInt(bossData.ReinforcementQuota * Balance.EnemyCountMultiplier);
+                if (bossData.ReinforcementAlive >= 0)
+                    AliveLimit = Mathf.Max(1, Mathf.RoundToInt(bossData.ReinforcementAlive * Balance.EnemyCountMultiplier));
+                if (bossData.Reinforcements != null && bossData.Reinforcements.Length > 0)
+                    m_Reinforcements = bossData.Reinforcements;
+            }
+            Debug.Log($"[Ícaro] Sala {ArenaNumber} ({RoomName}): {FloorArea:0} m² de chão, até {AliveLimit} vivos, cota {Quota}.");
             m_ToSpawn = Quota;
             QuotaStarted = true;
             m_Pending = 0;
@@ -267,15 +286,19 @@ namespace Icaro
                 StartCoroutine(SpawnBoss());
             }
 
-            while (m_ToSpawn > 0)
+            // A volta no tempo (TimeRewind) pode devolver inimigos à cota depois que todos surgiram: o laço continua
+            // surgindo enquanto restar alguém
+            while (RemainingEnemies > 0)
             {
-                if (RegularAlive() + m_Pending < AliveLimit)
+                if (m_ToSpawn > 0 && RegularAlive() + m_Pending < AliveLimit)
                 {
-                    EnemyDefinition next = SpawnDirector.Pick(Balance, ArenaNumber, ActiveByType(), FreeHighPoints());
+                    EnemyDefinition next = m_Reinforcements != null
+                        ? SpawnDirector.PickFrom(Balance, ArenaNumber, m_Reinforcements, ActiveByType(), FreeHighPoints())
+                        : SpawnDirector.Pick(Balance, ArenaNumber, ActiveByType(), FreeHighPoints());
                     if (next)
                     {
                         BeginSpawn(next, GroupSize(next));
-                        yield return new WaitForSeconds(Balance.NextSpawnInterval());
+                        yield return CombatTiming.Wait(Balance.NextSpawnInterval());
                         continue;
                     }
                 }
@@ -283,9 +306,6 @@ namespace Icaro
                 // Sem vaga (ou todos os tipos no limite): espera alguém morrer
                 yield return null;
             }
-
-            while (RemainingEnemies > 0)
-                yield return null;
         }
 
         // Vivos e surgindo de cada tipo (limite MaxAlive)
@@ -361,7 +381,7 @@ namespace Icaro
             for (int attempt = 0; attempt < 3; attempt++)
             {
                 float duration = ShowSpawnWarning(position);
-                yield return new WaitForSeconds(duration);
+                yield return CombatTiming.Wait(duration);
 
                 if (PlayerDistance(position) >= Balance.MinSpawnDistance * 0.5f)
                     break;
@@ -372,6 +392,8 @@ namespace Icaro
             {
                 Vector2 spread = count > 1 ? Random.insideUnitCircle * 1.5f : Vector2.zero;
                 EndPending(definition);
+                if (m_ReinforcementsCut)
+                    continue;
                 m_Alive.Add(Spawn(definition, position + new Vector3(spread.x, 0f, spread.y), false));
             }
         }
@@ -380,7 +402,7 @@ namespace Icaro
         IEnumerator SpawnBoss()
         {
             Vector3 position = BossPoint ? BossPoint.position : PickSpawnPosition();
-            yield return new WaitForSeconds(ShowSpawnWarning(position));
+            yield return CombatTiming.Wait(ShowSpawnWarning(position));
 
             GameObject boss = Spawn(BossDefinitionForRoom, position, true);
             m_BossPending = false;
@@ -397,7 +419,29 @@ namespace Icaro
                     Vector3 center = Boss ? Boss.transform.position + Vector3.up : position;
                     ShopDirector.DropFor(BossDefinitionForRoom, center, ArenaNumber, false, true);
                     Boss = null;
+                    if (BossDefinitionForRoom is BossDefinition data && data.ReinforcementsDieWithBoss)
+                        CutReinforcements();
                 };
+        }
+
+        // Chefe derrotado: os reforços vivos morrem juntos (com a recompensa de um abate normal) e os que faltam
+        // surgir saem da cota, para a sala acabar junto com o chefe
+        void CutReinforcements()
+        {
+            m_ReinforcementsCut = true;
+            m_ToSpawn = 0;
+            var alive = new List<GameObject>(m_Alive);
+            foreach (GameObject enemy in alive)
+            {
+                if (!enemy)
+                    continue;
+                var health = enemy.GetComponent<Health>();
+                if (health && health.CurrentHealth > 0f)
+                {
+                    health.Invincible = false;
+                    health.Kill();
+                }
+            }
         }
 
         // Espinhento: só em ponto alto livre e válido; a linha de visão é conferida de novo no fim do aviso.
@@ -408,8 +452,10 @@ namespace Icaro
             for (int attempt = 0; point && attempt < 3; attempt++)
             {
                 float duration = ShowSpawnWarning(point.transform.position);
-                yield return new WaitForSeconds(duration);
+                yield return CombatTiming.Wait(duration);
 
+                if (m_ReinforcementsCut)
+                    break;
                 if (point.Validate() && PlayerDistance(point.transform.position) > 3f)
                 {
                     EndPending(definition);
@@ -481,12 +527,13 @@ namespace Icaro
         }
 
         // highPoint: nasce exatamente no ponto (só encosta no NavMesh do topo do poleiro, nunca no chão abaixo)
-        GameObject Spawn(EnemyDefinition definition, Vector3 position, bool boss, bool highPoint = false)
+        GameObject Spawn(EnemyDefinition definition, Vector3 position, bool boss, bool highPoint = false,
+            EliteModifier? elite = null, bool exact = false)
         {
-            if (highPoint && NavMesh.SamplePosition(position, out NavMeshHit hit, 1f, NavMesh.AllAreas) &&
+            if (!exact && highPoint && NavMesh.SamplePosition(position, out NavMeshHit hit, 1f, NavMesh.AllAreas) &&
                 Mathf.Abs(hit.position.y - position.y) < 0.6f)
                 position = hit.position;
-            else if (!highPoint)
+            else if (!exact && !highPoint)
                 position = ClearGround(definition, position, boss ? Balance.BossScale : 1f);
 
             Vector3 toPlayer = m_Player ? m_Player.position - position : transform.position - position;
@@ -513,7 +560,13 @@ namespace Icaro
                 Balance.RoomScrapMultiplier(ArenaNumber));
 
             // Elite: só inimigos comuns (sem chefe e sem os reaproveitados pelo pool), com a chance da sala
-            if (!boss && !definition.Pooled && Random.value < Balance.EliteChance(ArenaNumber))
+            // (a volta no tempo traz de volta o mesmo modificador, sem sortear)
+            if (elite.HasValue)
+            {
+                if (elite.Value != EliteModifier.None)
+                    EliteAffix.Apply(enemy, elite.Value, Balance);
+            }
+            else if (!boss && !definition.Pooled && Random.value < Balance.EliteChance(ArenaNumber))
                 EliteAffix.Apply(enemy, (EliteModifier)Random.Range(1, 4), Balance);
 
             // Sai da lista ao morrer (e desinscreve, porque instâncias do pool voltam a nascer)
@@ -524,6 +577,7 @@ namespace Icaro
                 onDie = () =>
                 {
                     m_Alive.Remove(enemy);
+                    m_DieHandlers.Remove(enemy);
                     health.OnDie -= onDie;
 
                     // Abate: tira do multiplicador a vida da ficha (com o fator de elite, sem a escala por sala)
@@ -533,8 +587,68 @@ namespace Icaro
                         stats.Elite != EliteModifier.None, false);
                 };
                 health.OnDie += onDie;
+                m_DieHandlers[enemy] = onDie;
             }
             return enemy;
+        }
+
+        // ---------- volta no tempo (TimeRewind) ----------
+
+        readonly Dictionary<GameObject, UnityEngine.Events.UnityAction> m_DieHandlers =
+            new Dictionary<GameObject, UnityEngine.Events.UnityAction>();
+
+        // A sala está em luta (inimigos surgindo ou vivos)
+        public bool Fighting => State == RoomState.Active && QuotaStarted && RemainingEnemies > 0;
+
+        // Um inimigo que morreu no trecho voltado volta à vida no lugar, com a vida e o modificador de elite de antes
+        public GameObject RewindRevive(EnemyDefinition definition, EliteModifier elite, Vector3 position,
+            Quaternion rotation, float health)
+        {
+            if (!definition || !definition.Prefab || !Balance)
+                return null;
+            GameObject enemy = Spawn(definition, position, false, elite: elite, exact: true);
+            enemy.transform.rotation = rotation;
+            var h = enemy.GetComponent<Health>();
+            if (h)
+                h.CurrentHealth = Mathf.Clamp(health, 1f, h.MaxHealth);
+            m_Alive.Add(enemy);
+
+            // Espinhento: volta a ocupar o poleiro
+            foreach (HighSpawnPoint point in HighSpawnPoints ?? new HighSpawnPoint[0])
+            {
+                if (point && !point.Occupant && Vector3.Distance(point.transform.position, position) < 1.5f)
+                    point.Occupant = enemy;
+            }
+
+            return enemy;
+        }
+
+        // Um inimigo que surgiu no trecho voltado some e volta para a cota (vai surgir de novo)
+        public void RewindUnspawn(GameObject enemy)
+        {
+            if (!enemy)
+                return;
+            m_Alive.Remove(enemy);
+            var health = enemy.GetComponent<Health>();
+            if (m_DieHandlers.TryGetValue(enemy, out UnityEngine.Events.UnityAction onDie))
+            {
+                if (health)
+                    health.OnDie -= onDie;
+                m_DieHandlers.Remove(enemy);
+            }
+
+            foreach (HighSpawnPoint point in HighSpawnPoints ?? new HighSpawnPoint[0])
+            {
+                if (point && point.Occupant == enemy)
+                    point.Occupant = null;
+            }
+
+            m_ToSpawn++;
+            var stats = enemy.GetComponent<EnemyStats>();
+            if (stats && stats.Definition && stats.Definition.Pooled)
+                PrefabPool.Release(enemy);
+            else
+                Destroy(enemy);
         }
 
         // Ponto de spawn aleatório entre os que estão longe do jogador (o mais longe, se nenhum estiver),

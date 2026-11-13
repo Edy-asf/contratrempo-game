@@ -16,12 +16,13 @@ MonoBehaviour:
   Emission: {fileID: 2800000, guid: a5164cbb33ebf08468825912dddf072e, type: 3}
   BodyGlow: 0.25
   Material: {fileID: 2100000, guid: 3e92961c3b84c5744864e534c66914d0, type: 2}
-  CellWidth: 124
-  CellHeight: 92
-  Columns: 6
-  Rows: 32
-  PixelsPerMeter: 16
-  Pivot: {x: 62, y: 1}
+  Directions: 8
+  CellWidth: 120
+  CellHeight: 96
+  Columns: 8
+  Rows: 64
+  PixelsPerMeter: 15
+  Pivot: {x: 60, y: 10}
   Clips:
   - Name: Idle
     Row: 0
@@ -29,37 +30,37 @@ MonoBehaviour:
     Fps: 3
     Loop: 1
   - Name: Move
-    Row: 4
-    Frames: 4
-    Fps: 5
+    Row: 8
+    Frames: 8
+    Fps: 6
     Loop: 1
   - Name: Windup
-    Row: 8
-    Frames: 3
-    Fps: 6
-    Loop: 0
-  - Name: Attack
-    Row: 12
-    Frames: 2
-    Fps: 12
-    Loop: 1
-  - Name: Windup2
     Row: 16
     Frames: 3
     Fps: 6
     Loop: 0
+  - Name: Attack
+    Row: 24
+    Frames: 2
+    Fps: 12
+    Loop: 1
+  - Name: Windup2
+    Row: 32
+    Frames: 3
+    Fps: 6
+    Loop: 0
   - Name: Attack2
-    Row: 20
+    Row: 40
     Frames: 3
     Fps: 10
     Loop: 0
   - Name: Hit
-    Row: 24
+    Row: 48
     Frames: 2
     Fps: 10
     Loop: 0
   - Name: Death
-    Row: 28
+    Row: 56
     Frames: 6
     Fps: 8
     Loop: 0

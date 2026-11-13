@@ -75,7 +75,7 @@ namespace Icaro
 
         void Update()
         {
-            float dt = Time.deltaTime;
+            float dt = CombatTiming.DeltaTime;
             m_Life -= dt;
             if (m_Life <= 0f)
             {

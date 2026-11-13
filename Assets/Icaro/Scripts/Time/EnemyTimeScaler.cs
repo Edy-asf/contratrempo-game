@@ -92,12 +92,13 @@ namespace Icaro
                 m_Animators.Add(new AnimatorBase { Animator = animator, Speed = animator.speed });
             }
 
-            Apply(TimeManager.CurrentMultiplier);
+            Apply(TimeManager.CurrentMultiplier * CombatTiming.WorldSpeed);
         }
 
         void Update()
         {
-            float multiplier = TimeManager.CurrentMultiplier;
+            // A câmera lenta da habilidade (CombatTiming.WorldSpeed) entra junto com o multiplicador
+            float multiplier = TimeManager.CurrentMultiplier * CombatTiming.WorldSpeed;
             float slow = m_Stats ? m_Stats.SlowMultiplier : 1f;
             if (!Mathf.Approximately(multiplier, m_AppliedMultiplier) || !Mathf.Approximately(slow, m_AppliedSlow))
                 Apply(multiplier);
@@ -108,12 +109,12 @@ namespace Icaro
             m_AppliedMultiplier = multiplier;
             m_AppliedSlow = m_Stats ? m_Stats.SlowMultiplier : 1f;
             // Tempo deste inimigo: o geral com a lentidão própria por cima
-            float m = multiplier * m_AppliedSlow;
+            float m = Mathf.Max(0.01f, multiplier * m_AppliedSlow);
 
             if (m_Agent)
             {
                 // O movimento pode ter um teto próprio (ficha); giro, cadência e animação seguem o multiplicador inteiro
-                float move = CombatTiming.Movement(m_Stats);
+                float move = Mathf.Max(0.001f, CombatTiming.Movement(m_Stats) * CombatTiming.WorldSpeed);
                 m_Agent.speed = m_BaseAgentSpeed * move;
                 m_Agent.acceleration = m_BaseAgentAcceleration * move;
                 m_Agent.angularSpeed = m_BaseAgentAngularSpeed * m;

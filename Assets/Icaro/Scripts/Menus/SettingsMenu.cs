@@ -191,6 +191,8 @@ namespace Icaro
             m_Rows.Toggle(c, "Setas de ameaça e de dano", Y(5), () => GameSettings.ThreatIndicators,
                 v => GameSettings.ThreatIndicators = v);
             m_Rows.Toggle(c, "Mostrar FPS", Y(6), () => GameSettings.ShowFps, v => GameSettings.ShowFps = v);
+            m_Rows.Slider(c, "Destaque dos inimigos", Y(7), 0f, 1f, 0.05f, () => GameSettings.EnemyHighlight,
+                v => GameSettings.EnemyHighlight = v, v => v < 0.001f ? "Desligado" : Percent(v));
         }
 
         void BuildVideo()
@@ -230,6 +232,8 @@ namespace Icaro
         void BuildControls()
         {
             Transform c = m_Content;
+            // 12 linhas: um passo um pouco menor que o das outras abas para caberem no painel
+            float Y(int row) => -row * 48f;
             m_Rows.Slider(c, "Sensibilidade do mouse", Y(0), 0.1f, 3f, 0.05f, () => GameSettings.MouseSensitivity,
                 v => GameSettings.MouseSensitivity = v, v => v.ToString("0.00"));
             m_Rows.Toggle(c, "Inverter eixo Y", Y(1), () => GameSettings.InvertY, v => GameSettings.InvertY = v);
@@ -238,7 +242,9 @@ namespace Icaro
             foreach ((string label, string action) in GameSettings.RebindableActions)
                 m_Rows.KeyAction(c, label, Y(row++), action);
             m_Rows.KeyCustom(c, "Dash", Y(row++), () => GameSettings.DashKey, k => GameSettings.DashKey = k);
-            m_Rows.KeyCustom(c, "Abrir loja", Y(row), () => GameSettings.ShopKey, k => GameSettings.ShopKey = k);
+            m_Rows.KeyCustom(c, "Abrir loja", Y(row++), () => GameSettings.ShopKey, k => GameSettings.ShopKey = k);
+            m_Rows.KeyCustom(c, "Habilidade 1", Y(row++), () => GameSettings.Ability1Key, k => GameSettings.Ability1Key = k);
+            m_Rows.KeyCustom(c, "Habilidade 2", Y(row), () => GameSettings.Ability2Key, k => GameSettings.Ability2Key = k);
         }
 
         // ---------- listas ----------

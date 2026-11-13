@@ -74,35 +74,8 @@ namespace Icaro
         void Build(RoomManager room)
         {
             m_Room = room;
-            // Centro: o do gatilho e dos pontos de spawn; raio: até o mais longe deles (o gatilho conta pelos lados)
-            Bounds trigger = room.GetComponent<Collider>().bounds;
-            Bounds area = trigger;
-            float low = room.transform.position.y, high = low;
-            var points = new System.Collections.Generic.List<Vector3>();
-            void Add(Vector3 p)
-            {
-                points.Add(p);
-                area.Encapsulate(new Vector3(p.x, area.center.y, p.z));
-                low = Mathf.Min(low, p.y);
-                high = Mathf.Max(high, p.y);
-            }
-
-            if (room.SpawnPoints != null)
-                foreach (Transform point in room.SpawnPoints)
-                    if (point)
-                        Add(point.position);
-            if (room.HighSpawnPoints != null)
-                foreach (HighSpawnPoint point in room.HighSpawnPoints)
-                    if (point)
-                        Add(point.transform.position);
-            if (room.BossPoint)
-                Add(room.BossPoint.position);
-
-            m_Center = new Vector2(area.center.x, area.center.z);
-            float radius = Mathf.Max(trigger.extents.x, trigger.extents.z);
-            foreach (Vector3 p in points)
-                radius = Mathf.Max(radius, Vector2.Distance(m_Center, new Vector2(p.x, p.z)));
-            m_Radius = radius + k_Margin;
+            Measure(room, out m_Center, out float radius, out float low, out float high);
+            m_Radius = radius;
             m_Base = low - 14f;
             m_Top = high + k_WallAbove;
 
@@ -130,6 +103,43 @@ namespace Icaro
             m_Collider.enabled = false;
 
             m_Shards = BuildShards(visual);
+        }
+
+        // Planta do domo de uma sala: centro no meio do gatilho e dos pontos de spawn (normais, altos e do chefe), raio
+        // até o mais longe deles (o gatilho conta pelos lados) com a folga; low/high: o ponto mais baixo e o mais alto.
+        // Também usado fora do Play (tabela de vivos por tamanho da sala).
+        public static void Measure(RoomManager room, out Vector2 center, out float radius, out float low, out float high)
+        {
+            Bounds trigger = room.GetComponent<Collider>().bounds;
+            Bounds area = trigger;
+            float lo = room.transform.position.y, hi = lo;
+            var points = new System.Collections.Generic.List<Vector3>();
+            void Add(Vector3 p)
+            {
+                points.Add(p);
+                area.Encapsulate(new Vector3(p.x, area.center.y, p.z));
+                lo = Mathf.Min(lo, p.y);
+                hi = Mathf.Max(hi, p.y);
+            }
+
+            if (room.SpawnPoints != null)
+                foreach (Transform point in room.SpawnPoints)
+                    if (point)
+                        Add(point.position);
+            if (room.HighSpawnPoints != null)
+                foreach (HighSpawnPoint point in room.HighSpawnPoints)
+                    if (point)
+                        Add(point.transform.position);
+            if (room.BossPoint)
+                Add(room.BossPoint.position);
+
+            center = new Vector2(area.center.x, area.center.z);
+            float r = Mathf.Max(trigger.extents.x, trigger.extents.z);
+            foreach (Vector3 p in points)
+                r = Mathf.Max(r, Vector2.Distance(center, new Vector2(p.x, p.z)));
+            radius = r + k_Margin;
+            low = lo;
+            high = hi;
         }
 
         // Parede cilíndrica; UV em metros (u ao longo da volta, v do chão para cima), uma grade só. A versão sólida tem as

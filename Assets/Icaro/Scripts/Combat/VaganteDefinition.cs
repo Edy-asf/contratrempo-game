@@ -38,5 +38,40 @@ namespace Icaro
         [Tooltip("Intervalo entre rajadas, a 1,0x (sorteado entre o mínimo e o máximo)")]
         public float BurstIntervalMin = 2f;
         public float BurstIntervalMax = 3f;
+
+        [Tooltip("Segundos que cada tiro de plasma vive")]
+        public float ProjectileLifetime = 2.5f;
+
+        [Header("Recuo")]
+        [Tooltip("Depois de cada rajada, se o jogador estiver mais perto que isso, ele recua mancando")]
+        public float KiteTrigger = 8f;
+
+        [Tooltip("Quanto ele recua (m), para longe do jogador")]
+        public float KiteDistance = 6f;
+
+        [Tooltip("Velocidade do recuo em relação à caminhada (mancando)")]
+        public float KiteSpeed = 0.8f;
+
+        [Header("Morteiro de esporos")]
+        [Tooltip("Segundos sem ver o jogador (atrás de cobertura) até lançar o morteiro")]
+        public float MortarHiddenTime = 3f;
+
+        [Tooltip("Alcance máximo do morteiro (m)")]
+        public float MortarRange = 40f;
+
+        [Tooltip("Aviso antes do lançamento (o cogumelo do visor acende), a 1,0x; nunca abaixo de 60%")]
+        public float MortarWarning = 0.6f;
+
+        [Tooltip("Tempo de voo da bola, a 1,0x: a marca no chão avisa durante ele; nunca abaixo de 60%")]
+        public float MortarFlightTime = 1.2f;
+
+        [Tooltip("Raio da explosão (m)")]
+        public float MortarRadius = 3f;
+
+        [Tooltip("Dano da explosão em múltiplos do dano do tiro")]
+        public float MortarDamage = 2.5f;
+
+        [Tooltip("Recarga do morteiro, a 1,0x")]
+        public float MortarCooldown = 7f;
     }
 }

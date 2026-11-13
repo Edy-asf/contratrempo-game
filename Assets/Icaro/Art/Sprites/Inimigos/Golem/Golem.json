@@ -1,22 +1,23 @@
 {
   "name": "Golem",
-  "cellWidth": 124,
-  "cellHeight": 92,
-  "columns": 6,
-  "rows": 32,
-  "pixelsPerMeter": 16,
-  "pivotX": 62,
-  "pivotY": 1,
+  "cellWidth": 120,
+  "cellHeight": 96,
+  "columns": 8,
+  "rows": 64,
+  "pixelsPerMeter": 15,
+  "directions": 8,
+  "pivotX": 60,
+  "pivotY": 10,
   "emission": "Golem_Brilho.png",
   "bodyGlow": 0.25,
   "clips": [
     {"name": "Idle", "row": 0, "frames": 4, "fps": 3, "loop": true},
-    {"name": "Move", "row": 4, "frames": 4, "fps": 5, "loop": true},
-    {"name": "Windup", "row": 8, "frames": 3, "fps": 6, "loop": false},
-    {"name": "Attack", "row": 12, "frames": 2, "fps": 12, "loop": true},
-    {"name": "Windup2", "row": 16, "frames": 3, "fps": 6, "loop": false},
-    {"name": "Attack2", "row": 20, "frames": 3, "fps": 10, "loop": false},
-    {"name": "Hit", "row": 24, "frames": 2, "fps": 10, "loop": false},
-    {"name": "Death", "row": 28, "frames": 6, "fps": 8, "loop": false}
+    {"name": "Move", "row": 8, "frames": 8, "fps": 6, "loop": true},
+    {"name": "Windup", "row": 16, "frames": 3, "fps": 6, "loop": false},
+    {"name": "Attack", "row": 24, "frames": 2, "fps": 12, "loop": true},
+    {"name": "Windup2", "row": 32, "frames": 3, "fps": 6, "loop": false},
+    {"name": "Attack2", "row": 40, "frames": 3, "fps": 10, "loop": false},
+    {"name": "Hit", "row": 48, "frames": 2, "fps": 10, "loop": false},
+    {"name": "Death", "row": 56, "frames": 6, "fps": 8, "loop": false}
   ]
 }

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef856ab0cd06deb4a910d9065a96f960, type: 3}
+  m_Name: AbilitySettings
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.AbilitySettings
+  StartWithAll: 1
+  RewindName: "Retorno de Kair\xF3s"
+  RewindDescription: "Volta {0} segundos no tempo: sua vida, o multiplicador, os inimigos e os tiros voltam a como estavam. Quem morreu nesse trecho volta \xE0 vida. S\xF3 durante a luta."
+  RewindSeconds: 4
+  RewindPlayback: 0.9
+  RewindCooldown: 40
+  RecordInterval: 0.05
+  RewindPrice: 140
+  SlowName: "F\xF4lego de Kair\xF3s"
+  SlowDescription: "Por {0} segundos o mundo fica {1}x mais lento e voc\xEA n\xE3o: inimigos, tiros e o multiplicador quase param. S\xF3 durante a luta."
+  SlowDuration: 4
+  SlowSpeed: 0.2
+  SlowRampIn: 0.25
+  SlowRampOut: 0.6
+  SlowCooldown: 35
+  SlowPrice: 120

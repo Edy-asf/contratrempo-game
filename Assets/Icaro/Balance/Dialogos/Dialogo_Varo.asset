@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96966963609b55145b336a68b8459422, type: 3}
+  m_Name: Dialogo_Varo
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.DialogueDefinition
+  Speaker: "Varo, guarda da barbac\xE3"
+  SpeakerColor: {r: 0.75, g: 0.82, b: 0.9, a: 1}
+  IgnoreWithoutTranslator: 1
+  Repeat: {fileID: 0}
+  Nodes:
+  - Id: 
+    Text: "Alto! Ningu\xE9m passa pela barbac\xE3 sem ordem do Conselho. Nem... seja l\xE1 o que voc\xEA for."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "A grade desceu \xE0s 11h58, comigo do lado de dentro. Desde ent\xE3o eu guardo um port\xE3o que ningu\xE9m atravessa."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Voc\xEA viu a ponte? Viu o cerco?"
+    Next: 
+    Event: 
+    Choices:
+    - Label: Quem atacou a cidade?
+      Next: ataque
+      Event: 
+    - Label: Posso abrir a grade.
+      Next: grade
+      Event: 
+    - Label: Adeus, guarda.
+      Next: fim
+      Event: 
+  - Id: ataque
+    Text: "Eles n\xE3o andavam. Eles apareciam. Num instante a ponte estava vazia, no outro, cheia."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Lutamos o quanto deu. Depois o tempo parou, e eles tamb\xE9m."
+    Next: fim
+    Event: 
+    Choices: []
+  - Id: grade
+    Text: "N\xE3o. A grade sobe quando o Conselho mandar. Ou quando o mundo voltar a andar."
+    Next: fim
+    Event: 
+    Choices: []

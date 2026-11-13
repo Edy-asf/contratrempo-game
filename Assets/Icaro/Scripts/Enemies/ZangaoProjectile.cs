@@ -27,14 +27,14 @@ namespace Icaro
 
         void Update()
         {
-            m_Life -= Time.deltaTime;
+            m_Life -= CombatTiming.DeltaTime;
             if (m_Life <= 0f)
             {
                 PrefabPool.Release(gameObject);
                 return;
             }
 
-            float step = m_Speed * TimeManager.CurrentMultiplier * Time.deltaTime;
+            float step = m_Speed * TimeManager.CurrentMultiplier * CombatTiming.DeltaTime;
             Vector3 start = transform.position;
             if (Physics.Raycast(start, m_Direction, out RaycastHit hit, step, Physics.DefaultRaycastLayers,
                     QueryTriggerInteraction.Ignore) && !IsEnemy(hit.collider))

@@ -584,6 +584,8 @@ namespace Icaro.EditorTools
             Perch(a, Spot(a, -a.RadiusX * 0.9f, a.RadiusZ * 0.35f, k_RingStep), 0f);
             Perch(a, Spot(a, a.RadiusX * 0.9f, -a.RadiusZ * 0.35f, k_RingStep), 0f);
             Perch(a, Spot(a, a.RadiusX * 0.62f, a.RadiusZ * 0.7f, k_RingStep), 0f);
+            // quarto poleiro (pedido do usuário em 2026-11-13: os reforços do chefe são só Flores-canhão)
+            Perch(a, Spot(a, -a.RadiusX * 0.62f, -a.RadiusZ * 0.7f, k_RingStep), 0f);
         }
 
         // ---------- geração ----------

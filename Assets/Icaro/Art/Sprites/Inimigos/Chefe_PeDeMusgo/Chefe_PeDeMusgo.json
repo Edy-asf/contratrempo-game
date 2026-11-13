@@ -1,0 +1,127 @@
+{
+  "name": "Chefe_PeDeMusgo",
+  "cellWidth": 112,
+  "cellHeight": 112,
+  "columns": 7,
+  "rows": 64,
+  "pixelsPerMeter": 8,
+  "directions": 4,
+  "pivotX": 56,
+  "pivotY": 2,
+  "emission": "Chefe_PeDeMusgo_Brilho.png",
+  "bodyGlow": 0.25,
+  "clips": [
+    {
+      "name": "Idle",
+      "row": 0,
+      "frames": 4,
+      "fps": 3,
+      "loop": true
+    },
+    {
+      "name": "Move",
+      "row": 4,
+      "frames": 6,
+      "fps": 6,
+      "loop": true
+    },
+    {
+      "name": "Hit",
+      "row": 8,
+      "frames": 2,
+      "fps": 10,
+      "loop": false
+    },
+    {
+      "name": "Death",
+      "row": 12,
+      "frames": 7,
+      "fps": 7,
+      "loop": false
+    },
+    {
+      "name": "Salto_Aviso",
+      "row": 16,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+    },
+    {
+      "name": "Salto_Ar",
+      "row": 20,
+      "frames": 2,
+      "fps": 8,
+      "loop": true
+    },
+    {
+      "name": "Salto_Queda",
+      "row": 24,
+      "frames": 3,
+      "fps": 12,
+      "loop": false
+    },
+    {
+      "name": "Agarrao_Aviso",
+      "row": 28,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+    },
+    {
+      "name": "Agarrao_Golpe",
+      "row": 32,
+      "frames": 3,
+      "fps": 14,
+      "loop": false
+    },
+    {
+      "name": "Torrao_Aviso",
+      "row": 36,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+    },
+    {
+      "name": "Torrao_Golpe",
+      "row": 40,
+      "frames": 3,
+      "fps": 12,
+      "loop": false
+    },
+    {
+      "name": "Rugido_Aviso",
+      "row": 44,
+      "frames": 4,
+      "fps": 6,
+      "loop": false
+    },
+    {
+      "name": "Rugido_Golpe",
+      "row": 48,
+      "frames": 4,
+      "fps": 10,
+      "loop": true
+    },
+    {
+      "name": "Atordoado",
+      "row": 52,
+      "frames": 4,
+      "fps": 5,
+      "loop": true
+    },
+    {
+      "name": "Cacada",
+      "row": 56,
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+    },
+    {
+      "name": "Bote_Aviso",
+      "row": 60,
+      "frames": 3,
+      "fps": 6,
+      "loop": false
+    }
+  ]
+}

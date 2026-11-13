@@ -143,6 +143,8 @@ namespace Icaro
             // Mundo congelado (KairosClock): a fita desacelera e some; ao começar a luta, volta a rodar
             float freeze = KairosClock.Scale;
             float pitch = Mathf.Lerp(1f, Settings.PitchAtMax, k) * Mathf.Lerp(Settings.FrozenPitch, 1f, freeze);
+            // Câmera lenta e tempo voltando (habilidades): a fita desacelera junto com o mundo
+            pitch *= Mathf.Lerp(0.55f, 1f, CombatTiming.WorldSpeed);
             m_Freeze = Mathf.Lerp(Settings.FrozenVolume, 1f, freeze);
 
             Apply(m_Current, multiplier, k, pitch);

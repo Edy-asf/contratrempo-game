@@ -27,10 +27,27 @@ namespace Icaro
         // Plantas que sempre olham para o jogador: as quatro direções usam a vista de frente
         public virtual bool SameAllDirections => false;
 
+        // Quantas direções a folha tem: 4 (frente, lado, costas, lado espelhado) ou 8 (com as diagonais FrontSide e
+        // BackSide, também espelhadas do outro lado)
+        public virtual int Directions => 4;
+
+        // Pixels por metro desta folha (o tamanho no jogo); cada inimigo pode ter a própria densidade
+        public virtual float PixelDensity => PixelsPerMeter;
+
+        // Os que desenham o próprio contorno (antes dos efeitos soltos, como auras e ondas no chão, que ficam sem ele)
+        public virtual bool OwnOutline => false;
+
         protected abstract void Draw(EnemyView view, string clip, float t, int frame);
 
         PixelCanvas m_Canvas, m_Mask;
         SpriteRig m_Rig, m_MaskRig;
+
+        // Acesso direto à célula e à máscara de brilho do quadro atual (para os inimigos montados em volume,
+        // SpriteVolume) e o pivô em pixels da célula (de cima para baixo)
+        protected PixelCanvas Canvas => m_Canvas;
+        protected PixelCanvas GlowMask => m_Mask;
+        protected float CellPivotX => PivotX;
+        protected float CellPivotY => Height - PivotY;
         readonly float[] m_Stack = new float[3 * 16];
         int m_Depth;
 

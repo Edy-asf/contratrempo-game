@@ -440,6 +440,8 @@ namespace Icaro.EditorTools
             else
                 Debug.LogWarning("[Picos] Falta o Macico_Vilas_Remendo.fbx: o corte da ponte antiga fica aberto no platô do portão.");
 
+            PlacePortalCave();
+
             // Para os fiapos de névoa se enrolarem no pé do maciço
             foreach ((float e, float n, float r) in new[] { (-300f, 470f, 70f), (40f, 500f, 80f), (300f, 420f, 70f), (-460f, 520f, 60f) })
                 PicosMountainKit.Pillars.Add(new PicosMountainKit.Placed
@@ -448,6 +450,221 @@ namespace Icaro.EditorTools
                 });
             Physics.SyncTransforms();
             return true;
+        }
+
+        // Caverna do portal (Ferramentas/Picos/caverna_portal.py; pedido do usuário em 2026-11-12): o teto de rocha em volta
+        // do Terraço do Portal e do túnel da escadaria da fenda, até a boca no alto do caminho. Mesma origem e giro do
+        // maciço, rocha com colisão, pingentes de gelo sem; a planta (salão, eixo do túnel, boca) vai para o CaveLight,
+        // que escurece a luz lá dentro. Sem o FBX, o portal fica ao ar livre como antes.
+        static bool s_PortalCave;
+
+        [System.Serializable]
+        class CavePlan
+        {
+            public CaveHall hall;
+            public float mouth_s;
+            public float tunnel_half;
+            public float[] tunnel;
+        }
+
+        [System.Serializable]
+        class CaveHall
+        {
+            public float[] center;
+            public float[] axis;
+            public float a, b, floor, ceiling;
+        }
+
+        static void PlacePortalCave()
+        {
+            s_PortalCave = false;
+            string path = $"{IcaroAssetUtility.Root}/Models/Picos/Macico_Vilas_Caverna.fbx";
+            if (AssetImporter.GetAtPath(path) is ModelImporter importer && !importer.isReadable)
+            {
+                importer.isReadable = true;
+                importer.SaveAndReimport();
+            }
+
+            var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            var json = AssetDatabase.LoadAssetAtPath<TextAsset>($"{IcaroAssetUtility.Root}/Models/Picos/Macico_Vilas_Caverna.json");
+            if (!model || !json)
+            {
+                Debug.LogWarning("[Picos] Falta o Macico_Vilas_Caverna.fbx ou a planta dele: o portal das Vilas do Alto fica ao ar " +
+                                 "livre (rode Ferramentas/Picos/caverna_portal.py no Blender).");
+                return;
+            }
+
+            var cave = (GameObject)PrefabUtility.InstantiatePrefab(model, s_World);
+            cave.name = "Macico_Vilas_Caverna";
+            cave.transform.SetPositionAndRotation(k_High, model.transform.rotation);
+            PrefabUtility.UnpackPrefabInstance(cave, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            var rocks = new List<GameObject>();
+            foreach (MeshRenderer renderer in cave.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (!renderer.name.EndsWith("_Gelo"))
+                {
+                    rocks.Add(renderer.gameObject);
+                    continue;
+                }
+                var materials = new Material[renderer.sharedMaterials.Length];
+                for (int i = 0; i < materials.Length; i++)
+                    materials[i] = s_Materials.Ice;
+                renderer.sharedMaterials = materials;
+            }
+
+            // A rocha vira blocos de 64 m (GridSceneKit): no Forward do URP cada objeto recebe só as 4 luzes mais
+            // importantes, e numa malha só do tamanho da caverna as luzes do portal e da boca se perdiam
+            var data = new GridSceneKit.MeshData();
+            foreach (GameObject rock in rocks)
+            {
+                Mesh mesh = rock.GetComponent<MeshFilter>().sharedMesh;
+                Matrix4x4 toWorld = rock.transform.localToWorldMatrix;
+                int start = data.Count;
+                Vector3[] vertices = mesh.vertices, normals = mesh.normals;
+                Vector2[] uvs = mesh.uv;
+                Color[] colors = mesh.colors;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    data.Vertices.Add(toWorld.MultiplyPoint3x4(vertices[i]));
+                    data.Normals.Add(toWorld.MultiplyVector(normals.Length > i ? normals[i] : Vector3.up).normalized);
+                    data.Uvs.Add(uvs.Length > i ? uvs[i] : Vector2.zero);
+                    data.Colors.Add(colors.Length > i ? colors[i] : Color.white);
+                }
+                // Com espelhamento na matriz, os triângulos invertem a ordem para continuar virados para fora
+                int[] triangles = mesh.triangles;
+                bool flip = toWorld.determinant < 0f;
+                for (int i = 0; i < triangles.Length; i += 3)
+                {
+                    data.Triangles.Add(start + triangles[i]);
+                    data.Triangles.Add(start + triangles[flip ? i + 2 : i + 1]);
+                    data.Triangles.Add(start + triangles[flip ? i + 1 : i + 2]);
+                }
+                Object.DestroyImmediate(rock);
+            }
+            // Os vértices já estão no mundo: os blocos ficam no s_World (na origem), não dentro da peça deslocada
+            GridSceneKit.CreateObject("Picos_Caverna_Rocha", "Caverna_Rocha", data, s_Materials.Mountain, s_World, true);
+            Physics.SyncTransforms();
+
+            CavePlan plan = JsonUtility.FromJson<CavePlan>(json.text);
+            var light = new GameObject("Caverna_Luz").AddComponent<CaveLight>();
+            light.transform.SetParent(s_World, false);
+            light.HallCenter = HP(plan.hall.center[0], plan.hall.center[2], plan.hall.center[1]);
+            light.HallAxis = new Vector2(plan.hall.axis[0], plan.hall.axis[1]);
+            light.HallA = plan.hall.a;
+            light.HallB = plan.hall.b;
+            light.HallFloor = k_High.y + plan.hall.floor;
+            light.HallCeiling = k_High.y + plan.hall.ceiling;
+            light.MouthS = plan.mouth_s;
+            light.TunnelHalf = plan.tunnel_half;
+            var points = new Vector4[plan.tunnel.Length / 4];
+            for (int i = 0; i < points.Length; i++)
+            {
+                Vector3 p = HP(plan.tunnel[i * 4], plan.tunnel[i * 4 + 2], plan.tunnel[i * 4 + 1]);
+                points[i] = new Vector4(p.x, p.y, p.z, plan.tunnel[i * 4 + 3]);
+            }
+            light.Tunnel = points;
+            s_CaveTunnel = points;
+            s_CaveMouth = points.Length > 0 ? (Vector3)points[points.Length - 1] : light.HallCenter;
+            s_CaveMouthBack = points.Length > 8 ? (Vector3)points[points.Length - 9] : s_CaveMouth;
+            s_PortalCave = true;
+        }
+
+        static Vector3 s_CaveMouth, s_CaveMouthBack;
+        static Vector4[] s_CaveTunnel = new Vector4[0];
+
+        // Tochas nas paredes do túnel da caverna (pedido do usuário em 2026-11-12, no lugar das luzes do eclipse, que não
+        // pareciam naturais): uma a cada ~30 m da subida, alternando os lados, presas na rocha achada por raio na altura
+        // de 2,3 m; suporte de ferro, cabo de madeira inclinado para fora, gaiola de ferro, chama em sprite laranja e
+        // uma luz quente que tremula.
+        static readonly float[] k_TorchS = { 146f, 118f, 90f, 62f, 40f };
+
+        static void CaveTorches()
+        {
+            var iron = new GridSceneKit.MeshData();
+            var wood = new GridSceneKit.MeshData();
+            var root = new GameObject("Caverna_Tochas").transform;
+            root.SetParent(s_World, false);
+            int placed = 0;
+            for (int t = 0; t < k_TorchS.Length; t++)
+            {
+                float s = k_TorchS[t];
+                Vector3 axis = CaveTunnelAt(s);
+                Vector3 along = CaveTunnelAt(s + 3f) - CaveTunnelAt(s - 3f);
+                along.y = 0f;
+                if (along.sqrMagnitude < 1e-4f)
+                    continue;
+                Vector3 side = Vector3.Cross(Vector3.up, along.normalized);
+                bool found = false;
+                foreach (float sign in t % 2 == 0 ? new[] { 1f, -1f } : new[] { -1f, 1f })
+                {
+                    Vector3 from = axis + Vector3.up * 2.1f;
+                    if (!Physics.Raycast(from, side * sign, out RaycastHit hit, 12f, ~0, QueryTriggerInteraction.Ignore) ||
+                        Mathf.Abs(hit.normal.y) > 0.5f)
+                        continue;
+                    Vector3 n = hit.normal;
+                    n.y = 0f;
+                    n.Normalize();
+                    Torch(iron, wood, root, hit.point + n * 0.04f, n);
+                    found = true;
+                    placed++;
+                    break;
+                }
+                if (!found)
+                    Debug.LogWarning($"[Picos] Tocha da caverna em s {s} ficou de fora: nenhuma parede achada dos dois lados.");
+            }
+            GridSceneKit.CreateObject("Picos_Caverna_Tochas_Ferro", "Tochas_Ferro", iron, s_Materials.Iron, root, false, true, false);
+            GridSceneKit.CreateObject("Picos_Caverna_Tochas_Madeira", "Tochas_Madeira", wood, s_Materials.Wood, root, false, true, false);
+            Debug.Log($"[Picos] Caverna do portal: {placed} tochas.");
+        }
+
+        // Tamanho das tochas (pedido do usuário em 2026-11-12: maiores; 1 = tocha de mão de ~0,6 m)
+        const float k_TorchScale = 1.9f;
+
+        static void Torch(GridSceneKit.MeshData iron, GridSceneKit.MeshData wood, Transform root, Vector3 wall, Vector3 normal)
+        {
+            const float k = k_TorchScale;
+            Quaternion facing = Quaternion.LookRotation(normal);
+            // Placa na parede, braço e argola
+            BlockMesh.ChamferBox(iron, wall + normal * 0.03f * k, new Vector3(0.22f, 0.36f, 0.06f) * k, facing, 0.015f * k);
+            BlockMesh.Prism(iron, wall + (normal * 0.05f - Vector3.up * 0.08f) * k, normal, 0.24f * k, 0.025f * k, 6);
+            Vector3 ring = wall + (normal * 0.3f - Vector3.up * 0.06f) * k;
+            BlockMesh.Prism(iron, ring - Vector3.up * 0.04f * k, Vector3.up, 0.08f * k, 0.065f * k, 8);
+            // Cabo inclinado para fora
+            Vector3 handleAxis = (Vector3.up + normal * 0.45f).normalized;
+            Vector3 bottom = ring - handleAxis * 0.32f * k;
+            BlockMesh.Prism(wood, bottom, handleAxis, 0.62f * k, 0.042f * k, 7);
+            Vector3 top = bottom + handleAxis * 0.62f * k;
+            // Gaiola de ferro com o pano em volta do topo
+            BlockMesh.Prism(iron, top - handleAxis * 0.04f * k, handleAxis, 0.05f * k, 0.085f * k, 8);
+            BlockMesh.Prism(wood, top, handleAxis, 0.13f * k, 0.07f * k, 8);
+            BlockMesh.Prism(iron, top + handleAxis * 0.13f * k, handleAxis, 0.03f * k, 0.09f * k, 8, 0f, false);
+
+            Vector3 flameFoot = top + handleAxis * 0.12f * k;
+            var flame = new GameObject("Chama_Tocha").AddComponent<SpriteFlame>();
+            flame.Warm = true;
+            flame.Height = 0.55f * k;
+            flame.transform.SetParent(root, false);
+            flame.transform.position = flameFoot + Vector3.up * 0.26f * k;
+
+            var light = new GameObject("Luz_Tocha").AddComponent<Light>();
+            light.transform.SetParent(root, false);
+            light.transform.position = flameFoot + (Vector3.up * 0.35f + normal * 0.35f) * k;
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.6f, 0.28f);
+            light.intensity = 16f;
+            light.range = 16f;
+            light.shadows = LightShadows.None;
+            light.gameObject.AddComponent<LightFlicker>().FailuresPerSecond = 0f;
+        }
+
+        // Ponto do eixo do túnel a 's' metros do começo do caminho
+        static Vector3 CaveTunnelAt(float s)
+        {
+            Vector4 best = s_CaveTunnel.Length > 0 ? s_CaveTunnel[0] : (Vector4)s_CaveMouth;
+            foreach (Vector4 p in s_CaveTunnel)
+                if (Mathf.Abs(p.w - s) < Mathf.Abs(best.w - s))
+                    best = p;
+            return best;
         }
 
         // ---------- plataformas ----------
@@ -975,7 +1192,7 @@ namespace Icaro.EditorTools
                 break;
             }
             TowerTop(terrace.Center, terrace.Radius, 7301, open.ToArray(), open.Contains(door) ? -1 : door);
-            return IntactPortal(terrace.Center - f * terrace.Radius * 0.3f, f, "VilasDoAlto");
+            return IntactPortal(terrace.Center - f * terrace.Radius * 0.3f, f, "VilasDoAlto", s_PortalCave);
         }
 
         // Vila Escalonada: a primeira vila, na ponta do contraforte, com dois terraços mais baixos na frente (escadas da
@@ -1044,12 +1261,15 @@ namespace Icaro.EditorTools
 
         // Portal gêmeo do da praça da chegada, inteiro: estrado em degraus, anel parado, dois anéis girando, superfície
         // acesa e monólitos de runas; 'facing' é para onde a superfície olha. Devolve o ponto de chegada na frente dele.
-        static Transform IntactPortal(Vector3 floor, Vector3 facing, string name)
+        // Na caverna ('cave'), o portal é a única luz: sem os braseiros e as velas dos sprites, e com uma luz grande que
+        // alcança o teto e as paredes do salão (mais uma luz fraca, fria, logo dentro da boca: o céu entrando).
+        static Transform IntactPortal(Vector3 floor, Vector3 facing, string name, bool cave = false)
         {
             Quaternion rotation = Quaternion.LookRotation(facing);
             Vector3 right = rotation * Vector3.right;
             Vector3 center = floor + Vector3.up * 9.5f;
-            s_SpritePortals.Add((floor, facing));
+            if (!cave)
+                s_SpritePortals.Add((floor, facing));
             var m = new RuinMesh(s_Random.Next());
             for (int k = 0; k < 3; k++)
                 BlockMesh.ChamferBox(m.Pick(), floor + Vector3.up * (0.3f + k * 0.6f) - facing * (k * 0.6f),
@@ -1093,7 +1313,15 @@ namespace Icaro.EditorTools
             discSpin.Axis = facing;
             discSpin.DegreesPerSecond = 8f;
             discSpin.Bob = 0f;
-            Light(center + facing * 2f, new Color(0.35f, 1f, 0.95f), 5f, 28f);
+            if (!cave)
+                Light(center + facing * 2f, new Color(0.35f, 1f, 0.95f), 5f, 28f);
+            else
+            {
+                // No URP a luz cai com o quadrado da distância: a intensidade é a de perto, a 1 m
+                Light(center + facing * 3f, new Color(0.35f, 1f, 0.95f), 45f, 35f);
+                Light(center + facing * 14f + Vector3.up * 9f, new Color(0.3f, 0.95f, 1f), 450f, 110f);
+                CaveTorches();
+            }
 
             var point = new GameObject("Chegada_" + name).transform;
             point.SetParent(s_World, false);

@@ -2,8 +2,8 @@ using System;
 
 namespace Icaro
 {
-    // Uma oferta de uma loja (ShopTerminal). Itens, armas e a cura vendem uma vez por loja; a ficha de rerrolagem e
-    // as melhorias da arma podem ser compradas de novo (as melhorias ficam mais caras a cada compra).
+    // Uma oferta de uma loja (ShopTerminal). Itens, armas, habilidades, o tradutor e a cura vendem uma vez por loja; a
+    // ficha de rerrolagem pode ser comprada de novo.
     [Serializable]
     public class ShopOffer
     {
@@ -12,16 +12,17 @@ namespace Icaro
             Item,
             Heal,
             Reroll,
-            Damage,
-            FireRate,
             Weapon,
+            Ability,
+            Translator,
         }
 
         public OfferKind Kind;
         public ItemDefinition Item;
         public WeaponDefinition Weapon;
+        public AbilityType Ability;
         public bool Sold;
 
-        public bool Repeatable => Kind == OfferKind.Reroll || Kind == OfferKind.Damage || Kind == OfferKind.FireRate;
+        public bool Repeatable => Kind == OfferKind.Reroll;
     }
 }

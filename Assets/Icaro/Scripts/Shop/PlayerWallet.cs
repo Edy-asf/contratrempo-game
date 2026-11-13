@@ -13,8 +13,6 @@ namespace Icaro
         public int RerollTokens { get; private set; }
 
         // Melhorias compradas na loja nesta run (o preço sobe a cada uma)
-        public int DamageUpgrades { get; private set; }
-        public int FireRateUpgrades { get; private set; }
 
         // Mudou algo (para o HUD)
         public event Action OnChanged;
@@ -63,25 +61,11 @@ namespace Icaro
             return true;
         }
 
-        public void AddDamageUpgrade()
-        {
-            DamageUpgrades++;
-            OnChanged?.Invoke();
-        }
-
         // Devolve a carteira guardada ao trocar de cena (RunCarry)
-        public void Restore(int cronitas, int rerollTokens, int damageUpgrades, int fireRateUpgrades)
+        public void Restore(int cronitas, int rerollTokens)
         {
             Cronitas = Mathf.Max(0, cronitas);
             RerollTokens = Mathf.Max(0, rerollTokens);
-            DamageUpgrades = Mathf.Max(0, damageUpgrades);
-            FireRateUpgrades = Mathf.Max(0, fireRateUpgrades);
-            OnChanged?.Invoke();
-        }
-
-        public void AddFireRateUpgrade()
-        {
-            FireRateUpgrades++;
             OnChanged?.Invoke();
         }
     }

@@ -19,13 +19,32 @@ namespace Icaro
             CombatBalance.SpawnTable table = balance.TableFor(room);
             if (table == null || table.Weights == null)
                 return null;
+            return Pick(balance, room, table.Weights, active, highSpawnSlots);
+        }
+
+        // Reforços de um chefe (BossDefinition.Reinforcements): todos com o mesmo peso
+        public static EnemyDefinition PickFrom(CombatBalance balance, int room, EnemyDefinition[] enemies,
+            Dictionary<EnemyDefinition, int> active, int highSpawnSlots)
+        {
+            s_List.Clear();
+            foreach (EnemyDefinition enemy in enemies)
+                if (enemy)
+                    s_List.Add(new CombatBalance.SpawnWeight { Enemy = enemy, Weight = 1f });
+            return Pick(balance, room, s_List, active, highSpawnSlots, ignoreMinArena: true);
+        }
+
+        static readonly List<CombatBalance.SpawnWeight> s_List = new List<CombatBalance.SpawnWeight>();
+
+        static EnemyDefinition Pick(CombatBalance balance, int room, IEnumerable<CombatBalance.SpawnWeight> weights,
+            Dictionary<EnemyDefinition, int> active, int highSpawnSlots, bool ignoreMinArena = false)
+        {
 
             s_Candidates.Clear();
             float totalWeight = 0f;
-            foreach (CombatBalance.SpawnWeight entry in table.Weights)
+            foreach (CombatBalance.SpawnWeight entry in weights)
             {
                 EnemyDefinition enemy = entry?.Enemy;
-                if (!enemy || !enemy.Prefab || entry.Weight <= 0f || enemy.MinArena > room)
+                if (!enemy || !enemy.Prefab || entry.Weight <= 0f || (!ignoreMinArena && enemy.MinArena > room))
                     continue;
                 active.TryGetValue(enemy, out int count);
                 int cap = balance.TypeAliveCap(enemy);

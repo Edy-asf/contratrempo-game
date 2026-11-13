@@ -54,6 +54,7 @@ namespace Icaro
         readonly List<Card> m_Cards = new List<Card>();
         ShopTerminal m_Terminal;
         float m_MessageUntil;
+        float m_CardScale = 1f;
 
         void Awake()
         {
@@ -157,9 +158,11 @@ namespace Icaro
                 if (keyboard[GameSettings.ShopKey].wasPressedThisFrame ||
                     keyboard.escapeKey.wasPressedThisFrame)
                     return true;
-                for (int i = 0; i < m_Cards.Count && i < 9; i++)
+                for (int i = 0; i < m_Cards.Count && i < 10; i++)
                 {
-                    if (keyboard[Key.Digit1 + i].wasPressedThisFrame || keyboard[Key.Numpad1 + i].wasPressedThisFrame)
+                    // 1 a 9 e o 0 para a décima carta
+                    Key digit = i == 9 ? Key.Digit0 : Key.Digit1 + i, numpad = i == 9 ? Key.Numpad0 : Key.Numpad1 + i;
+                    if (keyboard[digit].wasPressedThisFrame || keyboard[numpad].wasPressedThisFrame)
                         Buy(m_Cards[i]);
                 }
             }
@@ -190,9 +193,10 @@ namespace Icaro
                 return false;
             if (keyboard[GameSettings.ShopKey].isPressed || keyboard.escapeKey.isPressed)
                 return true;
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 10; i++)
             {
-                if (keyboard[Key.Digit1 + i].isPressed || keyboard[Key.Numpad1 + i].isPressed)
+                Key digit = i == 9 ? Key.Digit0 : Key.Digit1 + i, numpad = i == 9 ? Key.Numpad0 : Key.Numpad1 + i;
+                if (keyboard[digit].isPressed || keyboard[numpad].isPressed)
                     return true;
             }
 
@@ -204,16 +208,15 @@ namespace Icaro
         int PriceOf(ShopOffer offer)
         {
             ShopSettings s = ShopDirector.Settings;
-            PlayerWallet wallet = PlayerWallet.Instance;
             int basePrice = offer.Kind switch
             {
                 ShopOffer.OfferKind.Item => offer.Item ? s.ItemPrice(offer.Item.Rarity) : 0,
                 ShopOffer.OfferKind.Weapon => offer.Weapon ? offer.Weapon.Price : 0,
+                ShopOffer.OfferKind.Ability => AbilitySettings.Current.PriceOf(offer.Ability),
+                ShopOffer.OfferKind.Translator => DialogueSettings.Current.TranslatorPrice,
                 ShopOffer.OfferKind.Heal => s.HealPrice,
                 ShopOffer.OfferKind.Reroll => s.RerollPrice,
-                ShopOffer.OfferKind.Damage => s.DamageUpgradePrice +
-                                              s.DamageUpgradePriceStep * (wallet ? wallet.DamageUpgrades : 0),
-                _ => s.FireRateUpgradePrice + s.FireRateUpgradePriceStep * (wallet ? wallet.FireRateUpgrades : 0),
+                _ => 0,
             };
             return s.Inflate(basePrice);
         }
@@ -239,6 +242,19 @@ namespace Icaro
                 return;
             }
 
+            PlayerAbilities abilities = PlayerAbilities.Instance;
+            if (offer.Kind == ShopOffer.OfferKind.Ability && (!abilities || abilities.Owns(offer.Ability)))
+            {
+                ShowMessage("Você já tem esta habilidade");
+                return;
+            }
+
+            if (offer.Kind == ShopOffer.OfferKind.Translator && (!PlayerTranslator.Instance || PlayerTranslator.Owned))
+            {
+                ShowMessage("Você já tem o tradutor");
+                return;
+            }
+
             int price = PriceOf(offer);
             if (!wallet.TrySpend(price))
             {
@@ -261,17 +277,24 @@ namespace Icaro
                     }
 
                     break;
+                case ShopOffer.OfferKind.Ability:
+                    abilities.Give(offer.Ability, out bool stored);
+                    if (stored)
+                    {
+                        offer.Sold = true;
+                        ShowMessage("Espaços cheios: a habilidade foi para o inventário");
+                        return;
+                    }
+
+                    break;
+                case ShopOffer.OfferKind.Translator:
+                    PlayerTranslator.Instance.Set(true);
+                    break;
                 case ShopOffer.OfferKind.Heal:
                     health.Heal(health.MaxHealth * s.HealFraction);
                     break;
                 case ShopOffer.OfferKind.Reroll:
                     wallet.AddRerollToken();
-                    break;
-                case ShopOffer.OfferKind.Damage:
-                    wallet.AddDamageUpgrade();
-                    break;
-                default:
-                    wallet.AddFireRateUpgrade();
                     break;
             }
 
@@ -295,10 +318,11 @@ namespace Icaro
         {
             ShopOffer.OfferKind.Item => offer.Item ? offer.Item.DisplayName : "Item",
             ShopOffer.OfferKind.Weapon => offer.Weapon ? offer.Weapon.DisplayName : "Arma",
+            ShopOffer.OfferKind.Ability => AbilitySettings.Current.NameOf(offer.Ability),
+            ShopOffer.OfferKind.Translator => DialogueSettings.Current.TranslatorName,
             ShopOffer.OfferKind.Heal => "Reparo de Casco",
             ShopOffer.OfferKind.Reroll => "Ficha de Rerrolagem",
-            ShopOffer.OfferKind.Damage => "Calibrar Arma",
-            _ => "Afinar Gatilho",
+            _ => "",
         };
 
         string Describe(ShopOffer offer)
@@ -315,17 +339,19 @@ namespace Icaro
                         ? offer.Weapon.Describe() +
                           $"\n<size=85%><color=#9AA4AE>{WeaponSlotHint(offer.Weapon)}</color></size>"
                         : "";
+                case ShopOffer.OfferKind.Ability:
+                    return AbilitySettings.Current.DescriptionOf(offer.Ability) +
+                           $"\n<size=85%><color=#9AA4AE>Habilidade ativa ({AbilitySlotHint()}). " +
+                           $"Recarga de {AbilitySettings.Current.CooldownOf(offer.Ability):0} s.</color></size>";
+                case ShopOffer.OfferKind.Translator:
+                    return DialogueSettings.Current.TranslatorDescription;
                 case ShopOffer.OfferKind.Heal:
                     return $"Recupera {s.HealFraction:P0} da vida máxima.";
                 case ShopOffer.OfferKind.Reroll:
                     return "Na escolha de itens, troca as 4 cartas por outras (tecla R)." +
                            $"\n<size=85%><color=#9AA4AE>Você tem: {(wallet ? wallet.RerollTokens : 0)}</color></size>";
-                case ShopOffer.OfferKind.Damage:
-                    return $"+{s.DamageUpgradeAmount:P0} de dano dos tiros nesta run. Fica mais caro a cada compra." +
-                           $"\n<size=85%><color=#9AA4AE>Compradas: {(wallet ? wallet.DamageUpgrades : 0)}</color></size>";
                 default:
-                    return $"+{s.FireRateUpgradeAmount:P0} de cadência nesta run. Fica mais caro a cada compra." +
-                           $"\n<size=85%><color=#9AA4AE>Compradas: {(wallet ? wallet.FireRateUpgrades : 0)}</color></size>";
+                    return "";
             }
         }
 
@@ -342,8 +368,22 @@ namespace Icaro
                 : $"Vai para o espaço livre ({arsenal.MaxCarried} armas; Q/E trocam).";
         }
 
+        // Onde a habilidade comprada entra
+        static string AbilitySlotHint()
+        {
+            PlayerAbilities abilities = PlayerAbilities.Instance;
+            if (!abilities)
+                return "";
+            for (int i = 0; i < PlayerAbilities.SlotCount; i++)
+                if (abilities.SlotAt(i) == AbilityType.None)
+                    return $"tecla {GameSettings.KeyName(PlayerAbilities.KeyFor(i))}";
+            return "espaços cheios: vai para o inventário";
+        }
+
         Color ColorOf(ShopOffer offer)
         {
+            if (offer.Kind == ShopOffer.OfferKind.Ability)
+                return AbilitySettings.ColorOf(offer.Ability);
             if (offer.Kind == ShopOffer.OfferKind.Weapon && offer.Weapon)
                 return offer.Weapon.Color;
 
@@ -372,14 +412,20 @@ namespace Icaro
                 TextAlignmentOptions.Center, Color.white);
 
             List<ShopOffer> offers = m_Terminal ? m_Terminal.Offers : new List<ShopOffer>();
-            int rows = Mathf.CeilToInt(offers.Count / (float)k_PerRow);
+            // Mais de 10 ofertas: linhas de 6, com as cartas um pouco menores, para caberem em duas linhas
+            int perRow = offers.Count > 2 * k_PerRow ? k_PerRow + 1 : k_PerRow;
+            float scale = perRow > k_PerRow ? 0.88f : 1f;
+            m_CardScale = scale;
+            int rows = Mathf.CeilToInt(offers.Count / (float)perRow);
             for (int i = 0; i < offers.Count; i++)
             {
-                int row = i / k_PerRow;
-                int inRow = Mathf.Min(k_PerRow, offers.Count - row * k_PerRow);
-                float x = (i % k_PerRow - (inRow - 1) * 0.5f) * k_CardSpacingX;
-                float y = ((rows - 1) * 0.5f - row) * k_CardSpacingY - 10f;
-                m_Cards.Add(BuildCard(root, offers[i], i, new Vector2(x, y)));
+                int row = i / perRow;
+                int inRow = Mathf.Min(perRow, offers.Count - row * perRow);
+                float x = (i % perRow - (inRow - 1) * 0.5f) * k_CardSpacingX * scale;
+                float y = ((rows - 1) * 0.5f - row) * k_CardSpacingY * scale - 10f;
+                Card card = BuildCard(root, offers[i], i, new Vector2(x, y));
+                card.Root.localScale = Vector3.one * scale;
+                m_Cards.Add(card);
             }
 
             m_Close = ItemUI.Panel("Sair", root, center, new Vector2(620f, -420f), new Vector2(220f, 54f),
@@ -400,10 +446,19 @@ namespace Icaro
 
             var top = new Vector2(0.5f, 1f);
             ItemUI.Text("Tecla", card, new Vector2(0f, 1f), new Vector2(12f, -8f), new Vector2(50f, 34f), 22f,
-                TextAlignmentOptions.TopLeft, new Color(0.6f, 0.66f, 0.72f)).text = $"[{index + 1}]";
+                TextAlignmentOptions.TopLeft, new Color(0.6f, 0.66f, 0.72f)).text = index < 10 ? $"[{(index + 1) % 10}]" : "";
 
             if (offer.Kind == ShopOffer.OfferKind.Item && offer.Item)
                 ItemUI.Icon(card, offer.Item, PlayerStats.Instance.Catalog, top, new Vector2(0f, -22f), 76f);
+            else if (offer.Kind == ShopOffer.OfferKind.Ability)
+            {
+                Image frame = ItemUI.Panel("Icone", card, top, new Vector2(0f, -22f), Vector2.one * 76f, color);
+                ItemUI.Fill("Fundo", frame.transform, 4f, Color.Lerp(color, Color.black, 0.7f));
+                Image icon = ItemUI.Panel("Desenho", frame.transform, new Vector2(0.5f, 0.5f), Vector2.zero,
+                    Vector2.one * 56f, color);
+                icon.sprite = AbilityHUD.IconFor(offer.Ability);
+                icon.preserveAspect = true;
+            }
             else
                 ServiceIcon(card, offer, color);
 
@@ -444,10 +499,9 @@ namespace Icaro
             string letter = offer.Kind switch
             {
                 ShopOffer.OfferKind.Weapon => offer.Weapon ? offer.Weapon.Letter : "A",
+                ShopOffer.OfferKind.Translator => "T",
                 ShopOffer.OfferKind.Heal => "+",
-                ShopOffer.OfferKind.Reroll => "R",
-                ShopOffer.OfferKind.Damage => "D",
-                _ => "C",
+                _ => "R",
             };
             TextMeshProUGUI text = ItemUI.Text("Letra", frame.transform, new Vector2(0.5f, 0.5f), Vector2.zero,
                 Vector2.one * 76f, 46f, TextAlignmentOptions.Center, color);
@@ -472,7 +526,7 @@ namespace Icaro
                 card.Price.color = cronitas >= price ? k_Cronita : k_TooExpensive;
                 Color color = card.Offer.Sold ? k_Sold : ColorOf(card.Offer);
                 card.Border.color = over && !card.Offer.Sold ? Color.Lerp(color, Color.white, 0.35f) : color;
-                card.Root.localScale = Vector3.one * (over && !card.Offer.Sold ? 1.04f : 1f);
+                card.Root.localScale = Vector3.one * (m_CardScale * (over && !card.Offer.Sold ? 1.04f : 1f));
             }
         }
 

@@ -54,7 +54,7 @@ namespace Icaro
 
             // Aviso: marca no chão do raio dos feixes
             GroundTelegraph.Show(Kit, transform.position, m_Def.BeamLength, warning, k_Rune);
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
 
             float start = Random.Range(0f, 360f);
             float direction = Random.value < 0.5f ? 1f : -1f;
@@ -67,9 +67,9 @@ namespace Icaro
             }
 
             // Enquanto os feixes giram, uma espiral leve na fase 2
-            float end = Time.time + duration;
+            float end = CombatTiming.Now + duration;
             float angle = 0f;
-            while (Time.time < end)
+            while (CombatTiming.Now < end)
             {
                 if (Phase >= 2)
                 {
@@ -117,7 +117,7 @@ namespace Icaro
             GroundTelegraph.Show(Kit, target, 3f, warning, k_Rune);
             Threat(warning + 0.5f);
             Squash(0.45f);
-            yield return new WaitForSeconds(warning);
+            yield return CombatTiming.Wait(warning);
 
             bool agent = Agent && Agent.enabled;
             if (agent)

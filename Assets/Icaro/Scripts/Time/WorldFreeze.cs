@@ -51,7 +51,7 @@ namespace Icaro
             // Rampa suave nas duas pontas (como uma fita parando ou voltando a rodar)
             float scale = m_Progress * m_Progress * (3f - 2f * m_Progress);
             KairosClock.Scale = scale;
-            KairosClock.WorldTime += Time.deltaTime * scale;
+            KairosClock.WorldTime += Time.deltaTime * scale * CombatTiming.WorldSpeed;
             Shader.SetGlobalFloat(s_WorldTime, KairosClock.WorldTime);
             Shader.SetGlobalFloat(s_ClockOn, 1f);
 

@@ -5,7 +5,7 @@ namespace Icaro
 {
     // Folha de sprites de um inimigo (gerada por "Ícaro > Sprites > Importar sprites dos inimigos" a partir de
     // <Nome>.png e <Nome>.json em Art/Sprites/Inimigos/<Nome>): uma grade de células iguais, uma linha por clipe e
-    // direção (frente, direita, costas, esquerda; a linha 0 é a de cima) e uma coluna por quadro. Formato no
+    // direção (4 ou 8, no sentido horário a partir da frente; a linha 0 é a de cima) e uma coluna por quadro. Formato no
     // LEIAME.md da pasta.
     [CreateAssetMenu(menuName = "Ícaro/Folha de sprites de inimigo")]
     public class EnemySpriteSet : ScriptableObject
@@ -14,7 +14,7 @@ namespace Icaro
         public class Clip
         {
             public string Name;
-            [Tooltip("Primeira linha do clipe (a da frente); as outras três direções vêm logo abaixo")]
+            [Tooltip("Primeira linha do clipe (a da frente); as outras direções vêm logo abaixo")]
             public int Row;
             public int Frames = 1;
             public float Fps = 8f;
@@ -35,6 +35,10 @@ namespace Icaro
 
         [Tooltip("Material da folha (URP Lit com recorte e brilho mínimo), criado pelo importador")]
         public Material Material;
+
+        [Tooltip("Direções por clipe: 4 (frente, direita, costas, esquerda) ou 8 (com as diagonais), no sentido " +
+                 "horário visto de cima")]
+        public int Directions = 4;
 
         public int CellWidth = 64, CellHeight = 64;
         public int Columns = 1, Rows = 1;

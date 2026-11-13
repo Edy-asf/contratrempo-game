@@ -22,13 +22,11 @@ namespace Icaro.EditorTools
         public const string VagantePath = IcaroAssetUtility.PrefabsFolder + "/Vagante.prefab";
         public const string VaganteProjectilePath = IcaroAssetUtility.PrefabsFolder + "/Projectile_Vagante.prefab";
         public const string ZangaoPath = IcaroAssetUtility.PrefabsFolder + "/Zangao.prefab";
-        public const string ZangaoProjectilePath = IcaroAssetUtility.PrefabsFolder + "/Projectile_Zangao.prefab";
         public const string SpikeProjectilePath = IcaroAssetUtility.PrefabsFolder + "/Projectile_Espinho.prefab";
 
         const string k_HoverBotSource = "Assets/FPS/Prefabs/Enemies/Enemy_HoverBot.prefab";
         const string k_TurretProjectileSource = "Assets/FPS/Prefabs/Projectiles/Projectile_Turret.prefab";
         const string k_HoverBotProjectileSource = "Assets/FPS/Prefabs/Projectiles/Projectile_Hoverbot.prefab";
-        const string k_VaganteShotSound = "Assets/FPS/Audio/SFX/Enemies/Hoverbot_Attack.wav";
         // Alcance de detecção do Espinhento: na prática, a arena inteira (o limite é a linha de visão)
         const float k_EspinhentoRange = 300f;
 
@@ -177,7 +175,7 @@ namespace Icaro.EditorTools
         }
 
         // Cascudo: corpo largo e baixo com uma casca em cima. O visual fica no filho "Visual" (trocável por modelo);
-        // o CascudoAI anima o Visual (recua e avança no golpe) e a "Casca" (ergue na preparação). Com a folha de
+        // o CascudoAI dá os pulinhos no Visual (no visual antigo, a "Casca" ficava sem uso). Com a folha de
         // sprites importada (Art/Sprites/Inimigos/Cascudo), o Visual vira o sprite animado (EnemySpriteView).
         static void BuildCascudo(EnemyController reference)
         {
@@ -265,13 +263,17 @@ namespace Icaro.EditorTools
                 AddSpriteVisual(root, sprites);
                 var aimPoint = new GameObject("Mira").transform;
                 aimPoint.SetParent(root.transform, false);
-                aimPoint.localPosition = new Vector3(0.3f, 1.3f, 0.1f);
-                WeaponController gun = AddWeapon(root, aimPoint, new Vector3(0f, 0.04f, 0.88f), BuildVaganteProjectile());
+                // Pontos do desenho: ombro do canhão, boca do canhão erguido e o chapéu do cogumelo (morteiro)
+                float[] pivot = ExploradorVolumeArt.AimPivot, muzzle = ExploradorVolumeArt.MuzzleFromPivot;
+                float[] mortar = ExploradorVolumeArt.MortarPoint;
+                aimPoint.localPosition = new Vector3(pivot[0], pivot[1], pivot[2]);
+                WeaponController gun = AddWeapon(root, aimPoint, new Vector3(muzzle[0], muzzle[1], muzzle[2]),
+                    BuildVaganteProjectile());
                 gun.ShootType = WeaponShootType.Manual;
                 var spriteAi = root.AddComponent<VaganteAI>();
                 spriteAi.AimPivot = aimPoint;
+                spriteAi.MortarPoint = new Vector3(mortar[0], mortar[1], mortar[2]);
                 spriteAi.Muzzle = gun.WeaponMuzzle;
-                spriteAi.ShotSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_VaganteShotSound);
                 AddStats(root, definition);
                 AddHitReaction(root, recoil: 0.3f, centerHeight: 1f, burstScale: 1f);
                 Save(root, VagantePath);
@@ -303,7 +305,6 @@ namespace Icaro.EditorTools
             ai.AimPivot = aim;
             ai.Muzzle = weapon.WeaponMuzzle;
             ai.MuzzleGlow = flash.transform;
-            ai.ShotSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_VaganteShotSound);
             AddStats(root, definition);
             AddHitReaction(root, recoil: 0.3f, centerHeight: 1f, burstScale: 1f);
 
@@ -365,13 +366,12 @@ namespace Icaro.EditorTools
                 Transform spriteVisual = AddSpriteVisual(root, sprites);
                 var spriteMuzzle = new GameObject("Cano").transform;
                 spriteMuzzle.SetParent(root.transform, false);
-                spriteMuzzle.localPosition = new Vector3(0f, -0.1f, 0.4f);
+                MariposaVolumeArt.StingTip(out float stingY, out float stingZ);
+                spriteMuzzle.localPosition = new Vector3(0f, stingY, stingZ);
                 var spriteAi = root.AddComponent<ZangaoAI>();
                 spriteAi.Visual = spriteVisual;
                 spriteAi.Wings = new Transform[0];
                 spriteAi.Muzzle = spriteMuzzle;
-                spriteAi.ProjectilePrefab = BuildZangaoProjectile(glow);
-                spriteAi.ShotSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_VaganteShotSound);
                 spriteAi.FlashRenderers = new Renderer[0];
                 AddStats(root, definition);
                 AddHitReaction(root, recoil: 0f, centerHeight: 0f, burstScale: 0.45f);
@@ -419,25 +419,11 @@ namespace Icaro.EditorTools
             ai.Wings = wings.ToArray();
             ai.Muzzle = muzzle;
             ai.MuzzleGlow = flash.transform;
-            ai.ProjectilePrefab = BuildZangaoProjectile(glow);
-            ai.ShotSound = AssetDatabase.LoadAssetAtPath<AudioClip>(k_VaganteShotSound);
             ai.FlashRenderers = parts.ToArray();
             AddStats(root, definition);
             AddHitReaction(root, recoil: 0f, centerHeight: 0f, burstScale: 0.45f);
 
             Save(root, ZangaoPath);
-        }
-
-        // Projétil do Zangão: esfera alongada brilhante, sem colisor (o ZangaoProjectile testa com raycast)
-        static ZangaoProjectile BuildZangaoProjectile(Material glow)
-        {
-            var root = new GameObject("Projectile_Zangao");
-            GameObject shape = Part(PrimitiveType.Sphere, "Forma", root.transform, Vector3.zero,
-                new Vector3(0.09f, 0.09f, 0.4f), glow);
-            shape.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            root.AddComponent<ZangaoProjectile>();
-            GameObject saved = IcaroPrefabBuilder.SavePrefab(root, ZangaoProjectilePath);
-            return saved ? saved.GetComponent<ZangaoProjectile>() : null;
         }
 
         static void BuildPredador(EnemyController reference)

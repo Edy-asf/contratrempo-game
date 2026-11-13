@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96966963609b55145b336a68b8459422, type: 3}
+  m_Name: Dialogo_Peregrino
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.DialogueDefinition
+  Speaker: O Peregrino
+  SpeakerColor: {r: 0.72, g: 0.55, b: 1, a: 1}
+  IgnoreWithoutTranslator: 1
+  Repeat: {fileID: 11400000, guid: 5883ac1f9c3a7b147b4bbf20f9d98a5b, type: 2}
+  Nodes:
+  - Id: 
+    Text: "Uma m\xE1quina que fala a l\xEDngua dos an\xE9is... Faz tanto tempo que ningu\xE9m me responde."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Eu ia \xE0 bas\xEDlica de Archen Kaedra. Os sinos tocaram \xE0s 11h58, e desde ent\xE3o eu ando."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: pergunta
+    Text: "Ando em dire\xE7\xE3o \xE0 cidade, mas ela nunca fica mais perto. O que voc\xEA procura, m\xE1quina?"
+    Next: 
+    Event: 
+    Choices:
+    - Label: "O que aconteceu \xE0s 11h58?"
+      Next: 1158
+      Event: 
+    - Label: "Onde est\xE3o os outros?"
+      Next: outros
+      Event: 
+    - Label: "Vim desligar o Cora\xE7\xE3o."
+      Next: coracao
+      Event: 
+    - Label: Preciso ir.
+      Next: adeus
+      Event: 
+  - Id: 1158
+    Text: "O Conselho dos An\xE9is ligou o Cora\xE7\xE3o de Kair\xF3s. Era para segurar o fim do mundo."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: Segurou. Nada mais termina aqui. Nem o dia, nem a dor, nem esta caminhada.
+    Next: pergunta
+    Event: 
+    Choices: []
+  - Id: outros
+    Text: "Fugiram pelos portais, para um mundo azul. Dizem que l\xE1 esqueceram o pr\xF3prio nome."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Eu fiquei. Algu\xE9m tinha que rezar diante do Cora\xE7\xE3o. Ainda n\xE3o cheguei."
+    Next: pergunta
+    Event: 
+    Choices: []
+  - Id: coracao
+    Text: "Desligar...? Ent\xE3o o instante acabaria. E eu, enfim, chegaria a algum lugar."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Siga as pontes. A cidade s\xF3 se afasta de quem tem medo de chegar."
+    Next: fim
+    Event: 
+    Choices: []
+  - Id: adeus
+    Text: "V\xE1. O tempo n\xE3o espera... ah, espere. Aqui ele espera."
+    Next: fim
+    Event: 
+    Choices: []

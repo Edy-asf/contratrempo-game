@@ -67,13 +67,13 @@ namespace Icaro
             float multiplier = TimeManager.CurrentMultiplier;
             Vector3 playerPosition = player.transform.position;
 
-            if (Time.time >= m_NextRepathTime)
+            if (CombatTiming.Now >= m_NextRepathTime)
             {
                 m_Controller.SetNavDestination(playerPosition);
-                m_NextRepathTime = Time.time + RepathInterval / multiplier;
+                m_NextRepathTime = CombatTiming.Now + RepathInterval / multiplier;
             }
 
-            if (Time.time >= m_NextHitTime && IsTouching(playerPosition))
+            if (CombatTiming.Now >= m_NextHitTime && IsTouching(playerPosition))
             {
                 if (!m_PlayerDamageable)
                     m_PlayerDamageable = player.GetComponent<Damageable>();
@@ -82,7 +82,7 @@ namespace Icaro
                     CombatEvents.ApplyDamage(m_PlayerDamageable, ContactDamage, gameObject,
                         playerPosition + Vector3.up);
 
-                m_NextHitTime = Time.time + ContactCooldown / multiplier;
+                m_NextHitTime = CombatTiming.Now + ContactCooldown / multiplier;
             }
 
             UpdateHop(multiplier);
@@ -102,7 +102,7 @@ namespace Icaro
                 return;
 
             bool moving = m_Controller.NavMeshAgent && m_Controller.NavMeshAgent.velocity.sqrMagnitude > 0.1f;
-            m_HopPhase += Time.deltaTime * HopFrequency * multiplier * Mathf.PI * (moving ? 2f : 0.6f);
+            m_HopPhase += CombatTiming.DeltaTime * HopFrequency * multiplier * Mathf.PI * (moving ? 2f : 0.6f);
             Body.localPosition = m_BodyBasePosition + Vector3.up * (Mathf.Abs(Mathf.Sin(m_HopPhase)) * HopHeight);
         }
     }

@@ -33,6 +33,18 @@ namespace Icaro
             }
         }
 
+        // Cristais soltos desde 'time' (Time.time) somem: a volta no tempo desfaz os abates que os soltaram
+        public static void ReleaseSince(float time)
+        {
+            for (int i = s_Active.Count - 1; i >= 0; i--)
+            {
+                CronitaPickup crystal = s_Active[i];
+                if (crystal && crystal.m_BornAt >= time)
+                    PrefabPool.Release(crystal.gameObject);
+            }
+        }
+
+        float m_BornAt;
         int m_Value;
         float m_Age;
         float m_Lifetime;
@@ -69,6 +81,7 @@ namespace Icaro
         {
             m_Value = value;
             m_Age = 0f;
+            m_BornAt = Time.time;
             m_Lifetime = settings ? settings.CrystalLifetime : 45f;
             m_Magnet = false;
             Vector2 side = Random.insideUnitCircle * 3.5f;

@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Inimigo_Cascudo
   m_EditorClassIdentifier: Assembly-CSharp::Icaro.CascudoDefinition
   Prefab: {fileID: 8931990137486767754, guid: bcf492125f10de249b440d90bfbe0509, type: 3}
-  DisplayName: Tatu-lanterna
+  DisplayName: Orbe
   MinArena: 1
-  MaxAlive: 6
+  MaxAlive: 4
   RequiresHighSpawn: 0
   GroupMin: 1
   GroupMax: 1
@@ -26,10 +26,17 @@ MonoBehaviour:
   ProjectileSpeed: 0
   MovementMultiplierCap: 6
   MaxHitFraction: 0
+  TimeReduction: 0
   CronitaValue: 3
   PlayerSpeedDivisor: 3
   FallbackSpeed: 4.3
-  AttackRange: 2.4
-  WindupDuration: 0.6
-  HitboxSize: {x: 2.4, y: 1.8, z: 2.2}
-  HitboxForward: 1.3
+  HopHeight: 0.15
+  HopsPerMeter: 0.9
+  AttackRange: 7
+  WindupDuration: 0.8
+  LeapMaxDistance: 9
+  LeapHeight: 1.8
+  LeapTime: 0.55
+  LandTime: 0.4
+  SlamRadius: 3
+  SlamDodgeHeight: 1.2

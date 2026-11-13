@@ -18,7 +18,7 @@ namespace Icaro.EditorTools
         class Meta
         {
             public string name;
-            public int cellWidth, cellHeight, columns, rows;
+            public int cellWidth, cellHeight, columns, rows, directions;
             public float pixelsPerMeter, pivotX, pivotY, bodyGlow;
             public string emission;
             public ClipMeta[] clips;
@@ -102,7 +102,8 @@ namespace Icaro.EditorTools
             }
 
             float bodyGlow = emission && meta.bodyGlow > 0f ? meta.bodyGlow : 1f;
-            Material material = SpriteMaterial($"{folder}/{name}_Sprite.mat", atlas, emission, 0.25f / bodyGlow);
+            Material material = SpriteMaterial($"{folder}/{name}_Sprite.mat", atlas, emission, 0.25f / bodyGlow,
+                meta.pixelsPerMeter > 0f ? meta.pixelsPerMeter : 32f);
 
             string setPath = $"{folder}/{name}_Sprites.asset";
             var set = AssetDatabase.LoadAssetAtPath<EnemySpriteSet>(setPath);
@@ -121,6 +122,7 @@ namespace Icaro.EditorTools
             set.Columns = meta.columns > 0 ? meta.columns : atlas.width / meta.cellWidth;
             set.Rows = meta.rows > 0 ? meta.rows : atlas.height / meta.cellHeight;
             set.PixelsPerMeter = meta.pixelsPerMeter > 0f ? meta.pixelsPerMeter : 32f;
+            set.Directions = meta.directions == 8 ? 8 : 4;
             set.Pivot = new Vector2(meta.pivotX, meta.pivotY);
             set.Clips.Clear();
             foreach (ClipMeta clip in meta.clips)
@@ -135,17 +137,23 @@ namespace Icaro.EditorTools
             return true;
         }
 
-        // URP Lit com recorte (sem semitransparência), sem brilho especular nem reflexo (sprites virados para a câmera
-        // refletiriam a lua juntos) e com o mapa de brilho (ou a própria folha) na emissão: o brilho mínimo e o piscar
-        // vêm do _EmissionColor
-        static Material SpriteMaterial(string path, Texture2D atlas, Texture2D emission, float emissionLevel)
+        // Icaro/EnemySprite (a luz do URP Lit com recorte, sem brilho especular nem reflexo, mais o destaque dos
+        // inimigos: contorno e névoa mais leve), com o mapa de brilho (ou a própria folha) na emissão: o brilho mínimo e
+        // o piscar vêm do _EmissionColor. Sem o shader, URP Lit como antes.
+        static Material SpriteMaterial(string path, Texture2D atlas, Texture2D emission, float emissionLevel,
+            float pixelsPerMeter)
         {
+            Shader shader = Shader.Find("Icaro/EnemySprite") ?? Shader.Find("Universal Render Pipeline/Lit");
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (!material)
             {
-                material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                material = new Material(shader);
                 AssetDatabase.CreateAsset(material, path);
             }
+            else if (material.shader != shader)
+                material.shader = shader;
+
+            material.SetFloat("_PixelsPerMeter", pixelsPerMeter);
 
             material.SetTexture("_BaseMap", atlas);
             material.SetTexture("_MainTex", atlas);

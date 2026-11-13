@@ -28,13 +28,10 @@ MonoBehaviour:
   HealPrice: 25
   HealFraction: 0.5
   RerollPrice: 20
-  DamageUpgradePrice: 45
-  DamageUpgradePriceStep: 25
-  DamageUpgradeAmount: 0.1
-  FireRateUpgradePrice: 45
-  FireRateUpgradePriceStep: 25
-  FireRateUpgradeAmount: 0.08
   Inflation: 0.15
+  MerchantDialogue: {fileID: 11400000, guid: 2af103dc50fdf284d92e0d82f2ea3381, type: 2}
+  MerchantRooms: 03000000060000000b0000000e000000i
+  MerchantDistance: 6
   ItemOffers: 3
   WeaponOffers: 2
   InteractRadius: 3.5

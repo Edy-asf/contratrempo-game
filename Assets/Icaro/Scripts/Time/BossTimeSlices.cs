@@ -26,6 +26,13 @@ namespace Icaro
             slices.m_Given = 0;
         }
 
+        // Voltar no tempo (TimeRewind): a vida voltou e o multiplicador também; as fatias contam de novo daqui
+        void OnTimeRewound()
+        {
+            if (m_Health && m_Health.MaxHealth > 0f && m_Slice > 0f)
+                m_Given = Mathf.FloorToInt((1f - Mathf.Clamp01(m_Health.CurrentHealth / m_Health.MaxHealth)) / m_Slice + 0.0001f);
+        }
+
         void Update()
         {
             if (!m_Health || m_Health.MaxHealth <= 0f)

@@ -135,7 +135,7 @@ namespace Icaro
             if (!player)
                 return;
 
-            m_StateTime += Time.deltaTime;
+            m_StateTime += CombatTiming.DeltaTime;
             float multiplier = TimeManager.CurrentMultiplier;
 
             switch (CurrentState)
@@ -166,10 +166,10 @@ namespace Icaro
                 return;
             }
 
-            if (Time.time >= m_NextRepathTime)
+            if (CombatTiming.Now >= m_NextRepathTime)
             {
                 m_Controller.SetNavDestination(player.transform.position);
-                m_NextRepathTime = Time.time + RepathInterval / multiplier;
+                m_NextRepathTime = CombatTiming.Now + RepathInterval / multiplier;
             }
         }
 
@@ -198,7 +198,7 @@ namespace Icaro
             float progress = Mathf.Clamp01(m_StateTime / m_StateDuration);
 
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(m_DashDirection),
-                1f - Mathf.Exp(-14f * Time.deltaTime));
+                1f - Mathf.Exp(-14f * CombatTiming.DeltaTime));
 
             // Pisca cada vez mais rápido e encolhe como uma mola
             float blink = 0.5f + 0.5f * Mathf.Sin(m_StateTime * Mathf.Lerp(10f, 45f, progress));
@@ -228,7 +228,7 @@ namespace Icaro
         void UpdateDash(GameObject player, float multiplier)
         {
             float remaining = m_DashDistance - m_DashTraveled;
-            float step = Mathf.Min(DashSpeed * CombatTiming.Movement(m_Stats) * Time.deltaTime, remaining);
+            float step = Mathf.Min(DashSpeed * CombatTiming.Movement(m_Stats) * CombatTiming.DeltaTime, remaining);
             Vector3 before = transform.position;
             if (step > 0f)
                 m_Agent.Move(m_DashDirection * step);
@@ -270,7 +270,7 @@ namespace Icaro
         // Circula o jogador a CircleDistance: o destino é sempre um pouco à frente, girando em volta dele
         void UpdateCooldown(GameObject player, float multiplier)
         {
-            if (Time.time >= m_NextRepathTime)
+            if (CombatTiming.Now >= m_NextRepathTime)
             {
                 Vector3 center = player.transform.position;
                 Vector3 away = transform.position - center;
@@ -282,7 +282,7 @@ namespace Icaro
                     m_Controller.SetNavDestination(hit.position);
                 else
                     m_CircleSign = -m_CircleSign;
-                m_NextRepathTime = Time.time + 0.3f / multiplier;
+                m_NextRepathTime = CombatTiming.Now + 0.3f / multiplier;
             }
 
             if (m_StateTime >= m_StateDuration)

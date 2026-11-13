@@ -74,14 +74,14 @@ namespace Icaro
 
         void Update()
         {
-            m_Life -= Time.deltaTime;
+            m_Life -= CombatTiming.DeltaTime;
             if (m_Life <= 0f || !m_Center)
             {
                 PrefabPool.Release(gameObject);
                 return;
             }
 
-            m_Angle += m_Speed * m_Kit.SpeedMultiplier * Time.deltaTime;
+            m_Angle += m_Speed * m_Kit.SpeedMultiplier * CombatTiming.DeltaTime;
             Place();
             CheckPlayer();
         }
@@ -101,7 +101,7 @@ namespace Icaro
         // Acerta se o jogador está perto da linha do feixe (no plano) e o corpo cruza a altura dele
         void CheckPlayer()
         {
-            if (!BossTarget.Exists || Time.time < m_NextHit)
+            if (!BossTarget.Exists || CombatTiming.Now < m_NextHit)
                 return;
 
             Vector3 origin = transform.position;
@@ -121,7 +121,7 @@ namespace Icaro
             if (beamY + k_Thickness * 0.5f < feet || beamY - k_Thickness * 0.5f > head)
                 return;
 
-            m_NextHit = Time.time + k_HitCooldown;
+            m_NextHit = CombatTiming.Now + k_HitCooldown;
             BossTarget.Damage(m_Damage, m_Owner, new Vector3(BossTarget.Feet.x, beamY, BossTarget.Feet.z));
         }
     }

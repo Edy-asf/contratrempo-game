@@ -128,11 +128,11 @@ namespace Icaro
         void Update()
         {
             if (m_Ring)
-                m_Ring.Rotate(Vector3.up, 90f * Time.deltaTime, Space.Self);
+                m_Ring.Rotate(Vector3.up, 90f * CombatTiming.DeltaTime, Space.Self);
             if (m_Marker)
             {
-                m_Marker.localPosition = Vector3.up * (m_Height + 0.6f + Mathf.Sin(Time.time * 3f) * 0.15f);
-                m_Marker.Rotate(Vector3.up, 120f * Time.deltaTime, Space.World);
+                m_Marker.localPosition = Vector3.up * (m_Height + 0.6f + Mathf.Sin(CombatTiming.Now * 3f) * 0.15f);
+                m_Marker.Rotate(Vector3.up, 120f * CombatTiming.DeltaTime, Space.World);
             }
         }
 

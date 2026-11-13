@@ -7,7 +7,7 @@ namespace Icaro
     // Terminal de loja no mundo: pedestal com um holograma girando. Com o jogador perto (InteractRadius), o HUD mostra
     // "[G] Abrir loja" e a tecla abre a loja (ShopUI). As ofertas são sorteadas na primeira vez que a loja abre e
     // ficam até o fim: alguns itens (pela raridade, diferentes entre si), armas novas (que o jogador ainda não
-    // carrega), cura, ficha de rerrolagem e melhorias da arma.
+    // carrega), uma habilidade, o tradutor, cura e ficha de rerrolagem.
     public class ShopTerminal : MonoBehaviour
     {
         public string Title = "Loja";
@@ -16,6 +16,9 @@ namespace Icaro
         public Transform Hologram;
 
         public List<ShopOffer> Offers = new List<ShopOffer>();
+
+        [Tooltip("Desligado: sem aviso nem tecla; a loja só abre por OpenShop (o Méton abre pela conversa)")]
+        public bool Interactive = true;
 
         bool m_Stocked;
         Vector3 m_HologramRest;
@@ -34,6 +37,9 @@ namespace Icaro
                 Hologram.localPosition = m_HologramRest + Vector3.up * (Mathf.Sin(Time.unscaledTime * 2f) * 0.12f);
             }
 
+            if (!Interactive)
+                return;
+
             ShopSettings settings = ShopDirector.Settings;
             bool near = BossTarget.Exists && BossTarget.FlatDistance(transform.position) <= settings.InteractRadius &&
                         Mathf.Abs(BossTarget.Feet.y - transform.position.y) < 3f;
@@ -50,6 +56,16 @@ namespace Icaro
                 Stock();
                 ui.Open(this);
             }
+        }
+
+        // Abre a loja (sorteia as ofertas na primeira vez)
+        public void OpenShop()
+        {
+            ShopUI ui = ShopUI.Instance;
+            if (!ui || ui.IsOpen)
+                return;
+            Stock();
+            ui.Open(this);
         }
 
         // Sorteia as ofertas na primeira abertura
@@ -75,10 +91,24 @@ namespace Icaro
                     Offers.Add(new ShopOffer { Kind = ShopOffer.OfferKind.Weapon, Weapon = weapon });
             }
 
+            // Uma habilidade ativa que o jogador ainda não tem (sorteada)
+            PlayerAbilities abilities = PlayerAbilities.Instance;
+            var missing = new List<AbilityType>();
+            foreach (AbilityType type in new[] { AbilityType.TimeRewind, AbilityType.TimeSlow })
+                if (!abilities || !abilities.Owns(type))
+                    missing.Add(type);
+            if (missing.Count > 0)
+                Offers.Add(new ShopOffer
+                {
+                    Kind = ShopOffer.OfferKind.Ability, Ability = missing[UnityEngine.Random.Range(0, missing.Count)],
+                });
+
+            // O tradutor aeônida, enquanto o jogador não tem
+            if (!PlayerTranslator.Owned)
+                Offers.Add(new ShopOffer { Kind = ShopOffer.OfferKind.Translator });
+
             Offers.Add(new ShopOffer { Kind = ShopOffer.OfferKind.Heal });
             Offers.Add(new ShopOffer { Kind = ShopOffer.OfferKind.Reroll });
-            Offers.Add(new ShopOffer { Kind = ShopOffer.OfferKind.Damage });
-            Offers.Add(new ShopOffer { Kind = ShopOffer.OfferKind.FireRate });
         }
     }
 }

@@ -3,8 +3,10 @@ using System.Text;
 
 namespace Icaro
 {
-    // Monta a folha de sprites de um inimigo desenhado em código (EnemyArt): uma linha por clipe e direção (frente,
-    // direita, costas, esquerda = espelho da direita; a linha 0 é a de cima) e uma coluna por quadro, com contorno
+    // Monta a folha de sprites de um inimigo desenhado em código (EnemyArt): uma linha por clipe e direção, no
+    // sentido horário visto de cima (4 direções: frente, direita, costas, esquerda = espelho da direita; 8 direções:
+    // frente, frente-direita, direita, costas-direita, costas, e as três do lado esquerdo espelhadas; a linha 0 é a
+    // de cima) e uma coluna por quadro, com contorno
     // escuro. Gera também o mapa de brilho (as partes que brilham na cor cheia; o resto na cor vezes BodyGlow) e a
     // descrição JSON no formato do LEIAME.md de Art/Sprites/Inimigos. Sem UnityEngine (prévias fora do Unity).
     public sealed class EnemySpriteSheet
@@ -22,7 +24,8 @@ namespace Icaro
         {
             Art = art;
             EnemyClipSpec[] clips = art.Clips;
-            Rows = clips.Length * 4;
+            int dirs = Directions = art.Directions == 8 ? 8 : 4;
+            Rows = clips.Length * dirs;
             foreach (EnemyClipSpec clip in clips)
                 Columns = clip.Frames > Columns ? clip.Frames : Columns;
 
@@ -31,28 +34,43 @@ namespace Icaro
             Emission = new PixelCanvas(w * Columns, h * Rows);
             for (int c = 0; c < clips.Length; c++)
             {
-                for (int d = 0; d < 4; d++)
+                for (int d = 0; d < dirs; d++)
                 {
-                    // Mesma vista nas quatro direções: copia a linha da frente
+                    // Mesma vista em todas as direções: copia a linha da frente
                     if (art.SameAllDirections && d > 0)
                     {
-                        CopyRow(c * 4 * h, (c * 4 + d) * h, h);
+                        CopyRow(c * dirs * h, (c * dirs + d) * h, h);
                         continue;
                     }
 
-                    EnemyView view = art.SameAllDirections ? EnemyView.Front
-                        : d == 0 ? EnemyView.Front : d == 2 ? EnemyView.Back : EnemyView.Side;
-                    bool mirror = d == 3 && !art.SameAllDirections;
+                    ViewFor(d, dirs, out EnemyView view, out bool mirror);
                     for (int f = 0; f < clips[c].Frames; f++)
                     {
                         var cell = new PixelCanvas(w, h) { Dither = 0.3f };
                         var mask = new PixelCanvas(w, h);
                         art.DrawFrame(cell, mask, view, clips[c], f);
-                        cell.Outline(EnemyRamps.Outline);
-                        Copy(cell, mask, f * w, (c * 4 + d) * h, mirror);
+                        if (!art.OwnOutline)
+                            cell.Outline(EnemyRamps.Outline);
+                        Copy(cell, mask, f * w, (c * dirs + d) * h, mirror);
                     }
                 }
             }
+        }
+
+        // Direções por clipe (4 ou 8)
+        public readonly int Directions;
+
+        // Vista e espelho da direção d (sentido horário a partir da frente); o lado esquerdo espelha o direito
+        public static void ViewFor(int d, int dirs, out EnemyView view, out bool mirror)
+        {
+            int half = dirs / 2;
+            mirror = d > half;
+            int k = mirror ? dirs - d : d; // 0 frente .. half costas
+            if (dirs == 8)
+                view = k == 0 ? EnemyView.Front : k == 1 ? EnemyView.FrontSide : k == 2 ? EnemyView.Side
+                    : k == 3 ? EnemyView.BackSide : EnemyView.Back;
+            else
+                view = k == 0 ? EnemyView.Front : k == 1 ? EnemyView.Side : EnemyView.Back;
         }
 
         void CopyRow(int fromY, int toY, int h)
@@ -97,7 +115,8 @@ namespace Icaro
             s.AppendFormat(inv, "  \"name\": \"{0}\",\n", Art.Key);
             s.AppendFormat(inv, "  \"cellWidth\": {0},\n  \"cellHeight\": {1},\n", Art.Width, Art.Height);
             s.AppendFormat(inv, "  \"columns\": {0},\n  \"rows\": {1},\n", Columns, Rows);
-            s.AppendFormat(inv, "  \"pixelsPerMeter\": {0},\n", EnemyArt.PixelsPerMeter);
+            s.AppendFormat(inv, "  \"pixelsPerMeter\": {0},\n", Art.PixelDensity);
+            s.AppendFormat(inv, "  \"directions\": {0},\n", Directions);
             s.AppendFormat(inv, "  \"pivotX\": {0},\n  \"pivotY\": {1},\n", Art.PivotX, Art.PivotY);
             s.AppendFormat(inv, "  \"emission\": \"{0}\",\n  \"bodyGlow\": {1},\n", emission, BodyGlow);
             s.Append("  \"clips\": [\n");
@@ -105,7 +124,7 @@ namespace Icaro
             for (int i = 0; i < clips.Length; i++)
             {
                 s.AppendFormat(inv, "    {{\"name\": \"{0}\", \"row\": {1}, \"frames\": {2}, \"fps\": {3}, \"loop\": {4}}}{5}\n",
-                    clips[i].Name, i * 4, clips[i].Frames, clips[i].Fps, clips[i].Loop ? "true" : "false",
+                    clips[i].Name, i * Directions, clips[i].Frames, clips[i].Fps, clips[i].Loop ? "true" : "false",
                     i < clips.Length - 1 ? "," : "");
             }
 

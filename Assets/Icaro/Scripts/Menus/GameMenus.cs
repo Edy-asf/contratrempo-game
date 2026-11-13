@@ -283,7 +283,7 @@ namespace Icaro
 
         static bool OtherOverlayOpen() =>
             ItemDraft.Instance && ItemDraft.Instance.IsOpen || ShopUI.Instance && ShopUI.Instance.IsOpen ||
-            WeaponSpriteTuner.IsOpen || IntroSequence.Playing;
+            WeaponSpriteTuner.IsOpen || IntroSequence.Playing || DialogueUI.Talking;
 
         void UpdateFps()
         {
@@ -620,8 +620,10 @@ namespace Icaro
             float alpha = 1f - fade * fade;
             if (m_PageGroup)
                 m_PageGroup.alpha = Mathf.Ceil(alpha * 6f) / 6f;
+            // O vídeo escurece até o preto, sempre opaco: ficar transparente deixava a cena aparecer por trás antes
+            // da abertura cobrir a tela
             if (m_Video)
-                m_Video.color = new Color(m_Video.color.r, m_Video.color.g, m_Video.color.b, alpha);
+                m_Video.color = Color.Lerp(m_Video.texture ? Color.white : MenuKit.Dark, Color.black, fade);
             if (fade >= 1f)
             {
                 Resume();

@@ -37,13 +37,29 @@ namespace Icaro
         [Min(0f)] public float QuotaPerRoom = 2.5f;
 
         [Tooltip("Limite de inimigos vivos ao mesmo tempo na sala 1")]
-        [Min(1f)] public float AliveBase = 6f;
+        [Min(1f)] public float AliveBase = 4f;
 
         [Tooltip("Vivos ao mesmo tempo a mais a cada sala seguinte")]
-        [Min(0f)] public float AlivePerRoom = 0.75f;
+        [Min(0f)] public float AlivePerRoom = 0.4f;
+
+        [Header("Vivos ao mesmo tempo pelo tamanho da sala")]
+        [Tooltip("Ajusta o limite de vivos pela área de chão andável da arena (NavMesh dentro do domo)")]
+        public bool AliveByRoomSize = true;
+
+        [Tooltip("Área (m²) em que o limite de vivos fica igual ao da fórmula por sala")]
+        [Min(100f)] public float ReferenceArea = 2000f;
+
+        [Tooltip("Quanto o tamanho pesa: 1 = proporcional à área, 0,5 = pela raiz (o dobro da área dá 1,41x)")]
+        [Range(0.1f, 1f)] public float AreaExponent = 0.5f;
+
+        [Tooltip("Fator do tamanho entre estes limites (menor e maior)")]
+        public Vector2 AreaFactorRange = new Vector2(0.5f, 3f);
+
+        [Tooltip("Mínimo de vivos ao mesmo tempo em qualquer sala de combate")]
+        [Min(1)] public int AliveMin = 3;
 
         [Tooltip("Teto absoluto de inimigos vivos ao mesmo tempo (desempenho)")]
-        [Min(1)] public int AliveCeiling = 40;
+        [Min(1)] public int AliveCeiling = 20;
 
         [Tooltip("Multiplica a cota, o limite de vivos e o MaxAlive de cada tipo (o teto absoluto continua valendo)")]
         [Min(0.1f)] public float EnemyCountMultiplier = 1f;
@@ -227,10 +243,24 @@ namespace Icaro
         }
 
         // Limite de vivos ao mesmo tempo (sem o chefe), com o teto absoluto
-        public int AliveLimitFor(int room, bool bossRoom)
+        // area: chão andável da arena em m² (ArenaFloor); 0 = sem medida (só a fórmula por sala). Nas salas de chefe
+        // o tamanho não conta.
+        public int AliveLimitFor(int room, bool bossRoom, float area = 0f)
         {
-            float alive = bossRoom ? BossAliveLimit : AliveBase + AlivePerRoom * (Mathf.Max(1, room) - 1);
-            return Mathf.Clamp(Mathf.RoundToInt(alive * EnemyCountMultiplier), 1, AliveCeiling);
+            if (bossRoom)
+                return Mathf.Clamp(Mathf.RoundToInt(BossAliveLimit * EnemyCountMultiplier), 1, AliveCeiling);
+            float alive = (AliveBase + AlivePerRoom * (Mathf.Max(1, room) - 1)) * AreaFactor(area);
+            return Mathf.Clamp(Mathf.RoundToInt(alive * EnemyCountMultiplier), Mathf.Min(AliveMin, AliveCeiling),
+                AliveCeiling);
+        }
+
+        // Fator do tamanho da sala sobre o limite de vivos (1 sem medida ou com AliveByRoomSize desligado)
+        public float AreaFactor(float area)
+        {
+            if (!AliveByRoomSize || area <= 0f)
+                return 1f;
+            float factor = Mathf.Pow(area / Mathf.Max(1f, ReferenceArea), AreaExponent);
+            return Mathf.Clamp(factor, AreaFactorRange.x, Mathf.Max(AreaFactorRange.x, AreaFactorRange.y));
         }
 
         // Limite de vivos de um tipo, já com o EnemyCountMultiplier (0 = sem limite)

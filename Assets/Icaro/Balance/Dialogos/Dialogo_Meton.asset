@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96966963609b55145b336a68b8459422, type: 3}
+  m_Name: Dialogo_Meton
+  m_EditorClassIdentifier: Assembly-CSharp::Icaro.DialogueDefinition
+  Speaker: "Méton"
+  SpeakerColor: {r: 1, g: 0.74, b: 0.35, a: 1}
+  IgnoreWithoutTranslator: 1
+  WithoutTranslator:
+  - Label: (Apontar para a mochila)
+    Next: fim
+    Event: abrir_loja
+  Repeat: {fileID: 11400000, guid: 9115cf0c749c6564092bab8ea1b889a9, type: 2}
+  Nodes:
+  - Id: 
+    Text: "Ah! Agora sim nos entendemos. Eu sabia que esse tradutor ia servir direitinho em você."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Méton, mercador de instantes. Eu não acredito em coincidências. Eu as vendo."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "Você passou um bom tempo apontando para a minha mochila. Ótimo cliente, mesmo sem uma palavra."
+    Next: 
+    Event: 
+    Choices: []
+  - Id: 
+    Text: "E não se preocupe com o preço. Ele sobe com a pressa do mundo, então compre cedo."
+    Next: 
+    Event: 
+    Choices:
+    - Label: Mostre o que tem.
+      Next: fim
+      Event: abrir_loja
+    - Label: "De onde você vem?"
+      Next: origem
+      Event: 
+    - Label: Depois.
+      Next: fim
+      Event: 
+  - Id: origem
+    Text: De onde? Que pergunta antiga. Digamos que vendi o primeiro cristal deste planeta.
+    Next: fim
+    Event: 
+    Choices: []

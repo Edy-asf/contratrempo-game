@@ -26,6 +26,7 @@ MonoBehaviour:
   ProjectileSpeed: 24
   MovementMultiplierCap: 0
   MaxHitFraction: 0
+  TimeReduction: 0
   CronitaValue: 4
   MoveSpeed: 3.5
   WanderMinDistance: 8
@@ -40,3 +41,14 @@ MonoBehaviour:
   SpreadMax: 5
   BurstIntervalMin: 2
   BurstIntervalMax: 3
+  ProjectileLifetime: 2.5
+  KiteTrigger: 8
+  KiteDistance: 6
+  KiteSpeed: 0.8
+  MortarHiddenTime: 3
+  MortarRange: 40
+  MortarWarning: 0.6
+  MortarFlightTime: 1.2
+  MortarRadius: 3
+  MortarDamage: 2.5
+  MortarCooldown: 7

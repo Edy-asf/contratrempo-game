@@ -13,7 +13,7 @@ namespace Icaro
     public class TimeManager : MonoBehaviour
     {
         // Valores padrão (o Inspector de cada TimeManager pode mudar)
-        public const float DefaultSecondsPerStep = 30f;
+        public const float DefaultSecondsPerStep = 20f;
         public const float DefaultHealthPerStep = 2000f;
         public const float DefaultMaxMultiplier = 6f;
 
@@ -116,7 +116,8 @@ namespace Icaro
             if (DebugPaused || !(Running || DebugRunOutsideCombat))
                 return;
 
-            m_Elapsed = Mathf.Min(m_Elapsed + Time.deltaTime * DebugTimeScale * GrowthRate, MaxElapsed);
+            // Na câmera lenta das habilidades o multiplicador cresce no ritmo do mundo (CombatTiming.WorldSpeed)
+            m_Elapsed = Mathf.Min(m_Elapsed + CombatTiming.DeltaTime * DebugTimeScale * GrowthRate, MaxElapsed);
         }
 
         // O mundo volta a andar em 1,0x, sem o multiplicador crescer (antes do domo subir)

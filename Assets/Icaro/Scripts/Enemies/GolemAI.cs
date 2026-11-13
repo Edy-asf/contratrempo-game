@@ -18,6 +18,7 @@ namespace Icaro
         public enum State
         {
             Move,
+            Face,
             Aim,
             Lock,
             Fire,
@@ -53,6 +54,16 @@ namespace Icaro
         public float RepathInterval = 0.4f;
         public float TurnSharpness = 3f;
 
+        [Tooltip("Antes de mirar, gira o corpo inteiro no lugar até ficar de frente para o jogador e mira acompanhando com " +
+                 "o corpo (sprites: o aviso e o disparo só existem na vista de frente)")]
+        public bool FaceBeforeAim;
+
+        [Tooltip("Giro do corpo ao se virar para o jogador (graus/s a 1,0x; cresce com o multiplicador)")]
+        public float FaceTurnSpeed = 150f;
+
+        [Tooltip("Diferença de ângulo em que já conta como de frente")]
+        public float FaceAngle = 8f;
+
         [Header("Visual e som")]
         public Material LineMaterial;
 
@@ -81,6 +92,8 @@ namespace Icaro
             {
                 switch (CurrentState)
                 {
+                    case State.Face:
+                        return SpriteAction.Move;
                     case State.Aim:
                     case State.Lock:
                         return SpriteAction.Windup;
@@ -90,7 +103,7 @@ namespace Icaro
                         return SpriteAction.Windup2;
                 }
 
-                if (Time.time - m_SlamTime < k_SlamShow)
+                if (CombatTiming.Now - m_SlamTime < k_SlamShow)
                     return SpriteAction.Attack2;
                 return m_Agent && m_Agent.velocity.sqrMagnitude > 0.04f ? SpriteAction.Move : SpriteAction.Idle;
             }
@@ -110,8 +123,8 @@ namespace Icaro
                     case State.SlamWarning:
                         return state;
                     case State.Move:
-                        if (Time.time - m_SlamTime < k_SlamShow)
-                            return (Time.time - m_SlamTime) / k_SlamShow;
+                        if (CombatTiming.Now - m_SlamTime < k_SlamShow)
+                            return (CombatTiming.Now - m_SlamTime) / k_SlamShow;
                         break;
                 }
 
@@ -190,7 +203,7 @@ namespace Icaro
             }
 
             // Primeiro tiro só depois de um respiro
-            m_NextLaserTime = Time.time + CombatTiming.Scaled(1.5f);
+            m_NextLaserTime = CombatTiming.Now + CombatTiming.Scaled(1.5f);
         }
 
         void OnDestroy()
@@ -207,13 +220,16 @@ namespace Icaro
             if (!player)
                 return;
 
-            m_StateTime += Time.deltaTime;
+            m_StateTime += CombatTiming.DeltaTime;
             Vector3 target = AimPoint(player);
 
             switch (CurrentState)
             {
                 case State.Move:
                     UpdateMove(player, target);
+                    break;
+                case State.Face:
+                    UpdateFace(player, target);
                     break;
                 case State.Aim:
                     UpdateAim(player, target);
@@ -243,25 +259,24 @@ namespace Icaro
             }
 
             bool seeing = m_Controller.IsSeeingTarget;
-            if (seeing && distance <= LaserRange && Time.time >= m_NextLaserTime)
+            if (seeing && distance <= LaserRange && CombatTiming.Now >= m_NextLaserTime)
             {
-                EnterState(State.Aim, CombatTiming.Warning(AimDuration));
-                ThreatSignals.Report(transform,
-                    CombatTiming.Warning(AimDuration) + CombatTiming.Warning(LockDuration) + 0.4f);
                 m_Agent.isStopped = true;
                 m_Agent.ResetPath();
-                if (AimSound)
-                    AudioUtility.CreateSFX(AimSound, Muzzle.position, AudioUtility.AudioGroups.WeaponChargeBuildup, 1f, 8f);
+                if (FaceBeforeAim)
+                    EnterState(State.Face, 0f);
+                else
+                    StartAim();
                 return;
             }
 
             if (!seeing || distance > PreferredDistance)
             {
                 m_Agent.isStopped = false;
-                if (Time.time >= m_NextRepathTime)
+                if (CombatTiming.Now >= m_NextRepathTime)
                 {
                     m_Controller.SetNavDestination(player.transform.position);
-                    m_NextRepathTime = Time.time + CombatTiming.Scaled(RepathInterval);
+                    m_NextRepathTime = CombatTiming.Now + CombatTiming.Scaled(RepathInterval);
                 }
             }
             else
@@ -272,8 +287,42 @@ namespace Icaro
             TurnTorso(target);
         }
 
+        void StartAim()
+        {
+            EnterState(State.Aim, CombatTiming.Warning(AimDuration));
+            ThreatSignals.Report(transform,
+                CombatTiming.Warning(AimDuration) + CombatTiming.Warning(LockDuration) + 0.4f);
+            if (AimSound)
+                AudioUtility.CreateSFX(AimSound, Muzzle.position, AudioUtility.AudioGroups.WeaponChargeBuildup, 1f, 8f);
+        }
+
+        // Vira o corpo no lugar até ficar de frente para o jogador; aí começa a mirar
+        void UpdateFace(GameObject player, Vector3 target)
+        {
+            if (ShouldSlam(player, FlatDistance(player.transform.position)))
+            {
+                EnterSlam();
+                return;
+            }
+
+            if (TurnBody(target, FaceTurnSpeed) <= FaceAngle)
+                StartAim();
+        }
+
+        // Gira a raiz para o alvo (graus/s a 1,0x); devolve o ângulo que ainda falta
+        float TurnBody(Vector3 target, float speed)
+        {
+            Vector3 direction = Vector3.ProjectOnPlane(target - transform.position, Vector3.up);
+            if (direction.sqrMagnitude < 0.01f)
+                return 0f;
+            Quaternion goal = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, goal,
+                speed * TimeManager.CurrentMultiplier * CombatTiming.DeltaTime);
+            return Quaternion.Angle(transform.rotation, goal);
+        }
+
         bool ShouldSlam(GameObject player, float distance) =>
-            distance <= SlamTriggerRange && Time.time >= m_NextSlamTime &&
+            distance <= SlamTriggerRange && CombatTiming.Now >= m_NextSlamTime &&
             Mathf.Abs(player.transform.position.y - transform.position.y) < 3f;
 
         // ---------- laser ----------
@@ -287,6 +336,8 @@ namespace Icaro
                 return;
             }
 
+            if (FaceBeforeAim)
+                TurnBody(target, FaceTurnSpeed);
             TurnTorso(target);
             Vector3 direction = (target - Muzzle.position).normalized;
             float progress = Mathf.Clamp01(m_StateTime / m_StateDuration);
@@ -335,7 +386,7 @@ namespace Icaro
             if (FireSound)
                 AudioUtility.CreateSFX(FireSound, m_BeamEnd, AudioUtility.AudioGroups.Impact, 1f, 10f);
 
-            m_NextLaserTime = Time.time + CombatTiming.Scaled(LaserCooldown);
+            m_NextLaserTime = CombatTiming.Now + CombatTiming.Scaled(LaserCooldown);
             EnterState(State.Fire, k_BeamShowTime);
         }
 
@@ -437,11 +488,11 @@ namespace Icaro
             }
 
             SpawnImpact(transform.position, SlamRadius / 4f);
-            m_SlamTime = Time.time;
+            m_SlamTime = CombatTiming.Now;
             if (SlamSound)
                 AudioUtility.CreateSFX(SlamSound, transform.position, AudioUtility.AudioGroups.Impact, 1f, 10f);
 
-            m_NextSlamTime = Time.time + CombatTiming.Scaled(SlamCooldown);
+            m_NextSlamTime = CombatTiming.Now + CombatTiming.Scaled(SlamCooldown);
             EnterState(State.Move, 0f);
         }
 
@@ -463,7 +514,7 @@ namespace Icaro
 
             float sharpness = TurnSharpness * TimeManager.CurrentMultiplier;
             pivot.rotation = Quaternion.Slerp(pivot.rotation, Quaternion.LookRotation(direction),
-                1f - Mathf.Exp(-sharpness * Time.deltaTime));
+                1f - Mathf.Exp(-sharpness * CombatTiming.DeltaTime));
         }
 
         // Peito do jogador (o pivô do Player do Microgame fica nos pés)

@@ -15,10 +15,10 @@ MonoBehaviour:
   Prefab: {fileID: 555392398416865075, guid: 4fbc4869c4ca8464facfcf3fd02212c5, type: 3}
   DisplayName: Mariposa-lanterna
   MinArena: 2
-  MaxAlive: 14
+  MaxAlive: 8
   RequiresHighSpawn: 0
-  GroupMin: 3
-  GroupMax: 5
+  GroupMin: 2
+  GroupMax: 4
   Pooled: 1
   MaxHealth: 52
   Damage: 4
@@ -26,6 +26,7 @@ MonoBehaviour:
   ProjectileSpeed: 45
   MovementMultiplierCap: 0
   MaxHitFraction: 0
+  TimeReduction: 0
   CronitaValue: 1
   FlySpeed: 8
   Acceleration: 14

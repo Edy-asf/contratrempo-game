@@ -24,6 +24,7 @@ namespace Icaro
         public static bool HitMarker = true;
         public static bool ThreatIndicators = true;
         public static bool ShowFps;
+        public static float EnemyHighlight = 0.7f; // contorno, névoa e brilho dos inimigos (EnemyHighlightSettings), 0 a 1
 
         public static bool CameraShakeOn
         {
@@ -58,6 +59,8 @@ namespace Icaro
         public static bool InvertY;
         public static Key DashKey = Key.F;
         public static Key ShopKey = Key.G;
+        public static Key Ability1Key = Key.Z;
+        public static Key Ability2Key = Key.X;
 
         // Ações do Microgame que podem ter a tecla trocada (nome mostrado, caminho da ação)
         public static readonly (string Label, string Action)[] RebindableActions =
@@ -97,6 +100,7 @@ namespace Icaro
             HitMarker = GetBool("MarcadorAcerto", HitMarker);
             ThreatIndicators = GetBool("SetasAmeaca", ThreatIndicators);
             ShowFps = GetBool("MostrarFps", ShowFps);
+            EnemyHighlight = PlayerPrefs.GetFloat(k_Prefix + "DestaqueInimigos", EnemyHighlight);
 
             ScreenMode = PlayerPrefs.GetInt(k_Prefix + "ModoTela", ScreenMode);
             ResolutionIndex = PlayerPrefs.GetInt(k_Prefix + "Resolucao", ResolutionIndex);
@@ -116,6 +120,8 @@ namespace Icaro
             InvertY = GetBool("InverterY", InvertY);
             DashKey = (Key)PlayerPrefs.GetInt(k_Prefix + "TeclaDash", (int)DashKey);
             ShopKey = (Key)PlayerPrefs.GetInt(k_Prefix + "TeclaLoja", (int)ShopKey);
+            Ability1Key = (Key)PlayerPrefs.GetInt(k_Prefix + "TeclaHabilidade1", (int)Ability1Key);
+            Ability2Key = (Key)PlayerPrefs.GetInt(k_Prefix + "TeclaHabilidade2", (int)Ability2Key);
 
             string bindings = PlayerPrefs.GetString(k_Bindings, "");
             if (!string.IsNullOrEmpty(bindings) && InputSystem.actions)
@@ -130,6 +136,7 @@ namespace Icaro
             SetBool("MarcadorAcerto", HitMarker);
             SetBool("SetasAmeaca", ThreatIndicators);
             SetBool("MostrarFps", ShowFps);
+            PlayerPrefs.SetFloat(k_Prefix + "DestaqueInimigos", EnemyHighlight);
 
             PlayerPrefs.SetInt(k_Prefix + "ModoTela", ScreenMode);
             PlayerPrefs.SetInt(k_Prefix + "Resolucao", ResolutionIndex);
@@ -149,6 +156,8 @@ namespace Icaro
             SetBool("InverterY", InvertY);
             PlayerPrefs.SetInt(k_Prefix + "TeclaDash", (int)DashKey);
             PlayerPrefs.SetInt(k_Prefix + "TeclaLoja", (int)ShopKey);
+            PlayerPrefs.SetInt(k_Prefix + "TeclaHabilidade1", (int)Ability1Key);
+            PlayerPrefs.SetInt(k_Prefix + "TeclaHabilidade2", (int)Ability2Key);
             if (InputSystem.actions)
                 PlayerPrefs.SetString(k_Bindings, InputSystem.actions.SaveBindingOverridesAsJson());
             PlayerPrefs.Save();
@@ -191,6 +200,8 @@ namespace Icaro
                 InputSystem.actions.RemoveAllBindingOverrides();
             DashKey = Key.F;
             ShopKey = Key.G;
+            Ability1Key = Key.Z;
+            Ability2Key = Key.X;
             Commit();
         }
 
@@ -207,6 +218,7 @@ namespace Icaro
                     CameraShakeOn = true;
                     ThreatIndicators = true;
                     ShowFps = false;
+                    EnemyHighlight = 0.7f;
                     break;
                 case 1:
                     ScreenMode = 0;
